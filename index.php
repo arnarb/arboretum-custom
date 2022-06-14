@@ -430,6 +430,9 @@ function custom_ticket_column($column, $post_id) {
   }
 }
 
+/**
+ * Make custom columns sortable
+ */
 add_filter('manage_edit-ticket_sortable_columns', 'set_custom_ticket_sortable_columns');
 
 function set_custom_ticket_sortable_columns( $columns ) {
