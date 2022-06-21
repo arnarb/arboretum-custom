@@ -669,23 +669,20 @@ function generate_spreadsheet_bulk_action($redirect_url, $action, $post_ids) {
       $sheet->setCellValue("B$num", $ticket->time_registered);
 
       $user = get_user_by('ID', $ticket->user);
-      $args = array(
-        'post_type' => 'event',
-        'posts_per_page' => 1,
-        'p' => $ticket->event
-      );
-      $event = new WP_Query($args);
-
+      
       $sheet->setCellValue("C$num", "$user->first_name $user->last_name");
       $sheet->setCellValue("D$num", $user->user_email);
-      $sheet->setCellValue("E$num", $user->city());
-      $sheet->setCellValue("F$num", $user->state());
-      $sheet->setCellValue("G$num", $user->country());
-      $sheet->setCellValue("H$num", $user->get_field('zip'));
+      $sheet->setCellValue("E$num", $user->city);
+      $sheet->setCellValue("F$num", $user->state);
+      $sheet->setCellValue("G$num", $user->country);
+      $sheet->setCellValue("H$num", $user->zip);
 
-      $sheet->setCellValue("I$num", $event->post_title);
-      $sheet->setCellValue("J$num", $event->startDate);
-      $sheet->setCellValue("K$num", get_field('locations', $event->ID));
+      foreach($ticket->event as $event_id){
+        $event = new Event($event_id);
+        $sheet->setCellValue("I$num", $event->title);
+        $sheet->setCellValue("J$num", $event->post_title);
+        $sheet->setCellValue("K$num", get_field('locations', $event_id));
+      }
     }
 
     $writer = new Xlsx($spreadsheet);
@@ -697,7 +694,7 @@ function generate_spreadsheet_bulk_action($redirect_url, $action, $post_ids) {
     header("Pragma: public");
     $writer->save("php://output");
   }
-
+// 
   return $redirect_url;
 }
 
