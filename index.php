@@ -9,6 +9,7 @@ use Arboretum\Repositories\DirectorRepository;
 
 use Arboretum\Models\Event as Event;
 use Arboretum\Models\Ticket as Ticket;
+use Arboretum\Models\Location as Location;
 use Timber\User as User;
 
 require 'vendor/autoload.php';
@@ -677,12 +678,42 @@ function generate_spreadsheet_bulk_action($redirect_url, $action, $post_ids) {
       $sheet->setCellValue("G$num", $user->country);
       $sheet->setCellValue("H$num", $user->zip);
 
+      // Consolidate event data into one string for entry into spreadsheet
+      $n = 0;
+      $count = count($ticket->event);
+      $titles = '';
+      $dates = '';
+      $locations = '';
+
       foreach($ticket->event as $event_id){
+        $n ++;
+
         $event = new Event($event_id);
-        $sheet->setCellValue("I$num", $event->title);
-        $sheet->setCellValue("J$num", $event->post_title);
-        $sheet->setCellValue("K$num", get_field('locations', $event_id));
+        $titles .= $event->title;
+        $dates .= $event->start_date;
+
+        $l = 0;
+        $location_count = count($event->locations);
+        foreach($event->locations as $location_id) {
+          $l ++;
+          $location = new Location($location_id);
+
+          $locations .= $location->title;
+
+          if($l < $location_count) {
+            $locations .= ', ';
+          }
+        }
+        if($n < $count) {
+          $titles .= '; ';
+          $dates .= '; ';
+          $locations .= '; ';
+        }
       }
+
+      $sheet->setCellValue("I$num", $titles);
+      $sheet->setCellValue("J$num", $dates);
+      $sheet->setCellValue("K$num", $locations);
     }
 
     $writer = new Xlsx($spreadsheet);
