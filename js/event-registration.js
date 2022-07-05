@@ -6,7 +6,21 @@ jQuery(document).ready(function() {
     const form = document.querySelector('#event-registration-form');
     const returned = document.querySelector('.arb-form__register');
     const requested = document.querySelector('#requested');
+    const questionInputs = document.querySelectorAll('.custom-question');
+    let questionIds = '';
+    let n = 0;
 
+    questionInputs.forEach(questionId => {
+      n++;
+      questionIds += questionId.name;
+      alert(questionId.name);
+
+      if(n < questionIds.length) {
+        questionIds += ', ';
+      }
+    })
+
+    alert(questionIds);
     // Validate the form
     const requestedNum = parseInt(requested.value);
     if (isNaN(requestedNum) || !(requestedNum > 0)) {
@@ -25,6 +39,7 @@ jQuery(document).ready(function() {
         user: returned.dataset.user,
         nonce: returned.dataset.nonce,
         requested: requestedNum,
+        questionIds: questionIds
       };
       let elements = form.elements;
 
@@ -38,6 +53,8 @@ jQuery(document).ready(function() {
       document.querySelector('#event-registration-form').remove();
       document.querySelector('#result').innerHTML = 'Thank you for registering! You will receive a confirmation email with more information about the program.';
       alert("Woohoo");
+      // alert(data);
+
       // alert(`Requested: ${requestedNum}   userId: ${data.userId}    eventId: ${data.eventId}`);
 //////////////
       // form_data = jQuery('form').serializeArray();
