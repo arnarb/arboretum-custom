@@ -380,7 +380,7 @@ function set_custom_ticket_columns($columns) {
   $columns['event'] = __('Event', 'arboretum');
   $columns['time_registered'] = __('Time Registered', 'arboretum');
   $columns['time_attended'] = __('Time Attended', 'arboretum');
-  $columns['time_canceled'] = __('Time Canceled', 'arboretum');
+  $columns['canceled'] = __('Canceled', 'arboretum');
   $columns['date'] = __('Date', $date);
 
   return $columns;
@@ -425,8 +425,11 @@ function custom_ticket_column($column, $post_id) {
       echo get_field('time_attended', $post_id);
       break;
 
-    case 'time_canceled':
-      echo get_field('time_canceled', $post_id);
+    case 'canceled':
+      $time_canceled = get_field('time_canceled', $post_id);
+      if(isset($time_canceled) && $time_canceled != '') {
+        echo 'Canceled on ' . $time_canceled;
+      }
       break;
   }
 }
@@ -441,7 +444,7 @@ function set_custom_ticket_sortable_columns( $columns ) {
   $columns['event'] = 'event';
   $columns['time_registered'] = 'time_registered';
   $columns['time_attended'] = 'time_attended';
-  $columns['time_canceled'] = 'time_canceled';
+  $columns['canceled'] = 'time_canceled';
 
   return $columns;
 }
@@ -497,6 +500,7 @@ function ticket_filters_restrict_manage_posts($post_type){
 
     $tickets = get_posts(array('numberposts' => -1, 'post_type' => 'ticket', 'posts_per_page' => -1));
 
+    // User column
     $values = array();
     foreach($tickets as $ticket) {
       setup_postdata($ticket);
@@ -507,58 +511,52 @@ function ticket_filters_restrict_manage_posts($post_type){
       $values[$user_id] = $name;
       wp_reset_postdata();
     }
-    ?>
+  ?>
     <select name="ticket_user_filter">
     <option value=""><?php _e('All users', 'ticket'); ?></option>
-    <?php
-      $current_v = isset($_GET['ticket_user_filter'])? $_GET['ticket_user_filter']:'';
-      foreach ($values as $label => $value) {
-        printf
-          (
-            '<option value="%s"%s>%s</option>',
-            $label,
-            $label == $current_v? ' selected="selected"':'',
-            $value
-            // $value,
-            // $value == $current_v? ' selected="selected"':'',
-            // $label
-          );
-      }
-    ?>
+  <?php
+    $current_v = isset($_GET['ticket_user_filter'])? $_GET['ticket_user_filter']:'';
+    foreach ($values as $label => $value) {
+      printf
+        (
+          '<option value="%s"%s>%s</option>',
+          $label,
+          $label == $current_v? ' selected="selected"':'',
+          $value
+        );
+    }
+  ?>
     </select>
-    <?php
+  <?php
+    // Event column
     $values = array();
     foreach($tickets as $ticket) {
       setup_postdata($ticket);
-      $event_id = get_field('event', $ticket->ID);
-      $event = new Event($event_id);
-
-      $values[$event_id] = $event->title;
+      $event_ids = get_field('event', $ticket->ID);
+      foreach($event_ids as $event_id) {
+        $event = new Event($event_id);
+        $values[$event_id] = $event->title;
+      }
+      wp_reset_postdata();
     }
-    wp_reset_postdata();
-    ?>
+  ?>
     <select name="ticket_event_filter">
     <option value=""><?php _e('All events', 'ticket'); ?></option>
-    <?php
-      $current_v = isset($_GET['ticket_event_filter'])? $_GET['ticket_event_filter']:'';
-      foreach ($values as $label => $value) {
-        printf
-          (
-            '<option value="%s"%s>%s</option>',
-            $label,
-            $label == $current_v? ' selected="selected"':'',
-            $value
-            // $value,
-            // $value == $current_v? ' selected="selected"':'',
-            // $label
-          );
-      }
-    ?>
+  <?php
+    $current_v = isset($_GET['ticket_event_filter'])? $_GET['ticket_event_filter']:'';
+    foreach ($values as $label => $value) {
+      printf
+        (
+          '<option value="%s"%s>%s</option>',
+          $label,
+          $label == $current_v? ' selected="selected"':'',
+          $value
+        );
+    }
+  ?>
     </select>
-    <?php
+  <?php
     wp_reset_postdata();
-
-    //}
 }
 
 
@@ -591,9 +589,6 @@ function ticket_filters($query){
       $_GET['ticket_user_filter'] != '' &&
       $query->is_main_query()
     ) {
-      // $query->query_vars['meta_key'] = 'user';
-      // $query->query_vars['meta_value'] = $_GET['ticket_user_filter'];
-      // $query->query_vars['meta_compare'] = '=';
       $query->query_vars['meta_query'][] = array(
         'key' => 'user',
         'value' => $_GET['ticket_user_filter'],
@@ -608,13 +603,10 @@ function ticket_filters($query){
       $_GET['ticket_event_filter'] != ''
       && $query->is_main_query()
     ) {
-      // $query->query_vars['meta_key'] = 'event';
-      // $query->query_vars['meta_value'] = $_GET['ticket_event_filter'];
-      // $query->query_vars['meta_compare'] = '=';
       $query->query_vars['meta_query'][] = array(
         'key' => 'event',
-        'value' => $_GET['ticket_event_filter'],
-        'compare' => '='
+        'value' => '"'.$_GET['ticket_event_filter'].'"',
+        'compare' => 'LIKE'
       );
     }
 
