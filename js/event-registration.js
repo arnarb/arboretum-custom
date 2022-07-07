@@ -12,7 +12,7 @@ jQuery(document).ready(function() {
 
     questionInputs.forEach(questionInput => {
       // questionIds.push(questionId.name);
-      let questionType = questionInput.dataset('question-type');
+      let questionType = questionInput.dataset.questionType;
 
       switch (questionType) {
         case 'checkbox':
