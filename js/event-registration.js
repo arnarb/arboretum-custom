@@ -7,20 +7,30 @@ jQuery(document).ready(function() {
     const returned = document.querySelector('.arb-form__register');
     const requested = document.querySelector('#requested');
     const questionInputs = document.querySelectorAll('.custom-question');
-    let questionIds = '';
+    // let questionIds = [];
     let n = 0;
 
-    questionInputs.forEach(questionId => {
-      n++;
-      questionIds += questionId.name;
-      alert(questionId.name);
+    questionInputs.forEach(questionInput => {
+      // questionIds.push(questionId.name);
+      let questionType = questionInput.dataset('question-type');
 
-      if(n < questionIds.length) {
-        questionIds += ', ';
+      switch (questionType) {
+        case 'checkbox':
+          alert("Checkbox");
+          break;
+        case 'radio':
+          alert("Radio");
+          break;
+        case 'source':
+          alert("Source");
+          break;
+        case 'text':
+          alert("Text");
+          break;
       }
     })
 
-    alert(questionIds);
+    // alert(questionIds);
     // Validate the form
     const requestedNum = parseInt(requested.value);
     if (isNaN(requestedNum) || !(requestedNum > 0)) {
@@ -39,7 +49,7 @@ jQuery(document).ready(function() {
         user: returned.dataset.user,
         nonce: returned.dataset.nonce,
         requested: requestedNum,
-        questionIds: questionIds
+        // questionIds: questionIds
       };
       let elements = form.elements;
 
