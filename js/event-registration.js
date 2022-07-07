@@ -1,8 +1,9 @@
-jQuery(document).ready(function() {
+document.ready(function() {
 
-  jQuery('.arb-form__register').click(function(el) {
-    // el.preventDefault();
+  document.querySelector('.arb-form__register').addEventListener('click', (el) => {
+    el.preventDefault();
 
+    let answers = {};
     const form = document.querySelector('#event-registration-form');
     const returned = document.querySelector('.arb-form__register');
     const requested = document.querySelector('#requested');
@@ -13,7 +14,6 @@ jQuery(document).ready(function() {
     customQuestions.forEach(customQuestion => {
       // questionIds.push(questionId.name);
       let answer;
-      let answers = {};
       let elements = [];
       let question = customQuestion.dataset.question;
       let questionType = customQuestion.dataset.questionType;
@@ -68,7 +68,7 @@ jQuery(document).ready(function() {
       return;
     } else {
 
-      alert(`heyo ${returned.dataset.availability}, ${returned.dataset.event}, ${returned.dataset.user}, ${returned.dataset.nonce}, ${requestedNum}, ${answers}`);
+      alert(`heyo ${returned.dataset.availability}, ${returned.dataset.event}, ${returned.dataset.user}, ${returned.dataset.nonce}, ${requestedNum}, ${JSON.stringify(answers)}`);
       data = {
         action: 'arboretum_event_registration',
         availability: returned.dataset.availability,
@@ -79,13 +79,14 @@ jQuery(document).ready(function() {
         answers: answers
       };
 
-      alert(data);
-      // let elements = form.elements;
+      console.log(data);
+      alert(JSON.stringify(data));
+      let elements = form.elements;
 
-      // for (let i = 0, element; element = elements[i++];){
-      //   data[element.name] = element.value;
-      //   // alert(`Element ${element.value}`);
-      // }
+      for (let i = 0, element; element = elements[i++];){
+        data[element.name] = element.value;
+        // alert(`Element ${element.value}`);
+      }
 
       // data += `&availability=${availability}&event=${event}&eventId=${eventId}&userId=${userId}&action=arboretum_event_registration`;
       // alert(data);
