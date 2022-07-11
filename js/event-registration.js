@@ -1,62 +1,7 @@
-document.ready(function() {
+jQuery(document).ready(function() {
 
-  document.querySelector('.arb-form__register').addEventListener('click', (el) => {
-    el.preventDefault();
-
-    let answers = {};
-    const form = document.querySelector('#event-registration-form');
-    const returned = document.querySelector('.arb-form__register');
-    const requested = document.querySelector('#requested');
-    const customQuestions = document.querySelectorAll('.custom-question');
-    // let questionIds = [];
-    // let n = 0;
-
-    customQuestions.forEach(customQuestion => {
-      // questionIds.push(questionId.name);
-      let answer;
-      let elements = [];
-      let question = customQuestion.dataset.question;
-      let questionType = customQuestion.dataset.questionType;
-
-      switch (questionType) {
-        case 'checkbox':  
-        answer = [];
-          elements = customQuestion.querySelectorAll('input[type="checkbox"]');
-          elements.forEach(element => {
-            if (element.checked) {
-              answer.push(element.value);
-            }
-          })
-
-          alert(`${questionType}: ${answer.join()}`);
-          answers[question] = answer.join();
-          break;
-
-        case 'radio':
-        case 'source':
-          answer = '';
-          elements = customQuestion.querySelectorAll('input[type="radio"]');
-          elements.forEach(element => {
-            if (element.checked) {
-              answer = element.value;
-            }
-          })
-
-          alert(`${questionType}: ${answer}`);
-          answers[question] = answer;
-          break;
-
-        case 'text':
-          answer = '';
-          element = customQuestion.querySelector('input');
-          answer = element.value;
-          
-          alert(`Text: ${answer}`);
-          answers[question] = answer;
-          break;
-      }
-    })
-
+  document.querySelector('.arb-form__register').addEventListener('click', () => {
+    // el.preventDefault();
 
     // Validate the form
     const requestedNum = parseInt(requested.value);
@@ -64,42 +9,97 @@ document.ready(function() {
       const req_validation = document.querySelector('.arb-form__requested-validation');
       // alert(`FAILURE! ${requestedNum}`);
 
-      req_validation.innerHTML("You need to select a value greater than 0.");
+      req_validation.innerHTML = "You need to select a value greater than 0.";
       return;
     } else {
+      let data = {};
+      const form = document.querySelector('#event-registration-form');
+      const returned = document.querySelector('.arb-form__register');
+      // const requested = document.querySelector('#requested');
+      const customQuestions = document.querySelectorAll('.custom-question');
+      let n = 0;
 
-      alert(`heyo ${returned.dataset.availability}, ${returned.dataset.event}, ${returned.dataset.user}, ${returned.dataset.nonce}, ${requestedNum}, ${JSON.stringify(answers)}`);
-      data = {
-        action: 'arboretum_event_registration',
-        availability: returned.dataset.availability,
-        event: returned.dataset.event,
-        user: returned.dataset.user,
-        nonce: returned.dataset.nonce,
-        requested: requestedNum,
-        answers: answers
-      };
+
+      const elements = form.elements;
+      for (let i = 0, element; element = elements[i++];) {
+        if (element.dataset.formRequired === 'true') {
+          data[element.name] = element.value;
+        }
+      }
+      data.requested = requestedNum;
+      data.questions = returned.dataset.customQuestions;
+
+      customQuestions.forEach(customQuestion => {
+        let answer;
+        let elements = [];
+        let question = customQuestion.dataset.question;
+        let questionType = customQuestion.dataset.questionType;
+
+        switch (questionType) {
+          case 'checkbox':  
+            answer = [];
+            elements = customQuestion.querySelectorAll('input[type="checkbox"]');
+            elements.forEach(element => {
+              if (element.checked) {
+                answer.push(element.value);
+              }
+            })
+
+            alert(`${questionType}: ${answer.join()}`);
+            answer = answer.join(', ');
+            break;
+
+          case 'radio':
+          case 'source':
+            answer = '';
+            elements = customQuestion.querySelectorAll('input[type="radio"]');
+            elements.forEach(element => {
+              if (element.checked) {
+                answer = element.value;
+              }
+            })
+
+            alert(`${questionType}: ${answer}`);
+            break;
+
+          case 'text':
+            answer = '';
+            element = customQuestion.querySelector('input');
+            answer = element.value;
+            
+            alert(`Text: ${answer}`);
+            break;
+        }
+
+        data[`question_${n}`] = question;
+        data[`answer_${n}`] = answer;
+        n++;
+      })
+
+      data.action = 'arboretum_event_registration';
+      data.availability = returned.dataset.availability;
+      data.event = returned.dataset.event;
+      data.user = returned.dataset.user;
+      data.nonce = returned.dataset.nonce;
 
       console.log(data);
       alert(JSON.stringify(data));
-      let elements = form.elements;
-
-      for (let i = 0, element; element = elements[i++];){
-        data[element.name] = element.value;
-        // alert(`Element ${element.value}`);
-      }
+      
+      document.querySelector('#event-registration-form').remove();
+      document.querySelector('#result').innerHTML = 'Thank you for registering! You will receive a confirmation email with more information about the program.';
 
       // data += `&availability=${availability}&event=${event}&eventId=${eventId}&userId=${userId}&action=arboretum_event_registration`;
       // alert(data);
 
       // alert(`Requested: ${requestedNum}   userId: ${data.userId}    eventId: ${data.eventId}`);
-//////////////
+      //////////////
       // form_data = jQuery('form').serializeArray();
 
       // form_data.foreach(element => {
       //   data[element['name']] = element['value'];
       // });
       // alert(`data: ${JSON.stringify(data)}`);
-///////////////
+      ///////////////
       jQuery.ajax({
         type: 'post',
         dataType: 'json',
@@ -107,13 +107,15 @@ document.ready(function() {
         data: data,
         success: function(response) {
           if (response.type == 'success') {
-            document.querySelector('#event-registration-form').remove();
-            document.querySelector('#result').innerHTML = 'Thank you for registering! You will receive a confirmation email with more information about the program.';
             alert("Success - Woohoo");
           } else {
             alert('failure');
           }
         }
+      })
+      .done(function(data) {
+        alert("DONE");
+        alert(data);
       });
     }
   });

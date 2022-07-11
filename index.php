@@ -153,70 +153,6 @@ add_action("wp_ajax_arboretum_ticket_cancelation", "arboretum_ticket_cancelation
  * @return void
  */
 function arboretum_event_registration_callback() {
-  // if(!wp_verify_nonce($_POST['nonce'], "event_registration_nonce_" . $_POST['event_id'])) {
-  //   exit ("No naughty business" . $_POST['nonce'] . ' event id: ' . $_POST['event_id'] . ' user id: ' . $_POST['user_id']);
-  // }
-
-  // echo $_REQUEST;
-          // $time_canceled = get_post_meta($_REQUEST["event_id"], "time_canceled", true);
-
-          // date_default_timezone_set('America/New_York');
-          // $date = date("Y-m-d H:i:s");
-
-          // $response = update_post_meta($_REQUEST['ticket_id'], 'time_canceled', $date);
-
-          // if($response === false) {
-          //   $result['type'] = "error";
-          //   $result['time_canceled'] = $time_canceled;
-          // }
-          // else {
-          //     $result['type'] = "success";
-          //     $result['time_canceled'] = $date;
-          // }
-
-          // if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
-          //     $result = json_encode($result);
-          //     echo $result;
-          // }
-          // else {
-          //     header("Location: ".$_SERVER["HTTP_REFERER"]);
-          //     echo $result;
-          // }
-          // // error_log(var_dump($args));
-          // // $raw_data = file_get_contents('php://input');
-          // // parse_str($raw_data, $data_array);
-          // // $data = (object)$data_array;
-          // // // $json_data =  json_encode((array) $obj);
-
-          // // // This is the response returned to the client
-          // // echo 'Raw: ' . var_dump($data_array);
-          // // echo 'Obj: ' . var_dump($data);
-
-          // date_default_timezone_set('America/New_York');
-          // $date = date("Y-m-d H:i:s");
-
-
-          // $user_data = [];
-          // $email_data = "\n";
-          // foreach ($data as $key => $val) {
-          //   $user_data[$key] = $val;
-          //   $email_data .= $key . ": " . $val . "\n";
-          // }
-
-          // $requested = $user_data["requested"];
-          // $event_id = $user_data["eventId"];
-          // $event = new Event($event_id);
-
-          // $user_id = $user_data["userId"];
-          // $user = new User($user_id);
-
-          // $anchor_tag = $event->anchor_tag;
-          // $registrants = $event->registrants;
-          // $current_num_registants = 0;
-          // if (is_array($registrants)) {
-          //   $current_num_registants = count($registrants);
-          // }
-
   date_default_timezone_set('America/New_York');
   $date = date("Y-m-d H:i:s");
 
@@ -262,11 +198,8 @@ function arboretum_event_registration_callback() {
 
 
 // <Directions>
-
 // <Event Description>
-
 // Your registration details are below:
-
 // <all of the fields that the person filled in>
 
   wp_mail($to, $subject, $body, $headers);
@@ -293,6 +226,17 @@ function arboretum_event_registration_callback() {
     );
 
     $response .= $ticket_id . ', ';
+    for ($j = 0; $j < $_POST['questions']; $j++) {
+      // $question_num = 'question_' . $j;
+      $question = $_POST['question_' . $j]; // $question_num];
+      // $answer_num = 'answer_' .$j;
+      $answer = $_POST['answer_' .$j]; // $answer_num];
+
+      add_row('custom_questions', array(
+        'question' => $question,
+        'answer' => $answer
+      ), $ticket_id);
+    };
   }
 
   if($response === false) {
@@ -353,7 +297,6 @@ function arboretum_ticket_cancelation() {
       echo $result;
   }
 
-
   $to                 = 'matthew_caulkins@harvard.edu';
   $subject            = 'Cancel Fired BY NONCE AJAX APPROACH';
   $body               = $response . '    ' . $result;
@@ -362,10 +305,6 @@ function arboretum_ticket_cancelation() {
   date_default_timezone_set('UTC');
   die();
 }
-
-
-
-
 
 /**
  * Adding custom columns to the admin section for Tickets
@@ -411,10 +350,10 @@ function custom_ticket_column($column, $post_id) {
 
         if(++$i != $num) {
           $events .= ', ';
-        } //$event->title . ', ';
+        }
       }
 
-      echo $events; //$events;
+      echo $events;
       break;
 
     case 'time_registered':
@@ -572,45 +511,43 @@ add_filter('parse_query', 'ticket_filters');
  * @return Void
  */
 function ticket_filters($query){
-    global $pagenow;
+  global $pagenow;
 
-    $type = 'ticket';
-    if (isset($_GET['post_type'])) {
-      $type = $_GET['post_type'];
-    }
-    if('ticket' !== $type) {
-      return;
-    }
+  $type = 'ticket';
+  if (isset($_GET['post_type'])) {
+    $type = $_GET['post_type'];
+  }
+  if('ticket' !== $type) {
+    return;
+  }
 
-    // User filter
-    if (is_admin() &&
-      $pagenow=='edit.php' &&
-      isset($_GET['ticket_user_filter']) &&
-      $_GET['ticket_user_filter'] != '' &&
-      $query->is_main_query()
-    ) {
-      $query->query_vars['meta_query'][] = array(
-        'key' => 'user',
-        'value' => $_GET['ticket_user_filter'],
-        'compare' => '='
-      );
-    }
+  // User filter
+  if (is_admin() &&
+    $pagenow=='edit.php' &&
+    isset($_GET['ticket_user_filter']) &&
+    $_GET['ticket_user_filter'] != '' &&
+    $query->is_main_query()
+  ) {
+    $query->query_vars['meta_query'][] = array(
+      'key' => 'user',
+      'value' => $_GET['ticket_user_filter'],
+      'compare' => '='
+    );
+  }
 
-    // // Event filter
-    if (is_admin() &&
-      $pagenow=='edit.php' &&
-      isset($_GET['ticket_event_filter']) &&
-      $_GET['ticket_event_filter'] != ''
-      && $query->is_main_query()
-    ) {
-      $query->query_vars['meta_query'][] = array(
-        'key' => 'event',
-        'value' => '"'.$_GET['ticket_event_filter'].'"',
-        'compare' => 'LIKE'
-      );
-    }
-
-    // return $query;
+  // // Event filter
+  if (is_admin() &&
+    $pagenow=='edit.php' &&
+    isset($_GET['ticket_event_filter']) &&
+    $_GET['ticket_event_filter'] != ''
+    && $query->is_main_query()
+  ) {
+    $query->query_vars['meta_query'][] = array(
+      'key' => 'event',
+      'value' => '"'.$_GET['ticket_event_filter'].'"',
+      'compare' => 'LIKE'
+    );
+  }
 }
 
 
@@ -643,7 +580,6 @@ function generate_spreadsheet_bulk_action($redirect_url, $action, $post_ids) {
       )
     );
 
-    $num = 1;
     $sheet->setCellValue("A1", "Title");
     $sheet->setCellValue("B1", "Time Registered");
     $sheet->setCellValue("C1", "User Name");
@@ -656,6 +592,32 @@ function generate_spreadsheet_bulk_action($redirect_url, $action, $post_ids) {
     $sheet->setCellValue("J1", "Start Date");
     $sheet->setCellValue("K1", "Locations");
 
+    // add custom questions
+    $custom_question_positions = array();
+    $column_number = 11;  // Capital A (65) + 11 other predetermined columns for chr()
+    foreach($tickets as $ticket) {      
+
+      $get_post_custom = get_post_custom($ticket->ID); 
+      foreach($get_post_custom as $name=>$value) {
+        if (strpos($name, 'custom_questions_') === 0 && !str_contains($name, '_answer')) {
+          foreach($value as $value_name=>$question) {
+
+            // See if it already contains this answer?
+            if (!array_key_exists($question, $custom_question_positions)) {
+              $column_letter = chr(65 + ($column_number % 26));
+              $column = $column_letter . '1';
+              $sheet->setCellValue($column, $question);
+              $custom_question_positions[$question] = $column_letter;
+
+              $column_number ++;
+            }
+          }
+        }
+      }
+    }
+
+    $num = 1;
+    // Populate rows with submissions
     foreach($tickets as $ticket) {
       $num ++;
       $sheet->setCellValue("A$num", $ticket->post_title);
@@ -677,7 +639,7 @@ function generate_spreadsheet_bulk_action($redirect_url, $action, $post_ids) {
       $dates = '';
       $locations = '';
 
-      foreach($ticket->event as $event_id){
+      foreach($ticket->event as $event_id) {
         $n ++;
 
         $event = new Event($event_id);
@@ -706,6 +668,23 @@ function generate_spreadsheet_bulk_action($redirect_url, $action, $post_ids) {
       $sheet->setCellValue("I$num", $titles);
       $sheet->setCellValue("J$num", $dates);
       $sheet->setCellValue("K$num", $locations);
+
+      
+      $get_post_custom = get_post_custom($ticket->ID); 
+      foreach($get_post_custom as $name=>$value) {
+        if (strpos($name, 'custom_questions_') === 0 && !str_contains($name, '_answer')) {
+
+          $question_num = substr($name, 0, strlen($name) - 9);
+          $answer_name = $question_num . '_answer';
+          $answer = $get_post_custom[$answer_name][0];
+          foreach($value as $value_name=>$question) {
+            $column_letter = $custom_question_positions[$question];
+            $column = $column_letter . $num;
+
+            $sheet->setCellValue($column, $answer);
+          }
+        }
+      }
     }
 
     $writer = new Xlsx($spreadsheet);
