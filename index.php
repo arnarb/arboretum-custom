@@ -6,6 +6,7 @@ Version: 0.1.2
 Author: Arnold Arboretum
 */
 use Arboretum\Repositories\DirectorRepository;
+use Arboretum\Repositories\TicketRepository;
 
 use Arboretum\Models\Event as Event;
 use Arboretum\Models\Ticket as Ticket;
@@ -306,6 +307,68 @@ function arboretum_ticket_cancelation() {
   die();
 }
 
+
+
+/**
+ * Adding custom columns to the admin section for Events
+ */
+add_filter('manage_event_posts_columns', 'set_custom_event_columns');
+
+function set_custom_event_columns($columns) {
+  $date = $colunns['date'];
+  unset($columns['date']);
+
+  $columns['venue'] = __('Venue', 'arboretum');
+  $columns['registrations'] = __('Registrations', 'arboretum');
+  $columns['event_date'] = __('Event Date', 'arboretum');
+  $columns['date'] = __('Date', $date);
+
+  return $columns;
+}
+
+add_action('manage_event_posts_custom_column', 'custom_event_column', 10, 2);
+
+function custom_event_column($column, $post_id) {
+  switch ($column) {
+    case 'venue':
+      $venues = get_field('venues', $post_id);
+
+      if ($venues > 0) {
+        foreach ($venues as $venue) {
+          $title = $venue['location'][0]->post_title;
+
+          echo $title . '<br>';
+        }
+      }
+      break;
+
+    case 'registrations':
+      $ticketRepo = new TicketRepository();
+      $venues = get_field('venues', $post_id);
+
+      if ($venues > 0) {
+        foreach ($venues as $venue) {
+          // NEED THIS TO SORT OUT BY THE VENUE
+          $eventTickets = $ticketRepo->getEventTickets($post_id)->get();
+
+          $capacity = $venue['capacity'];
+
+          echo count($eventTickets) . ' out of ' . $capacity . '<br>';
+        }
+      }
+      break;
+
+    case 'event_date':
+      // Need to expand this for which date / time was chosen
+      $event_date = strtotime(get_field('start_date', $post_id));
+      echo date("F j, Y g:i a", $event_date);
+      break;
+  }
+}
+
+
+
+
 /**
  * Adding custom columns to the admin section for Tickets
  */
@@ -328,10 +391,11 @@ function set_custom_ticket_columns($columns) {
 add_action('manage_ticket_posts_custom_column', 'custom_ticket_column', 10, 2);
 
 function custom_ticket_column($column, $post_id) {
-  switch ($column) {
+  $custom_fields = get_post_custom($post_id);
 
+  switch ($column) {
     case 'user':
-      $user_id = get_field('user', $post_id);
+      $user_id = $custom_fields['user'][0];// get_field('user', $post_id);
       $user = new User($user_id);
 
       echo $user->first_name . ' ' . $user->last_name;
@@ -357,17 +421,23 @@ function custom_ticket_column($column, $post_id) {
       break;
 
     case 'time_registered':
-      echo get_field('time_registered', $post_id);
+      $time_registered = strtotime($custom_fields['time_registered'][0]);
+      echo date("F j, Y g:i a", $time_registered);
       break;
 
     case 'time_attended':
-      echo get_field('time_attended', $post_id);
+      $time_attended = $custom_fields['time_attended'][0];
+      if (isset($time_attended) && $time_attended != '') {
+        $time_attended = strtotime($time_attended);
+        echo date("F j, Y g:i a", $time_attended);
+      } 
       break;
 
     case 'canceled':
-      $time_canceled = get_field('time_canceled', $post_id);
-      if(isset($time_canceled) && $time_canceled != '') {
-        echo 'Canceled on ' . $time_canceled;
+      $time_canceled = $custom_fields['time_canceled'][0];
+      if (isset($time_canceled) && $time_canceled != '') {
+        $time_canceled = strtotime($time_canceled);
+        echo 'Canceled on ' . date("F j, Y g:i a", $time_canceled);
       }
       break;
   }
