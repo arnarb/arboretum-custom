@@ -4,14 +4,12 @@ jQuery(document).ready(function() {
     document.querySelector('.arb-form__register').addEventListener('click', () => {
       // el.preventDefault();
 
-      let data = {};
-      const form = document.querySelector('#event-registration-form');
-      const returned = document.querySelector('.arb-form__register');
-
+      let invalid = false;
+      let requestedNum;
       const requiredFields = document.querySelectorAll('[data-required-field');
 
       requiredFields.forEach(requiredField => {
-        switch(requiredField.id){
+        switch(requiredField.id) {
           case 'venue':
               console.log('is venue');
             break;
@@ -29,6 +27,12 @@ jQuery(document).ready(function() {
             break;
 
           case 'requested':
+            if (isNaN(requiredField.value) || !(requiredField.value > 0)) {
+              requiredField.innerHTML = "You need to select a value greater than 0.";
+              invalid = true;
+            } else {
+              requestedNum = parseInt(requested.value);
+            }
             console.log('is requested');
             break;
 
@@ -46,19 +50,23 @@ jQuery(document).ready(function() {
       })
       
       // const requested = document.querySelector('#requested');
-      const customQuestions = document.querySelectorAll('.custom-question');
-      let n = 0;
 
       // Validate the form
-      const requestedNum = parseInt(requested.value);
-      if (isNaN(requestedNum) || !(requestedNum > 0)) {
-        const req_validation = document.querySelector('.requested-validation');
-        // alert(`FAILURE! ${requestedNum}`);
+      // 
+      // if (isNaN(requestedNum) || !(requestedNum > 0)) {
+      //   const req_validation = document.querySelector('.requested-validation');
+      //   // alert(`FAILURE! ${requestedNum}`);
 
-        req_validation.innerHTML = "You need to select a value greater than 0.";
+      //   req_validation.innerHTML = "You need to select a value greater than 0.";
+      if(invalid) {
         return;
       } else {
 
+        let n = 0;
+        let data = {};
+        const form = document.querySelector('#event-registration-form');
+        const returned = document.querySelector('.arb-form__register');
+        const customQuestions = document.querySelectorAll('.custom-question');
 
         const elements = form.elements;
         for (let i = 0, element; element = elements[i++];) {
