@@ -4,21 +4,60 @@ jQuery(document).ready(function() {
     document.querySelector('.arb-form__register').addEventListener('click', () => {
       // el.preventDefault();
 
+      let data = {};
+      const form = document.querySelector('#event-registration-form');
+      const returned = document.querySelector('.arb-form__register');
+
+      const requiredFields = document.querySelectorAll('[data-required-field');
+
+      requiredFields.forEach(requiredField => {
+        switch(requiredField.id){
+          case 'venue':
+              console.log('is venue');
+            break;
+
+          case 'first-name':
+            console.log('is first-name');
+            break;
+
+          case 'last-name':
+            console.log('is last-name');
+            break;
+
+          case 'email':
+            console.log('is email');
+            break;
+
+          case 'requested':
+            console.log('is requested');
+            break;
+
+          default:
+            if(requiredField.id.includes('custom_question_')) {
+              console.log('is custom question');
+
+            } else {
+              
+              console.log('is something else');
+            }
+            break;
+        }  
+        console.log(requiredField);
+      })
+      
+      // const requested = document.querySelector('#requested');
+      const customQuestions = document.querySelectorAll('.custom-question');
+      let n = 0;
+
       // Validate the form
       const requestedNum = parseInt(requested.value);
       if (isNaN(requestedNum) || !(requestedNum > 0)) {
-        const req_validation = document.querySelector('.arb-form__requested-validation');
+        const req_validation = document.querySelector('.requested-validation');
         // alert(`FAILURE! ${requestedNum}`);
 
         req_validation.innerHTML = "You need to select a value greater than 0.";
         return;
       } else {
-        let data = {};
-        const form = document.querySelector('#event-registration-form');
-        const returned = document.querySelector('.arb-form__register');
-        // const requested = document.querySelector('#requested');
-        const customQuestions = document.querySelectorAll('.custom-question');
-        let n = 0;
 
 
         const elements = form.elements;
