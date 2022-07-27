@@ -8,45 +8,65 @@ jQuery(document).ready(function() {
       let requestedNum;
       const requiredFields = document.querySelectorAll('[data-required-field');
 
-      requiredFields.forEach(requiredField => {
-        switch(requiredField.id) {
-          case 'venue':
-              console.log('is venue');
-            break;
+      requiredFields.forEach(field => {
 
-          case 'first-name':
-            console.log('is first-name');
-            break;
+        // switch(field.dataset.questionType) {
+        //   case "text":
+        //     break;
 
-          case 'last-name':
-            console.log('is last-name');
-            break;
+        //   case "email":
+        //     break;
 
-          case 'email':
-            console.log('is email');
-            break;
+        //   case "select":
+        //     if(field.value) {
 
-          case 'requested':
-            if (isNaN(requiredField.value) || !(requiredField.value > 0)) {
-              requiredField.innerHTML = "You need to select a value greater than 0.";
-              invalid = true;
-            } else {
-              requestedNum = parseInt(requested.value);
-            }
-            console.log('is requested');
-            break;
+        //     }
+        //     break;
+        // }
 
-          default:
-            if(requiredField.id.includes('custom_question_')) {
-              console.log('is custom question');
+        if(field.value == '' || field.value == null){
+          const validationElement = document.querySelector(`.${field.dataset.requiredField}`);
+          validationElement.innerHTML = field.dataset.requiredText;
+          invalid = true;
+        }
+        // switch(requiredField.id) {
+        //   case 'venue':
+        //       console.log('is venue');
+        //     break;
 
-            } else {
+        //   case 'first-name':
+        //     console.log('is first-name');
+        //     break;
+
+        //   case 'last-name':
+        //     console.log('is last-name');
+        //     break;
+
+        //   case 'email':
+        //     console.log('is email');
+        //     break;
+
+        //   case 'requested':
+        //     if (isNaN(requiredField.value) || !(requiredField.value > 0)) {
+        //       requiredField.innerHTML = "You need to select a value greater than 0.";
+        //       invalid = true;
+        //     } else {
+        //       requestedNum = parseInt(requested.value);
+        //     }
+        //     console.log('is requested');
+        //     break;
+
+        //   default:
+        //     if(requiredField.id.includes('custom_question_')) {
+        //       console.log('is custom question');
+
+        //     } else {
               
-              console.log('is something else');
-            }
-            break;
-        }  
-        console.log(requiredField);
+        //       console.log('is something else');
+        //     }
+        //     break;
+        // }  
+        console.log(field);
       })
       
       // const requested = document.querySelector('#requested');
