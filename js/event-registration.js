@@ -1,311 +1,152 @@
 jQuery(document).ready(function() {
 
   if(document.querySelector('.arb-form__register')) {
-    document.querySelector('.arb-form__register').addEventListener('click', () => {
-      // el.preventDefault();
 
-      let invalid = false;
-      let requestedNum;
-      const requiredFields = document.querySelectorAll('[data-required-field');
-
-      requiredFields.forEach(field => {
-
-        // switch(field.dataset.questionType) {
-        //   case "text":
-        //     break;
-
-        //   case "email":
-        //     break;
-
-        //   case "select":
-        //     if(field.value) {
-
-        //     }
-        //     break;
-        // }
-
-        if(field.value == '' || field.value == null){
-          const validationElement = document.querySelector(`.${field.dataset.requiredField}`);
-          validationElement.innerHTML = field.dataset.requiredText;
-          invalid = true;
-        }
-        // switch(requiredField.id) {
-        //   case 'venue':
-        //       console.log('is venue');
-        //     break;
-
-        //   case 'first-name':
-        //     console.log('is first-name');
-        //     break;
-
-        //   case 'last-name':
-        //     console.log('is last-name');
-        //     break;
-
-        //   case 'email':
-        //     console.log('is email');
-        //     break;
-
-        //   case 'requested':
-        //     if (isNaN(requiredField.value) || !(requiredField.value > 0)) {
-        //       requiredField.innerHTML = "You need to select a value greater than 0.";
-        //       invalid = true;
-        //     } else {
-        //       requestedNum = parseInt(requested.value);
-        //     }
-        //     console.log('is requested');
-        //     break;
-
-        //   default:
-        //     if(requiredField.id.includes('custom_question_')) {
-        //       console.log('is custom question');
-
-        //     } else {
-              
-        //       console.log('is something else');
-        //     }
-        //     break;
-        // }  
-        console.log(field);
-      })
-      
-      // const requested = document.querySelector('#requested');
-
-      // Validate the form
-      // 
-      // if (isNaN(requestedNum) || !(requestedNum > 0)) {
-      //   const req_validation = document.querySelector('.requested-validation');
-      //   // alert(`FAILURE! ${requestedNum}`);
-
-      //   req_validation.innerHTML = "You need to select a value greater than 0.";
-      if(invalid) {
-        return;
-      } else {
-
-        let n = 0;
-        let data = {};
-        const form = document.querySelector('#event-registration-form');
-        const returned = document.querySelector('.arb-form__register');
-        const customQuestions = document.querySelectorAll('.custom-question');
-
-        const elements = form.elements;
-        for (let i = 0, element; element = elements[i++];) {
-          if (element.dataset.formRequired === 'true') {
-            data[element.name] = element.value;
-          }
-        }
-        data.requested = requestedNum;
-        data.questions = returned.dataset.customQuestions;
-
-        customQuestions.forEach(customQuestion => {
-          let answer;
-          let elements = [];
-          let question = customQuestion.dataset.question;
-          let questionType = customQuestion.dataset.questionType;
-
-          switch (questionType) {
-            case 'checkbox':  
-              answer = [];
-              elements = customQuestion.querySelectorAll('input[type="checkbox"]');
-              elements.forEach(element => {
-                if (element.checked) {
-                  answer.push(element.value);
-                }
-              })
-
-              alert(`${questionType}: ${answer.join()}`);
-              answer = answer.join(', ');
-              break;
-
-            case 'radio':
-            case 'source':
-              answer = '';
-              elements = customQuestion.querySelectorAll('input[type="radio"]');
-              elements.forEach(element => {
-                if (element.checked) {
-                  answer = element.value;
-                }
-              })
-
-              alert(`${questionType}: ${answer}`);
-              break;
-
-            case 'text':
-              answer = '';
-              element = customQuestion.querySelector('input');
-              answer = element.value;
-              
-              alert(`Text: ${answer}`);
-              break;
-          }
-
-          data[`question_${n}`] = question;
-          data[`answer_${n}`] = answer;
-          n++;
-        })
-
-        data.action = 'arboretum_event_registration';
-        data.availability = returned.dataset.availability;
-        data.event = returned.dataset.event;
-        data.user = returned.dataset.user;
-        data.nonce = returned.dataset.nonce;
-
-        console.log(data);
-        alert(JSON.stringify(data));
-        
-        document.querySelector('#event-registration-form').remove();
-        document.querySelector('#result').innerHTML = 'Thank you for registering! You will receive a confirmation email with more information about the program.';
-
-        // data += `&availability=${availability}&event=${event}&eventId=${eventId}&userId=${userId}&action=arboretum_event_registration`;
-        // alert(data);
-
-        // alert(`Requested: ${requestedNum}   userId: ${data.userId}    eventId: ${data.eventId}`);
-        //////////////
-        // form_data = jQuery('form').serializeArray();
-
-        // form_data.foreach(element => {
-        //   data[element['name']] = element['value'];
-        // });
-        // alert(`data: ${JSON.stringify(data)}`);
-        ///////////////
-        jQuery.ajax({
-          type: 'post',
-          dataType: 'json',
-          url: arbAjax.ajaxurl,
-          data: data,
-          success: function(response) {
-            if (response.type == 'success') {
-              alert("Success - Woohoo");
-            } else {
-              alert('failure');
-            }
-          }
-        })
-        .done(function(data) {
-          alert("DONE");
-          alert(data);
-        });
-      }
+    document.querySelectorAll('[data-required-field]').forEach(element => {
+      element.addEventListener('click', resetValidationCheck, false);
     });
+    
+    document.querySelector('.arb-form__register').addEventListener('click', submitForm);
   }
 });
 
+// Clear validation text on focus
+function resetValidationCheck(event) {
+  const validationElement = document.querySelector(`.${event.currentTarget.dataset.requiredField}`);
+  validationElement.innerHTML = '';
+}
 
-// class EventRegistration {
-//   constructor() {
-//     this.form = document.querySelector('#event-registration-form');
-//     // this.login = this.form.querySelector('.submit input[type=submit]');
-//     this.register = this.form.querySelector('.arb-form__register');
-//     this.guest_register = this.form.querySelector('.arb-form__guest-register');
-//     this.requested = this.form.querySelector('#requested');
-
-//     this.availability = this.form.dataset.availability;
-//     this.event = this.form.dataset.event;
-//     this.eventId = this.form.dataset.eventId;
-//     this.userId = this.form.dataset.userId;
-
-//     this.init();
-//   }
-
-//   init() {
-//     console.log(`this requested is : ${this.requested}`);
-//     if (this.register) {
-//       this.register.addEventListener('click', () => this.registerUser());
-//     } else {
-//       this.guest_register.addEventListener('click', () => this.registerUser());
-//     }
-//   }
-
-//   registerUser() {
-//     console.log(`Requested number ${this.requested.value}`);
-
-//     if (parseInt(this.requested.value) === 0) {
-//       const req_validation = this.form.querySelector('.arb-form__requested-validation');
-
-//       req_validation.innerHTML = "You need to select a value greater than 0."
-//       return;
-//     }
-
-//     const formData = new FormData(this.form);
-//     const data = new URLSearchParams();
-//     console.log('Form Data:');
-//     //console.log(formData);
+// Check validation
+function validationCheck(element, topElement) {
+  const validationElement = document.querySelector(`.${element.dataset.requiredField}`);
+  validationElement.innerHTML = element.dataset.requiredText;
+  if(topElement === null) {
+    topElement = validationElement;
+  }
+  
+  return topElement;
+}
 
 
-//     for (const [key, val] of formData.entries()) {
-//       data.append(key, val);
-//       console.log(key + ', ' + val);
-//     }
+function submitForm() {
+  // el.preventDefault();
+  console.log('submit form');
+  let requestedNum;
+  let topElement = null;
 
-//     data.append('availability', this.availability);
-//     data.append('requested', this.requested.value);
-//     data.append('event', this.event);
-//     data.append('eventId', this.eventId);
-//     data.append('userId', this.userId);
-//     // data.append('userName', 'test@gmail.com');
-//     // data.append('something', 'dumb');
+  const requiredElements = document.querySelectorAll('[data-required-field]');
 
-//     // console.log('Data:');
-//     // console.log(data);
+  // Reset the validation elements
+  requiredElements.forEach(element => {
+    const validationElement = document.querySelector(`.${element.dataset.requiredField}`);
+    validationElement.innerHTML = '';
+  });
 
-//     this.form.remove();
-//     document.getElementById("result").innerHTML = 'Thank you for registering!<br><br>You will receive a confirmation email.';
+  // Check form validation
+  requiredElements.forEach(element => {
+    const elements = element.querySelectorAll('input, option');
 
-//     // let formBody = [];
-//     // // for (var property in details) {
-//     // for (const [key, val] of formData.entries()) {
-//     //   var encodedKey = encodeURIComponent(key);
-//     //   var encodedValue = encodeURIComponent(val);
-//     //   formBody.push(encodedKey + "=" + encodedValue);
-//     // }
-//     // formBody = formBody.join("&");
-//     // console.log('Form Body: %s', formBody);
+    if(element.dataset.questionType != 'select' && elements != null && elements.length > 0) {
+      let input = false;
+      elements.forEach(element => {
+        // console.log(element);
+        if (element.checked) {
+          input = true;
+        }
+      })
 
-//     fetch('/events/event-registration/', {
-//       method: 'POST',
-//       body: data
-//     })
-//     .then(response => response.text())
-//     .catch(err => console.log(err));
-//     // .then((response) => response.text())
-//     // .then((res) => {
-//     //   document.getElementById("result").innerHTML = 'Response:<br><br> ' + res;
-//     //   this.form.remove();
-//     // });
+      // For checkboxes check if there is at least one entry
+      if(!input) {
+        // console.log('no input');
+        topElement = validationCheck(element, topElement);
+      }
+    } else if(element.value == '' || element.value == 0 || element.value == null){
+      // console.log('empty value');
+      topElement = validationCheck(element, topElement);
+    } else if(element.id == 'e-mail') {
+      var mailformat = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+      if(!element.value.toLowerCase().match(mailformat)) {
+        // console.log('invalid email');
+        topElement = validationCheck(element, topElement);
+      }
+    }
+  })
+  
+  if(topElement != null) {
+    // If didn't pass validation, set the first faulty element as the scroll focus and return
+    topElement.scrollIntoView();
 
+    return;
+  } else {
 
+    // Passed validation, send the data
+    let n = 0;
+    let data = {};
+    const form = document.querySelector('#event-registration-form');
+    const returned = document.querySelector('.arb-form__register');
+    const customQuestions = document.querySelectorAll('.custom-question');
+    form.elements.forEach(element => {
+      if (element.dataset.formRequired === 'true') {
+        data[element.name] = element.value;
+      }
+    });
+    data.requested = requestedNum;
+    data.questions = returned.dataset.customQuestions;
 
+    customQuestions.forEach(customQuestion => {
+      let answer;
+      let elements = [];
+      let question = customQuestion.dataset.question;
+      let questionType = customQuestion.dataset.questionType;
 
-//     // /// JSON Attempt
-//     // const headers = {
-//     //   'Accept': 'application/json',
-//     //   'Content-Type': 'application/json'
-//     // };
+      answer = [];
+      elements = customQuestion.querySelectorAll('input');
+      elements.forEach(element => {
+        if (element.checked) {
+          answer.push(element.value);
+        }
+      })
 
-//     // const datum = JSON.stringify({
-//     //   'user': 'wtf'
-//     // });
+        alert(`${questionType}: ${answer.join()}`);
+      answer = answer.join(', ');
+      
+      data[`question_${n}`] = question;
+      data[`answer_${n}`] = answer;
+      n++;
+    })
 
-//     // console.log('JSON variation: ');
-//     // console.log(datum);
+    data.venue = '';
+    data.email = '';
+    data.firstName = '';
+    data.lastName = '';
+    data.action = 'arboretum_event_registration';
+    data.availability = returned.dataset.availability;
+    data.event = returned.dataset.event;
+    data.user = returned.dataset.user;
+    data.nonce = returned.dataset.nonce;
 
+    console.log(data);
+    alert(JSON.stringify(data));
+    
+    document.querySelector('#event-registration-form').remove();
+    document.querySelector('#result').innerHTML = 'Thank you for registering! You will receive a confirmation email with more information about the program.';
 
-//     // //
-//     // // mode: 'cors',
-//     // // headers: headers,
-//     // //
-
-//     // fetch('https://staging-arnoldarboretumwebsite.kinsta.cloud/events/event-registration/', {
-//     //   method: 'POST',
-//     //   body: datum
-//     // })
-//     // .then((response) => response.json())
-//     // .then((res) => {
-//     //   document.getElementById("result2").innerHTML += 'JSON Response:<br><br> ' + res;
-//     //   this.form.remove();
-//     // });
-
-//   }
-// }
-
-// export default EventRegistration;
+    jQuery.ajax({
+      type: 'post',
+      dataType: 'json',
+      url: arbAjax.ajaxurl,
+      data: data,
+      success: function(response) {
+        if (response.type == 'success') {
+          alert("Success - Woohoo");
+        } else {
+          alert('failure');
+        }
+      }
+    })
+    .done(function(data) {
+      alert("DONE");
+      alert(data);
+    });
+  }
+}
