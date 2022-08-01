@@ -31,7 +31,7 @@ function validationCheck(element, topElement) {
 function submitForm() {
   // el.preventDefault();
   console.log('submit form');
-  let requestedNum;
+  // let requestedNum;
   let topElement = null;
 
   const requiredElements = document.querySelectorAll('[data-required-field]');
@@ -90,7 +90,7 @@ function submitForm() {
         data[element.name] = element.value;
       }
     });
-    data.requested = requestedNum;
+    data.requested = document.querySelector('#requested').value;
     data.questions = returned.dataset.customQuestions;
 
     customQuestions.forEach(customQuestion => {
@@ -115,12 +115,12 @@ function submitForm() {
       n++;
     })
 
-    data.venue = '';
-    data.email = '';
-    data.firstName = '';
-    data.lastName = '';
+    data.venue = document.querySelector('#venue').value;
+    data.email = document.querySelector('#e-mail').value;
+    data.firstName = document.querySelector('#first-name').value;
+    data.lastName = document.querySelector('#last-name').value;
     data.action = 'arboretum_event_registration';
-    data.availability = returned.dataset.availability;
+    // data.availability = returned.dataset.availability;
     data.event = returned.dataset.event;
     data.user = returned.dataset.user;
     data.nonce = returned.dataset.nonce;

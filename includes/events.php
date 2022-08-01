@@ -110,14 +110,19 @@ function arboretum_event_registration_callback() {
   
     $recipient = $_POST['email'];
     $requested = $_POST['requested'];
-    $user_id = $_POST['user'];
-    $user = new User($user_id);
-  
+
+    if ($_POST['user']) {
+      $user_id = $_POST['user'];
+      $user = new User($user_id);
+    } else {
+      // GET GUEST USER
+    }    
+    
     $event_id = $_POST['event'];
     $event = new Event($event_id);
   
     $email_data .= 'Number of tickets requested: ' . $requested;
-    $email_data .= "\nAvailability left: " . $_POST['availability'] . '  USER: ' . $user_id . '   EVENT: ' . $event_id . '    RECIPIENT: ' . $recipient;
+    $email_data .= '   EVENT: ' . $event_id . '    RECIPIENT: ' . $recipient;   // "\nAvailability left: " . $_POST['availability'] . '  USER: ' . $user_id . 
   
     // Send notification of new registrant
     $to                 = 'matthew_caulkins@harvard.edu';
