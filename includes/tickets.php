@@ -17,6 +17,7 @@ function set_custom_ticket_columns($columns) {
   
     $columns['user'] = __('User', 'arboretum');
     $columns['event'] = __('Event', 'arboretum');
+    $columns['location'] = __('Location', 'arboretum');
     $columns['time_registered'] = __('Time Registered', 'arboretum');
     $columns['time_attended'] = __('Time Attended', 'arboretum');
     $columns['canceled'] = __('Canceled', 'arboretum');
@@ -59,6 +60,25 @@ function set_custom_ticket_columns($columns) {
         echo $events;
         break;
   
+      case 'location':
+        $locations = '';
+
+        $location_ids = get_field('location', $post_id);
+        $num = count($location_ids);
+        $i = 0;
+
+        foreach($location_ids as $key => $location_id) {
+          $location = new Location($location_id);
+          $locations .= $location->title;
+  
+          if(++$i != $num) {
+            $locations .= ', ';
+          }
+        }
+
+        echo $locations;
+        break;
+
       case 'time_registered':
         $time_registered = strtotime($custom_fields['time_registered'][0]);
         echo date("F j, Y g:i a", $time_registered);
@@ -89,6 +109,7 @@ function set_custom_ticket_columns($columns) {
   function set_custom_ticket_sortable_columns( $columns ) {
     $columns['user'] = 'user';
     $columns['event'] = 'event';
+    $columns['location'] = 'location';
     $columns['time_registered'] = 'time_registered';
     $columns['time_attended'] = 'time_attended';
     $columns['canceled'] = 'time_canceled';
@@ -111,6 +132,9 @@ function set_custom_ticket_columns($columns) {
       $query->set('orderby', 'meta_value');
     } else if('event' == $orderby) {
       $query->set('meta_key', 'event');
+      $query->set('orderby', 'meta_value');
+    } else if('location' == $orderby) {
+      $query->set('meta_key', 'location');
       $query->set('orderby', 'meta_value');
     } else if('time_registered' == $orderby) {
       $query->set('meta_key', 'time_registered');
@@ -205,6 +229,34 @@ function set_custom_ticket_columns($columns) {
     ?>
       </select>
     <?php
+    // Location column
+    $values = array();
+    foreach($tickets as $ticket) {
+      setup_postdata($ticket);
+      $location_ids = get_field('location', $ticket->ID);
+      foreach($location_ids as $location_id) {
+        $location = new Location($location_id);
+        $values[$location_id] = $location->title;
+      }
+      wp_reset_postdata();
+    }
+  ?>
+    <select name="ticket_location_filter">
+    <option value=""><?php _e('All locations', 'ticket'); ?></option>
+  <?php
+    $current_v = isset($_GET['ticket_location_filter'])? $_GET['ticket_location_filter']:'';
+    foreach ($values as $label => $value) {
+      printf
+        (
+          '<option value="%s"%s>%s</option>',
+          $label,
+          $label == $current_v? ' selected="selected"':'',
+          $value
+        );
+    }
+  ?>
+    </select>
+  <?php
       wp_reset_postdata();
   }
   add_action('restrict_manage_posts', 'ticket_filters_restrict_manage_posts');
@@ -245,7 +297,7 @@ function set_custom_ticket_columns($columns) {
       );
     }
   
-    // // Event filter
+    // Event filter
     if (is_admin() &&
       $pagenow=='edit.php' &&
       isset($_GET['ticket_event_filter']) &&
@@ -255,6 +307,20 @@ function set_custom_ticket_columns($columns) {
       $query->query_vars['meta_query'][] = array(
         'key' => 'event',
         'value' => '"'.$_GET['ticket_event_filter'].'"',
+        'compare' => 'LIKE'
+      );
+    }
+
+    // Location filter
+    if (is_admin() &&
+      $pagenow=='edit.php' &&
+      isset($_GET['ticket_location_filter']) &&
+      $_GET['ticket_location_filter'] != ''
+      && $query->is_main_query()
+    ) {
+      $query->query_vars['meta_query'][] = array(
+        'key' => 'location',
+        'value' => '"'.$_GET['ticket_location_filter'].'"',
         'compare' => 'LIKE'
       );
     }
@@ -272,6 +338,7 @@ function set_custom_ticket_columns($columns) {
   }
   add_filter('bulk_actions-edit-ticket', 'register_generate_spreadsheet_bulk_action');
   
+
   /**
    * 
    */

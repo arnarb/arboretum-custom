@@ -5,6 +5,8 @@ jQuery(document).ready(function() {
     document.querySelectorAll('[data-required-field]').forEach(element => {
       element.addEventListener('click', resetValidationCheck, false);
     });
+
+    document.querySelector('.arb-form__venue').addEventListener('change', toggleVenue);
     
     document.querySelector('.arb-form__register').addEventListener('click', submitForm);
   }
@@ -27,6 +29,18 @@ function validationCheck(element, topElement) {
   return topElement;
 }
 
+// Show the venue description
+function toggleVenue(event) {
+  document.querySelectorAll('.arb-form__venue').forEach(venue => {
+    venue.classList.add('arb-form__hidden');
+  })
+
+  const venueDiv = document.querySelector(`[data-venue="${event.currentTarget.value}"]`);
+  console.log('venue changed');
+  console.log(venueDiv);
+
+  venueDiv.classList.remove('arb-form__hidden');
+}
 
 function submitForm() {
   // el.preventDefault();
