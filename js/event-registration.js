@@ -6,7 +6,7 @@ jQuery(document).ready(function() {
       element.addEventListener('click', resetValidationCheck, false);
     });
 
-    document.querySelector('.arb-form__venue').addEventListener('change', toggleVenue);
+    document.querySelector('.arb-form__venue-select').addEventListener('change', toggleVenue);
     
     document.querySelector('.arb-form__register').addEventListener('click', submitForm);
   }
@@ -14,7 +14,7 @@ jQuery(document).ready(function() {
 
 // Clear validation text on focus
 function resetValidationCheck(event) {
-  const validationElement = document.querySelector(`.${event.currentTarget.dataset.requiredField}`);
+  const validationElement = document.querySelector(`.${event.target.dataset.requiredField}`);
   validationElement.innerHTML = '';
 }
 
@@ -35,7 +35,7 @@ function toggleVenue(event) {
     venue.classList.add('arb-form__hidden');
   })
 
-  const venueDiv = document.querySelector(`[data-venue="${event.currentTarget.value}"]`);
+  const venueDiv = document.querySelector(`[data-venue="${event.target.value}"]`);
   console.log('venue changed');
   console.log(venueDiv);
 
