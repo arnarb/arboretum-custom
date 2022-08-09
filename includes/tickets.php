@@ -61,7 +61,7 @@ function set_custom_ticket_columns($columns) {
         $num = count($event_ids);
         $i = 0;
   
-        foreach($event_ids as $key => $event_id) {
+        foreach($event_ids as $event_id) {
           $event = new Event($event_id);
           $events .= '<a href="/wp-admin/edit.php?post_type=ticket&ticket_event_filter=' . $event->ID . '">' . $event->title . '</a>';
   
@@ -80,7 +80,7 @@ function set_custom_ticket_columns($columns) {
         $num = count($location_ids);
         $i = 0;
 
-        foreach($location_ids as $key => $location_id) {
+        foreach($location_ids as $location_id) {
           $location = new Location($location_id);
           $locations .= $location->title;
   
@@ -132,7 +132,7 @@ function set_custom_ticket_columns($columns) {
   add_filter('manage_edit-ticket_sortable_columns', 'set_custom_ticket_sortable_columns');
   
   /**
-   * 
+   * Order tickets by filters
    */
   function ticket_orderby($query) {
     if(!is_admin())
@@ -376,22 +376,26 @@ function set_custom_ticket_columns($columns) {
           'post_type' => 'ticket'
         )
       );
+
+      $ticket_num = count($tickets);
+
+      // Set static column titles
+      $sheet->setCellValue("A1", "Ticket");
+      $sheet->setCellValue("B1", "Ticket Number");
+      $sheet->setCellValue("C1", "Time Registered");
+      $sheet->setCellValue("D1", "User Name");
+      $sheet->setCellValue("E1", "User Email");
+      $sheet->setCellValue("F1", "City");
+      $sheet->setCellValue("G1", "State");
+      $sheet->setCellValue("H1", "Country");
+      $sheet->setCellValue("I1", "Zip Code");
+      $sheet->setCellValue("J1", "Event Title");
+      $sheet->setCellValue("K1", "Start Date");
+      $sheet->setCellValue("L1", "Selected Venue Location");
   
-      $sheet->setCellValue("A1", "Title");
-      $sheet->setCellValue("B1", "Time Registered");
-      $sheet->setCellValue("C1", "User Name");
-      $sheet->setCellValue("D1", "User Email");
-      $sheet->setCellValue("E1", "City");
-      $sheet->setCellValue("F1", "State");
-      $sheet->setCellValue("G1", "Country");
-      $sheet->setCellValue("H1", "Zip");
-      $sheet->setCellValue("I1", "Event Title");
-      $sheet->setCellValue("J1", "Start Date");
-      $sheet->setCellValue("K1", "Locations");
-  
-      // add custom questions
+      // Add custom questions
       $custom_question_positions = array();
-      $column_number = 11;  // Capital A (65) + 11 other predetermined columns for chr()
+      $column_number = 12;  // Capital A (65) + 11 other predetermined columns for chr()
       foreach($tickets as $ticket) {      
   
         $get_post_custom = get_post_custom($ticket->ID); 
@@ -412,59 +416,61 @@ function set_custom_ticket_columns($columns) {
           }
         }
       }
+
+      // Combine custom questions onto the column array
+      $columns = array_merge(array('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'), array_values($custom_question_positions));
   
       $num = 1;
       // Populate rows with submissions
       foreach($tickets as $ticket) {
-        $num ++;
-        $sheet->setCellValue("A$num", $ticket->post_title);
-        $sheet->setCellValue("B$num", $ticket->time_registered);
-  
         $user = get_user_by('ID', $ticket->user);
-        
-        $sheet->setCellValue("C$num", "$user->first_name $user->last_name");
-        $sheet->setCellValue("D$num", $user->user_email);
-        $sheet->setCellValue("E$num", $user->city);
-        $sheet->setCellValue("F$num", $user->state);
-        $sheet->setCellValue("G$num", $user->country);
-        $sheet->setCellValue("H$num", $user->zip);
+        $num ++;
+
+        $sheet->setCellValue("A$num", $ticket->post_title);
+        $sheet->setCellValue("B$num", $ticket->ID);
+        $sheet->setCellValue("C$num", $ticket->time_registered);        
+        $sheet->setCellValue("D$num", "$user->first_name $user->last_name");
+        $sheet->setCellValue("E$num", $user->user_email);
+        $sheet->setCellValue("F$num", $user->city);
+        $sheet->setCellValue("G$num", $user->state);
+        $sheet->setCellValue("H$num", $user->country);
+        $sheet->setCellValue("I$num", $user->zip);
   
         // Consolidate event data into one string for entry into spreadsheet
         $n = 0;
-        $count = count($ticket->event);
+        $event_count = count($ticket->event);
+        $location_count = count($ticket->location);
         $titles = '';
         $dates = '';
         $locations = '';
   
         foreach($ticket->event as $event_id) {
           $n ++;
-  
           $event = new Event($event_id);
           $titles .= $event->title;
+          // TODO: improve date functionality
           $dates .= $event->start_date;
   
-          $l = 0;
-          $location_count = count($event->locations);
-          foreach($event->locations as $location_id) {
-            $l ++;
-            $location = new Location($location_id);
-  
-            $locations .= $location->title;
-  
-            if($l < $location_count) {
-              $locations .= ', ';
-            }
-          }
-          if($n < $count) {
+          if($n < $event_count) {
             $titles .= '; ';
             $dates .= '; ';
+          }
+        }
+
+        $m = 0;
+        foreach($ticket->location as $location_id) {
+          $m ++;
+          $location = new Location($location_id);
+          $locations .= $location->title;
+
+          if($m < $location_count) {
             $locations .= '; ';
           }
         }
   
-        $sheet->setCellValue("I$num", $titles);
-        $sheet->setCellValue("J$num", $dates);
-        $sheet->setCellValue("K$num", $locations);
+        $sheet->setCellValue("J$num", $titles);
+        $sheet->setCellValue("K$num", $dates);
+        $sheet->setCellValue("L$num", $locations);
   
         
         $get_post_custom = get_post_custom($ticket->ID); 
@@ -483,7 +489,20 @@ function set_custom_ticket_columns($columns) {
           }
         }
       }
+
+      // Set column width and text-wrap
+      foreach($columns as $column) {
+        $sheet->getColumnDimension($column)->setAutoSize(true);
+        // $sheet->getColumnDimension($column)->setWidth('50');
+        
+        $sheet->getStyle($column . '1:' . $column . '1')->getFont()->setBold(true);
+        $sheet->getStyle($column . '1:' . $column . '1')->getAlignment()->setHorizontal('center');
+        $sheet->getStyle($column . '2:' . $column . ($ticket_num + 1))->getAlignment()->setWrapText(true); 
+        $sheet->getStyle($column . '2:' . $column . ($ticket_num + 1))->getAlignment()->setHorizontal('left'); 
+        // $sheet->getStyle($column . '2:' . $column . ($ticket_num + 1))->getAlignment()->setIndent(1); 
+      }
   
+      // Write excel sheet to file
       $writer = new Xlsx($spreadsheet);
       header("Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
       header("Content-Disposition: attachment;filename=\"Event-Registrations-$date.xlsx\"");
@@ -493,7 +512,7 @@ function set_custom_ticket_columns($columns) {
       header("Pragma: public");
       $writer->save("php://output");
     }
-  // 
+
     return $redirect_url;
   }
   add_filter('handle_bulk_actions-edit-ticket', 'generate_spreadsheet_bulk_action', 10, 3);
