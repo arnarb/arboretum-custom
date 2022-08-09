@@ -38,9 +38,9 @@ function custom_event_column($column, $post_id) {
 
       if ($venues > 0) {
         foreach ($venues as $venue) {
-          $title = $venue['location'][0]->post_title;
+          $location_name = $venue['location'][0]->post_title;
 
-          echo $title . '<br>';
+          echo $location_name . '<br>';
         }
       }
       break;
@@ -54,9 +54,21 @@ function custom_event_column($column, $post_id) {
           // NEED THIS TO SORT OUT BY THE VENUE
           $eventTickets = $ticketRepo->getEventTickets($post_id)->get();
 
+          $location_id = $venue['location'][0]->ID;
+          $sold = 0;
+
+          foreach ($eventTickets as $ticket) {
+            // $location = new Location($location_id);
+            // $location = get_field('location', $ticket->ID);
+            // echo $ticket->location[0] . ' - ' . $location_id;
+            if ($location_id == $ticket->location[0]) {
+               $sold ++;
+             }
+          }
+
           $capacity = $venue['capacity'];
 
-          echo count($eventTickets) . ' out of ' . $capacity . '<br>';
+          echo $sold . ' out of ' . $capacity . '<br>';
         }
       }
       break;
@@ -108,19 +120,33 @@ function arboretum_event_registration_callback() {
   
     $headers .= "Content-Type: text/html; charset=UTF-8\r\n";
   
+    // Get Site Settings values
+    $settings = get_fields('options');
+
     $recipient = $_POST['email'];
     $requested = $_POST['requested'];
 
-    if ($_POST['user']) {
+    if (isset($_POST['user']) && !empty($_POST['user'])) {
       $user_id = $_POST['user'];
-      $user = new User($user_id);
+      // $user = new User($user_id);
     } else {
       // GET GUEST USER
+      $user_id = 68;
+      // $user = new User($user_id);
     }    
+
+    $first_name = $_POST['firstName'];
+    $last_name = $_POST['lastName'];
     
+    // Get the Event
     $event_id = $_POST['event'];
     $event = new Event($event_id);
   
+    // Get the Venue
+    $location_id = $_POST['location'];
+    $location = new Location($location_id);
+
+
     $email_data .= 'Number of tickets requested: ' . $requested;
     $email_data .= '   EVENT: ' . $event_id . '    RECIPIENT: ' . $recipient;   // "\nAvailability left: " . $_POST['availability'] . '  USER: ' . $user_id . 
   
@@ -132,7 +158,7 @@ function arboretum_event_registration_callback() {
     wp_mail($to, $subject, $body, $headers);
   
     if(!empty($event->start_date)) {
-      $event_date = date('Y-m-d at H:i:s', $event->start_date);
+      $event_date = date('Y-m-d H:i:s', $event->start_date);
       $event_time = date('H:i', $event->start_date);
     } else {
       $x = 0;
@@ -143,13 +169,24 @@ function arboretum_event_registration_callback() {
       $event_time = date('H:i', $event->event_dates[$x]);
     }
   
-    // Send confirmation email
+    // Send confirmation email  
+    // TODO: user the stuff from site settings
     $to                 = $recipient;
     $subject            = 'Confirmation to ' . $event->title;
   
     // if()
-    $body               = "Thank you for registering for " . $event->title . " on " . $event_date . " at " . $event_time . ". If you have any questions, please email us at <a href='publicprograms@arnarb.harvard.edu'>publicprograms@arnarb.harvard.edu</a> or call us at <a href='tel:617-384-5209'>(617) 384-5209</a>.";
-    $body               .= "<br><br>We welcome people of all abilities and are committed to facilitating a safe and engaging experience for all who visit. To request services such as an interpreter, wheelchair, or other assistance prior to attending an event, please contact us.";
+
+    // TODO: replace 
+      // [event] - event title
+      // [date] - event date
+      // [venue] - venue location and time
+    $body               = $settings['confirmation_email']['body'];
+
+    $tags               = array('[event]', '[date]', '[venue]');
+    $values             = array($event->title, $event_date, $location->post_title);
+    $body               = str_replace($tags, $values, $body);
+    // $body               = "Thank you for registering for " . $event->title . " on " . $event_date . " at " . $event_time . ". If you have any questions, please email us at <a href='publicprograms@arnarb.harvard.edu'>publicprograms@arnarb.harvard.edu</a> or call us at <a href='tel:617-384-5209'>(617) 384-5209</a>.";
+    // $body               .= "<br><br>We welcome people of all abilities and are committed to facilitating a safe and engaging experience for all who visit. To request services such as an interpreter, wheelchair, or other assistance prior to attending an event, please contact us.";
   
   
   // <Directions>
@@ -168,12 +205,18 @@ function arboretum_event_registration_callback() {
       $ticket_id = wp_insert_post(
         array (
           'post_type' => 'ticket',
-          'post_title' => $user->display_name . ': ' . $event->title,
+          'post_title' => $event->title . ' - ' . $first_name . ' ' . $last_name,
           'post_status' => 'publish',
           'meta_input' => array(
             'user' => $user_id,
+            'first_name' => $first_name,
+            'last_name' => $last_name,
+            'email' => $recipient,
             'event' => array(
               $event_id
+            ),
+            'location' => array(
+              $location_id
             ),
             'time_registered' => $date,
           )
@@ -216,6 +259,10 @@ function arboretum_event_registration_callback() {
     die;
 }
 add_action('wp_ajax_arboretum_event_registration', 'arboretum_event_registration_callback');
+add_action('wp_ajax_nopriv_arboretum_event_registration', 'arboretum_event_registration_callback');
+
+
+
 
 /**
  * 

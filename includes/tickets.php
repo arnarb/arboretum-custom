@@ -16,6 +16,7 @@ function set_custom_ticket_columns($columns) {
     unset($columns['date']);
   
     $columns['user'] = __('User', 'arboretum');
+    $columns['registrant'] = __('Registrant', 'arboretum');
     $columns['event'] = __('Event', 'arboretum');
     $columns['location'] = __('Location', 'arboretum');
     $columns['time_registered'] = __('Time Registered', 'arboretum');
@@ -36,11 +37,23 @@ function set_custom_ticket_columns($columns) {
     switch ($column) {
       case 'user':
         $user_id = $custom_fields['user'][0];// get_field('user', $post_id);
-        $user = new User($user_id);
   
-        echo $user->first_name . ' ' . $user->last_name;
+        if ($user_id != GUEST_ID) {
+          $user = new User($user_id);
+          echo $user->first_name . ' ' . $user->last_name;
+        } else {
+          echo 'Guest';
+        }
         break;
   
+      case 'registrant':
+        $first_name = $custom_fields['first_name'][0];
+        $last_name = $custom_fields['last_name'][0];
+        $email = $custom_fields['email'][0];
+  
+        echo $first_name . ' ' . $last_name . '<br/>' . $email;
+        break;
+
       case 'event':
         $events = '';
   
@@ -50,7 +63,7 @@ function set_custom_ticket_columns($columns) {
   
         foreach($event_ids as $key => $event_id) {
           $event = new Event($event_id);
-          $events .= '<a href="/wp-admin/edit.php?post_type=ticket/">' . $event->title . '</a>';
+          $events .= '<a href="/wp-admin/edit.php?post_type=ticket&ticket_event_filter=' . $event->ID . '">' . $event->title . '</a>';
   
           if(++$i != $num) {
             $events .= ', ';
@@ -178,9 +191,15 @@ function set_custom_ticket_columns($columns) {
       foreach($tickets as $ticket) {
         setup_postdata($ticket);
         $user_id = get_field('user', $ticket->ID);
-        $user = new User($user_id);
-  
-        $name = $user->first_name . ' ' . $user->last_name;
+
+        
+        if ($user_id != GUEST_ID) {
+          $user = new User($user_id);
+    
+          $name = $user->first_name . ' ' . $user->last_name;
+        } else {
+          $name = 'Guest';
+        }
         $values[$user_id] = $name;
         wp_reset_postdata();
       }

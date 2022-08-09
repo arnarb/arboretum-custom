@@ -19,7 +19,7 @@ add_filter('login_headertext', 'arb_login_logo_url_title');
 /**
  * Add login form shortcode
  */
-function arb_log_me_shortcode() {
+function arb_login_shortcode() {
     $args = array(
         'echo'            => true,
         'label_username' => __( 'Email Address' ),
@@ -30,7 +30,7 @@ function arb_log_me_shortcode() {
   
     return '<div class="arb-form">' . wp_login_form( $args ) . '</div>';
 }
-add_shortcode( 'arb_log_me', 'arb_log_me_shortcode' );
+add_shortcode( 'arb_login', 'arb_login_shortcode' );
 
 
 

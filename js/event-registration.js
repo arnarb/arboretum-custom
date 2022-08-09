@@ -2,8 +2,27 @@ jQuery(document).ready(function() {
 
   if(document.querySelector('.arb-form__register')) {
 
-    document.querySelectorAll('[data-required-field]').forEach(element => {
-      element.addEventListener('click', resetValidationCheck, false);
+    document.querySelectorAll('[data-required-field]').forEach(reqElement => {
+
+      // const parentElement = element.parentElement;
+      // if(element.dataset.questionType == 'radio' && element.dataset.questionType == 'source' && element.dataset.questionType == 'checkbox') {
+      //   validationElement = document.querySelector(`.${target.dataset.requiredField}`);
+      // } else {
+      //   validationElement = document.querySelector(`.${parentElement.dataset.requiredField}`);
+      // }
+
+      
+      const elements = reqElement.querySelectorAll('input, option');
+
+      if(reqElement.dataset.questionType != 'select' && elements != null && elements.length > 0) {
+        elements.forEach(element => {
+          element.addEventListener('click', resetValidationCheck, false);
+          element.addEventListener('focus', resetValidationCheck, false);
+        });
+      } else {
+        reqElement.addEventListener('click', resetValidationCheck, false);
+        reqElement.addEventListener('focus', resetValidationCheck, false);
+      }
     });
 
     document.querySelector('.arb-form__venue-select').addEventListener('change', toggleVenue);
@@ -14,8 +33,20 @@ jQuery(document).ready(function() {
 
 // Clear validation text on focus
 function resetValidationCheck(event) {
-  const validationElement = document.querySelector(`.${event.target.dataset.requiredField}`);
-  validationElement.innerHTML = '';
+  console.log('Event target');
+  console.log(event.target);
+  let target = event.target;
+  let validationElement = "";
+  const parentElement = target.parentElement;
+  if(parentElement.dataset.requiredField) {
+    validationElement = document.querySelector(`.${parentElement.dataset.requiredField}`);
+  } else if(target.dataset.questionType != 'radio' && target.dataset.questionType != 'source' && target.dataset.questionType != 'checkbox') {
+    validationElement = document.querySelector(`.${target.dataset.requiredField}`);
+  }
+
+  if(validationElement) {
+    validationElement.innerHTML = '';
+  }
 }
 
 // Check validation
@@ -51,16 +82,16 @@ function submitForm() {
   const requiredElements = document.querySelectorAll('[data-required-field]');
 
   // Reset the validation elements
-  requiredElements.forEach(element => {
-    const validationElement = document.querySelector(`.${element.dataset.requiredField}`);
+  requiredElements.forEach(reqElement => {
+    const validationElement = document.querySelector(`.${reqElement.dataset.requiredField}`);
     validationElement.innerHTML = '';
   });
 
   // Check form validation
-  requiredElements.forEach(element => {
-    const elements = element.querySelectorAll('input, option');
+  requiredElements.forEach(reqElement => {
+    const elements = reqElement.querySelectorAll('input, option');
 
-    if(element.dataset.questionType != 'select' && elements != null && elements.length > 0) {
+    if(reqElement.dataset.questionType != 'select' && elements != null && elements.length > 0) {
       let input = false;
       elements.forEach(element => {
         // console.log(element);
@@ -72,16 +103,16 @@ function submitForm() {
       // For checkboxes check if there is at least one entry
       if(!input) {
         // console.log('no input');
-        topElement = validationCheck(element, topElement);
+        topElement = validationCheck(reqElement, topElement);
       }
-    } else if(element.value == '' || element.value == 0 || element.value == null){
+    } else if(reqElement.value == '' || reqElement.value == 0 || reqElement.value == null){
       // console.log('empty value');
-      topElement = validationCheck(element, topElement);
-    } else if(element.id == 'e-mail') {
+      topElement = validationCheck(reqElement, topElement);
+    } else if(reqElement.id == 'e-mail') {
       var mailformat = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-      if(!element.value.toLowerCase().match(mailformat)) {
+      if(!reqElement.value.toLowerCase().match(mailformat)) {
         // console.log('invalid email');
-        topElement = validationCheck(element, topElement);
+        topElement = validationCheck(reqElement, topElement);
       }
     }
   })
@@ -107,6 +138,7 @@ function submitForm() {
     data.requested = document.querySelector('#requested').value;
     data.questions = returned.dataset.customQuestions;
 
+    // Store custom question/answer pairs
     customQuestions.forEach(customQuestion => {
       let answer;
       let elements = [];
@@ -129,33 +161,41 @@ function submitForm() {
       n++;
     })
 
-    data.venue = document.querySelector('#venue').value;
+    data.location = document.querySelector('#venue').value;
     data.email = document.querySelector('#e-mail').value;
     data.firstName = document.querySelector('#first-name').value;
     data.lastName = document.querySelector('#last-name').value;
     data.action = 'arboretum_event_registration';
     // data.availability = returned.dataset.availability;
     data.event = returned.dataset.event;
-    data.user = returned.dataset.user;
+    if (returned.dataset.user) {
+      data.user = returned.dataset.user;
+    } else {
+      data.user = 68;
+    }
     data.nonce = returned.dataset.nonce;
 
     console.log(data);
     alert(JSON.stringify(data));
     
     document.querySelector('#event-registration-form').remove();
-    document.querySelector('#result').innerHTML = 'Thank you for registering! You will receive a confirmation email with more information about the program.';
+    document.querySelector('#result').classList.remove('arb-form__hidden');
 
+    //      
+    //  dataType: 'json',
     jQuery.ajax({
       type: 'post',
-      dataType: 'json',
       url: arbAjax.ajaxurl,
       data: data,
       success: function(response) {
         if (response.type == 'success') {
           alert("Success - Woohoo");
         } else {
-          alert('failure');
+          alert(JSON.stringify(response));
         }
+      },
+      error: function(response) {
+        alert(JSON.stringify(response));
       }
     })
     .done(function(data) {
