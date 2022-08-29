@@ -54,48 +54,73 @@ function sort_shows_and_events($events) {
     $posts = array();
 
     foreach($events as $event) {
-        if($event->start_date) {
-            $event->start_date = date($format, strtotime($event->start_date)); // substr($event->start_date, 0, 4) . '-' . substr($event->start_date, 4, 2) . '-' . substr($event->start_date, 6) . ' 00:00:00'; // 23:59:59
-        }
-        if($event->end_date) { //} && !strpos($event->end_date, '-')) {
-            $event->end_date = date($format, strtotime($event->end_date)); // substr($event->end_date, 0, 4) . '-' . substr($event->end_date, 4, 2) . '-' . substr($event->end_date, 6) . ' 00:00:00'; // 23:59:59
-        }
-
-        // sort the event_dates
-
-        // Check for the next date in event_dates array
-        if($event->event_dates) {
+        if ($event->custom['venues']) { // Events
+            $start_date = null;
+            $end_date = null;
             $event_dates = array();
-            for($i = 0; $i < $event->event_dates; $i++) {
-                $date = 'event_dates_' . $i . '_date';
-                array_push($event_dates, date($format, strtotime($event->$date)));
+            $start_found = false;
+
+            for ($i = 0; $i < $event->custom['venues']; $i++) {
+                $start_label = 'venues_' . $i . '_start_date';
+                $end_label = 'venues_' . $i . '_end_date';
+                $dates_label = 'venues_' . $i . '_event_dates';
+
+                if($event->$dates_label) {
+                    for($j = 0; $j < $event->$dates_label; $j++) {
+                        $date_label = 'venues_' . $i . '_event_dates_' . $j . '_date';
+                        array_push($event_dates, date($format, strtotime($event->$date_label)));
+                    }
+                } else {
+                    if ($start_date === null || $start_date > $event->custom[$start_label]) {
+                        // Sort out the start dates?
+                        $start_date = $event->$start_label;
+                    }
+
+                    if ($event->$end_label) {
+                        if ($end_date === null || $end_date < $event->custom[$end_label]) {
+                            // Sort out the end dates?
+                            $end_date = $event->$end_label;
+                        }
+                    }
+                }
             }
 
-            usort($event_dates, function($a, $b) {
-                if ($a == $b):
-                    return (0);
-                endif;
+            if(count($event_dates) > 0) {
+                usort($event_dates, function($a, $b) {
+                    if ($a == $b):
+                        return (0);
+                    endif;
 
-                return (($a > $b) ? 1 : -1);
-            });
+                    return (($a > $b) ? 1 : -1);
+                });
 
-
-            for($i = 0; $i < $event->event_dates; $i++) {
-            // $event->dates_has = $event->event_dates;
-            // $date = 'event_dates_' . $i . '_date';
-            // $date_text = 'event_' . $i . '_date';
-
-                if(!$event->start_date) {
-                    if($event_dates[$i] > date($format)) {
-                        $event->start_date = date($format, strtotime($event_dates[$i]));
+                for($k = 0; $k < count($event_dates); $k++) {
+                    if(!$start_found) {
+                        // Assumes the next available day so we don't continue counting in the past for nonsequential dates
+                        if($event_dates[$k] > date($format)) {
+                            $event->start_date = date($format, strtotime($event_dates[$k]));
+                            $start_found = true;
+                        }
                     }
                 }
 
-            // $event->$date_text = $event->$date;
+                if (count($event_dates) > 1) {
+                    $event->end_date = date($format, strtotime($event_dates[count($event_dates) - 1]));
+                }
+                // $event->start_date = date($format, strtotime($start_date));
+                // $event->end_date = date($format, strtotime($end_date));
+                $event->start_date2 = date($format, strtotime($event_dates[0]));
+            } else {
+                $event->start_date = date($format, strtotime($start_date));
+                $event->end_date = date($format, strtotime($end_date));
             }
-
-            // $date = 'event_dates_' . ($event->event_dates - 1) . '_date';
-            $event->end_date = $event_dates[count($event_dates) - 1];
+        } else {  // Art Shows
+            if ($event->start_date) {
+                $event->start_date = date($format, strtotime($event->start_date)); // substr($event->start_date, 0, 4) . '-' . substr($event->start_date, 4, 2) . '-' . substr($event->start_date, 6) . ' 00:00:00'; // 23:59:59
+            }
+            if ($event->end_date) { //} && !strpos($event->end_date, '-')) {
+                $event->end_date = date($format, strtotime($event->end_date)); // substr($event->end_date, 0, 4) . '-' . substr($event->end_date, 4, 2) . '-' . substr($event->end_date, 6) . ' 00:00:00'; // 23:59:59
+            }
         }
 
         // Don't add multi-day events that have already passed
@@ -115,7 +140,6 @@ function sort_shows_and_events($events) {
 
     return $posts;
 }
-
 
 /**
  * Special for group of items to be blocked into eras
