@@ -33,6 +33,18 @@ function arb_login_shortcode() {
 add_shortcode( 'arb_login', 'arb_login_shortcode' );
 
 
+/**
+ * Filter for where posts using sub-fields of repeaters
+ */
+function repeater_nested_where( $where ) {
+	
+	$where = str_replace("meta_key = 'venues_$", "meta_key LIKE 'venues_%", $where);
+
+	return $where;
+}
+
+add_filter('posts_where', 'repeater_nested_where');
+
 
 /**
  * 
