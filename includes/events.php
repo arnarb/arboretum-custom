@@ -83,6 +83,104 @@ function custom_event_column($column, $post_id) {
 add_action('manage_event_posts_custom_column', 'custom_event_column', 10, 2);
 
 
+  /**
+   * Add filter dropdowns for tickets
+   */
+  /**
+   * First create the dropdown
+   * make sure to change POST_TYPE to the name of your custom post type
+   *
+   * @author Ohad Raz
+   *
+   * @return void
+   */
+  function event_filters_restrict_manage_posts($post_type){
+    global $wpdb, $table_prefix;
+
+    $type = 'event';
+    if (isset($_GET['post_type'])) {
+        $type = $_GET['post_type'];
+    }
+    if('event' !== $type) {
+      return;
+    }
+
+    $events = get_posts(array('numberposts' => -1, 'post_type' => 'event', 'posts_per_page' => -1));
+
+    // User column
+    $values = array();
+    foreach($events as $event) {
+      setup_postdata($event);
+      $subjects = get_field('subject_matter', $event->ID);
+      foreach($subjects as $subject) {
+        // $location = new Location($location_id);
+        $values[$subject->slug] = $subject->name;
+      }
+      wp_reset_postdata();
+    }
+  ?>
+    <select name="event_subject_filter">
+    <option value=""><?php _e('All Subject Matters', 'event'); ?></option>
+  <?php
+    $current_v = isset($_GET['event_subject_filter'])? $_GET['event_subject_filter']:'';
+    foreach ($values as $label => $value) {
+      printf
+        (
+          '<option value="%s"%s>%s</option>',
+          $label,
+          $label == $current_v? ' selected="selected"':'',
+          $value
+        );
+    }
+  ?>
+    </select>
+<?php
+    wp_reset_postdata();
+}
+add_action('restrict_manage_posts', 'event_filters_restrict_manage_posts');
+
+
+/**
+ * if submitted filter by post meta
+ *
+ * make sure to change META_KEY to the actual meta key
+ * and POST_TYPE to the name of your custom post type
+ * @author Ohad Raz
+ * @param  (wp_query object) $query
+ *
+ * @return Void
+ */
+function event_filters($query){
+  global $pagenow;
+
+  $type = 'event';
+  if (isset($_GET['post_type'])) {
+    $type = $_GET['post_type'];
+  }
+  if('event' !== $type) {
+    return;
+  }
+
+  // Subject Matter filter
+  if (is_admin() &&
+    $pagenow=='edit.php' &&
+    isset($_GET['event_subject_filter']) &&
+    $_GET['event_subject_filter'] != '' &&
+    $query->is_main_query()
+  ) {
+    $query->query_vars['tax_query'][] = array(
+      'taxonomy' => 'subject',
+      'field'    => 'slug',
+      'terms'    => $_GET['event_subject_filter'],
+    );
+  }
+}
+add_filter('parse_query', 'event_filters');
+
+
+
+
+
 
 
 

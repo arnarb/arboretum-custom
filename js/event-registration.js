@@ -25,7 +25,12 @@ jQuery(document).ready(function() {
       }
     });
 
-    document.querySelector('.arb-form__venue-select').addEventListener('change', toggleVenue);
+    const venueSelect = document.querySelector('.arb-form__venue-select');
+    if (venueSelect) {
+      venueSelect.addEventListener('change', toggleVenue);
+    } else {
+
+    }
     
     document.querySelector('.arb-form__register').addEventListener('click', submitForm);
   }
@@ -161,7 +166,9 @@ function submitForm() {
       n++;
     })
 
-    data.location = document.querySelector('#venue').value;
+    if (document.querySelector('#venue')) {
+      data.location = document.querySelector('.arb-form__venue:not[.arb-form__hidden]').dataset.venue;
+    } 
     data.email = document.querySelector('#e-mail').value;
     data.firstName = document.querySelector('#first-name').value;
     data.lastName = document.querySelector('#last-name').value;

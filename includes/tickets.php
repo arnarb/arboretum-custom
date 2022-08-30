@@ -29,7 +29,7 @@ function set_custom_ticket_columns($columns) {
   add_filter('manage_ticket_posts_columns', 'set_custom_ticket_columns');
   
   /**
-   * 
+   * Populate the values for the Ticket columns
    */
   function custom_ticket_column($column, $post_id) {
     $custom_fields = get_post_custom($post_id);
