@@ -27,9 +27,10 @@ jQuery(document).ready(function() {
 
     const venueSelect = document.querySelector('.arb-form__venue-select');
     if (venueSelect) {
+      if (venueSelect.value != '') {
+        this.toggleVenue(venueSelect.value);
+      }
       venueSelect.addEventListener('change', toggleVenue);
-    } else {
-
     }
     
     document.querySelector('.arb-form__register').addEventListener('click', submitForm);
