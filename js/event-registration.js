@@ -28,7 +28,7 @@ jQuery(document).ready(function() {
     const venueSelect = document.querySelector('.arb-form__venue-select');
     if (venueSelect) {
       if (venueSelect.value != '') {
-        this.toggleVenue(venueSelect.value);
+        toggleVenue(venueSelect.value);
       }
       venueSelect.addEventListener('change', toggleVenue);
     }
@@ -72,7 +72,10 @@ function toggleVenue(event) {
     venue.classList.add('arb-form__hidden');
   })
 
-  const venueDiv = document.querySelector(`[data-venue="${event.target.value}"]`);
+  // Get this to work for original pass or if they change it
+  const value = event.target ? event.target.value : event;
+
+  const venueDiv = document.querySelector(`[data-venue="${value}"]`); // (`[data-venue="${event.target.value}"]`);
   console.log('venue changed');
   console.log(venueDiv);
 
@@ -168,7 +171,7 @@ function submitForm() {
     })
 
     if (document.querySelector('#venue')) {
-      data.location = document.querySelector('.arb-form__venue:not[.arb-form__hidden]').dataset.venue;
+      data.location = document.querySelector('.arb-form__venue:not(.arb-form__hidden)').dataset.venue;
     } 
     data.email = document.querySelector('#e-mail').value;
     data.firstName = document.querySelector('#first-name').value;
