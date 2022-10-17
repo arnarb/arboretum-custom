@@ -177,6 +177,14 @@ function submitForm() {
     data.firstName = document.querySelector('#first-name').value;
     data.lastName = document.querySelector('#last-name').value;
     data.action = 'arboretum_event_registration';
+
+
+    ////////////////////////////////
+    // data.venue
+    // data.date = document.querySelector('').value;
+    ////////////////////////////////
+
+
     // data.availability = returned.dataset.availability;
     data.event = returned.dataset.event;
     if (returned.dataset.user) {

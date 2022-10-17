@@ -1,7 +1,6 @@
 <?php
-
 /**
- * Adding custom columns to the admin section for Expeditions
+ * Adds custom columns to the admin section for Expeditions
  */
 function set_custom_expedition_columns($columns) {
     $date = $colunns['date'];
@@ -16,8 +15,9 @@ function set_custom_expedition_columns($columns) {
 }
 add_filter('manage_expedition_posts_columns', 'set_custom_expedition_columns');
 
+
 /**
- * 
+ * Sets what each custom column displays
  */
 function custom_expeditions_column($column, $post_id) {
     switch ($column) {
@@ -37,6 +37,7 @@ function custom_expeditions_column($column, $post_id) {
 }
 add_action('manage_expedition_posts_custom_column' , 'custom_expeditions_column', 10, 2);
 
+
 /**
  * 
  */
@@ -49,24 +50,25 @@ function set_custom_expedition_sortable_columns( $columns ) {
 }
 add_filter('manage_edit-expedition_sortable_columns', 'set_custom_expedition_sortable_columns');
 
+
 /**
  * 
  */
 function expedition_orderby($query) {
-        if(!is_admin())
-            return;
+    if(!is_admin())
+        return;
 
-        $orderby = $query->get('orderby');
+    $orderby = $query->get('orderby');
 
-        if('start_year' == $orderby) {
-            $query->set('meta_key', 'start_year');
-            $query->set('orderby', 'meta_value');
-        } else if('end_year' == $orderby) {
-            $query->set('meta_key', 'end_year');
-            $query->set('orderby', 'meta_value');
-        } else if('is_active' == $orderby) {
-            $query->set('meta_key', 'is_active');
-            $query->set('orderby', 'meta_value');
-        }
+    if('start_year' == $orderby) {
+        $query->set('meta_key', 'start_year');
+        $query->set('orderby', 'meta_value');
+    } else if('end_year' == $orderby) {
+        $query->set('meta_key', 'end_year');
+        $query->set('orderby', 'meta_value');
+    } else if('is_active' == $orderby) {
+        $query->set('meta_key', 'is_active');
+        $query->set('orderby', 'meta_value');
+    }
 }
 add_action('pre_get_posts', 'expedition_orderby');

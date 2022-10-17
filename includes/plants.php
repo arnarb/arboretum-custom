@@ -1,7 +1,6 @@
 <?php
-
 /**
- * Adding custom columns to the admin section for Plant Bios
+ * Adds custom columns to the admin section for Plant Bios
  */
 function set_custom_plant_columns($columns) {
     $date = $colunns['date'];
@@ -14,8 +13,9 @@ function set_custom_plant_columns($columns) {
 }
 add_filter('manage_plant_posts_columns', 'set_custom_plant_columns');
 
+
 /**
- * 
+ * Sets what each custom column displays
  */
 function custom_plant_column($column, $post_id) {
     switch ($column) {
@@ -28,6 +28,7 @@ function custom_plant_column($column, $post_id) {
 }
 add_action('manage_plant_posts_custom_column' , 'custom_plant_column', 10, 2);
 
+
 /**
  * 
  */
@@ -37,6 +38,7 @@ function set_custom_plant_sortable_columns( $columns ) {
     return $columns;
 }
 add_action('pre_get_posts', 'plant_orderby');
+
 
 /**
  * 

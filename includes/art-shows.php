@@ -1,7 +1,6 @@
 <?php
-
 /**
- * Adding custom columns to the admin section for Art Shows
+ * Adds custom columns to the admin section for Art Shows
  */
 function set_custom_art_show_columns($columns) {
     $date = $colunns['date'];
@@ -15,8 +14,9 @@ function set_custom_art_show_columns($columns) {
 }
 add_filter('manage_art_show_posts_columns', 'set_custom_art_show_columns');
 
+
 /**
- * 
+ * Sets what each custom column displays
  */
 function custom_art_show_column($column, $post_id) {
     switch ($column) {
@@ -33,6 +33,7 @@ function custom_art_show_column($column, $post_id) {
 }
 add_action('manage_art_show_posts_custom_column' , 'custom_art_show_column', 10, 2);
 
+
 /**
  * 
  */
@@ -43,6 +44,7 @@ function set_custom_art_show_sortable_columns( $columns ) {
     return $columns;
 }
 add_filter('manage_edit-art_show_sortable_columns', 'set_custom_art_show_sortable_columns');
+
 
 /**
  * 

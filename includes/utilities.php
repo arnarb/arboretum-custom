@@ -1,8 +1,4 @@
 <?php
-
-// define('ARBORETUM_CUSTOM', plugin_dir_path( __FILE__ ));
-
-
 /**
  * Edit login page
  */
@@ -11,11 +7,16 @@ function arb_login_logo_url() {
 }
 add_filter('login_headerurl', 'arb_login_logo_url');
   
+
+/**
+ * 
+ */
 function arb_login_logo_url_title() {
     return 'Arnold Arboretum';
 }
 add_filter('login_headertext', 'arb_login_logo_url_title');
   
+
 /**
  * Add login form shortcode
  */
@@ -141,6 +142,7 @@ function sort_shows_and_events($events) {
     return $posts;
 }
 
+
 /**
  * Special for group of items to be blocked into eras
  */
@@ -163,6 +165,7 @@ function sort_items($eras, $sort_value) {
     return $eras;
 }
 
+
 /**
  * 
  */
@@ -175,6 +178,7 @@ function get_era($year) {
         return "1977-present";
     }
 }
+
 
 /**
  * Get an array of arrays sorted into 3 eras, 1874-1927, 1928-1976, 1977-present
@@ -194,6 +198,7 @@ function get_items_by_era($items, $sort_value = "start_year") {
 
     return sort_items($items_by_era, $sort_value);
 }
+
 
 /**
  * Get an array of arrays sorted into individual years
@@ -216,6 +221,7 @@ function get_items_by_year($items, $sort_value = "") {
 
     return sort_items($items_by_year, $sort_value);
 }
+
 
 /**
  * Helper function to convert an Array of Arrays to an Array of Objects
@@ -389,7 +395,6 @@ function nf_subs_capabilities($cap) {
 }
 
 
-
 /**
  * Call to see if the language translantions dropdown should appear
  */
@@ -410,7 +415,6 @@ function extend_afc_date_picker_range() {
     wp_enqueue_script('date-picker-js', ARBORETUM_CUSTOM . '/js/custom-date-picker.js', array(), '1.0.0', true);
 }
 add_action('admin_enqueue_scripts', 'extend_afc_date_picker_range');
-  
   
   
 /**

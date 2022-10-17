@@ -1,6 +1,4 @@
 <?php
-
-// use Arboretum\Repositories\DirectorRepository;
 use Arboretum\Repositories\TicketRepository;
 
 use Arboretum\Models\Event as Event;
@@ -8,12 +6,9 @@ use Arboretum\Models\Ticket as Ticket;
 use Arboretum\Models\Location as Location;
 use Timber\User as User;
 
-// define('ARBORETUM_CUSTOM', plugin_dir_path( __FILE__ ));
-
-
 
 /**
- * Adding custom columns to the admin section for Events
+ * Adds custom columns to the admin section for Events
  */
 function set_custom_event_columns($columns) {
   $date = $colunns['date'];
@@ -28,8 +23,9 @@ function set_custom_event_columns($columns) {
 }
 add_filter('manage_event_posts_columns', 'set_custom_event_columns');
 
+
 /**
- * 
+ * Sets what each custom column displays
  */
 function custom_event_column($column, $post_id) {
   switch ($column) {
@@ -73,51 +69,51 @@ function custom_event_column($column, $post_id) {
       }
       break;
 
-    case 'event_date':
-      // Need to expand this for which date / time was chosen
-      $event_date = strtotime(get_field('start_date', $post_id));
-      echo date("F j, Y g:i a", $event_date);
-      break;
+      case 'event_date':
+        // Need to expand this for which date / time was chosen
+        $event_date = strtotime(get_field('start_date', $post_id));
+        echo date("F j, Y g:i a", $event_date);
+        break;
   }
 }
 add_action('manage_event_posts_custom_column', 'custom_event_column', 10, 2);
 
 
-  /**
-   * Add filter dropdowns for tickets
-   */
-  /**
-   * First create the dropdown
-   * make sure to change POST_TYPE to the name of your custom post type
-   *
-   * @author Ohad Raz
-   *
-   * @return void
-   */
-  function event_filters_restrict_manage_posts($post_type){
-    global $wpdb, $table_prefix;
+/**
+ * Add filter dropdowns for tickets
+ */
+/**
+ * First create the dropdown
+ * make sure to change POST_TYPE to the name of your custom post type
+ *
+ * @author Ohad Raz
+ *
+ * @return void
+ */
+function event_filters_restrict_manage_posts($post_type){
+  global $wpdb, $table_prefix;
 
-    $type = 'event';
-    if (isset($_GET['post_type'])) {
-        $type = $_GET['post_type'];
-    }
-    if('event' !== $type) {
-      return;
-    }
+  $type = 'event';
+  if (isset($_GET['post_type'])) {
+      $type = $_GET['post_type'];
+  }
+  if('event' !== $type) {
+    return;
+  }
 
-    $events = get_posts(array('numberposts' => -1, 'post_type' => 'event', 'posts_per_page' => -1));
+  $events = get_posts(array('numberposts' => -1, 'post_type' => 'event', 'posts_per_page' => -1));
 
-    // User column
-    $values = array();
-    foreach($events as $event) {
-      setup_postdata($event);
-      $subjects = get_field('subject_matter', $event->ID);
-      foreach($subjects as $subject) {
-        // $location = new Location($location_id);
-        $values[$subject->slug] = $subject->name;
-      }
-      wp_reset_postdata();
+  // User column
+  $values = array();
+  foreach($events as $event) {
+    setup_postdata($event);
+    $subjects = get_field('subject_matter', $event->ID);
+    foreach($subjects as $subject) {
+      // $location = new Location($location_id);
+      $values[$subject->slug] = $subject->name;
     }
+    wp_reset_postdata();
+  }
   ?>
     <select name="event_subject_filter">
     <option value=""><?php _e('All Subject Matters', 'event'); ?></option>
@@ -134,7 +130,7 @@ add_action('manage_event_posts_custom_column', 'custom_event_column', 10, 2);
     }
   ?>
     </select>
-<?php
+  <?php
     wp_reset_postdata();
 }
 add_action('restrict_manage_posts', 'event_filters_restrict_manage_posts');
@@ -178,13 +174,6 @@ function event_filters($query){
 add_filter('parse_query', 'event_filters');
 
 
-
-
-
-
-
-
-
 /**
  * Register event scripts
  */
@@ -201,6 +190,7 @@ function event_scripts_enqueuer() {
 }
 add_action('wp_enqueue_scripts', 'event_scripts_enqueuer');
 
+
 /**
  * Handle event registration form submission
  *
@@ -208,83 +198,84 @@ add_action('wp_enqueue_scripts', 'event_scripts_enqueuer');
  * @callback @event_registration_callback
  */
 
+
 /**
  * @param $form_data array
  * @return void
  */
 function arboretum_event_registration_callback() {
-    date_default_timezone_set('America/New_York');
-    $date = date("Y-m-d H:i:s");
-  
-    $headers .= "Content-Type: text/html; charset=UTF-8\r\n";
-  
-    // Get Site Settings values
-    $settings = get_fields('options');
+  date_default_timezone_set('America/New_York');
+  $date = date("Y-m-d H:i:s");
 
-    $recipient = $_POST['email'];
-    $requested = $_POST['requested'];
+  $headers .= "Content-Type: text/html; charset=UTF-8\r\n";
 
-    if (isset($_POST['user']) && !empty($_POST['user'])) {
-      $user_id = $_POST['user'];
-      // $user = new User($user_id);
-    } else {
-      // GET GUEST USER
-      $user_id = 68;
-      // $user = new User($user_id);
-    }    
+  // Get Site Settings values
+  $settings = get_fields('options');
 
-    $first_name = $_POST['firstName'];
-    $last_name = $_POST['lastName'];
-    
-    // Get the Event
-    $event_id = $_POST['event'];
-    $event = new Event($event_id);
+  $recipient = $_POST['email'];
+  $requested = $_POST['requested'];
+
+  if (isset($_POST['user']) && !empty($_POST['user'])) {
+    $user_id = $_POST['user'];
+    // $user = new User($user_id);
+  } else {
+    // GET GUEST USER
+    $user_id = 68;
+    // $user = new User($user_id);
+  }    
+
+  $first_name = $_POST['firstName'];
+  $last_name = $_POST['lastName'];
   
-    // Get the Venue
-    $location_id = $_POST['location'];
-    $location = new Location($location_id);
+  // Get the Event
+  $event_id = $_POST['event'];
+  $event = new Event($event_id);
+
+  // Get the Venue
+  $location_id = $_POST['location'];
+  $location = new Location($location_id);
 
 
-    $email_data .= 'Number of tickets requested: ' . $requested;
-    $email_data .= '   EVENT: ' . $event_id . '    RECIPIENT: ' . $recipient;   // "\nAvailability left: " . $_POST['availability'] . '  USER: ' . $user_id . 
-  
-    // Send notification of new registrant
-    $to                 = 'matthew_caulkins@harvard.edu';
-    $subject            = 'New Event Registration BY AJAX';
-    $body               = $email_data;
-  
-    wp_mail($to, $subject, $body, $headers);
-  
-    if(!empty($event->start_date)) {
-      $event_date = date('Y-m-d H:i:s', $event->start_date);
-      $event_time = date('H:i', $event->start_date);
-    } else {
-      $x = 0;
-      while(date('Y-m-d H:i:s', intval($event->event_dates[$x])) < $date) {
-        $x++;
-      }
-      $event_date = date('Y-m-d', $event->event_dates[$x]);
-      $event_time = date('H:i', $event->event_dates[$x]);
+  $email_data .= 'Number of tickets requested: ' . $requested;
+  $email_data .= '   EVENT: ' . $event_id . '    RECIPIENT: ' . $recipient;   // "\nAvailability left: " . $_POST['availability'] . '  USER: ' . $user_id . 
+
+  // Send notification of new registrant
+  $to                 = 'matthew_caulkins@harvard.edu';
+  $subject            = 'New Event Registration BY AJAX';
+  $body               = $email_data;
+
+  wp_mail($to, $subject, $body, $headers);
+
+  if(!empty($event->start_date)) {
+    $event_date = date('Y-m-d H:i:s', $event->start_date);
+    $event_time = date('H:i', $event->start_date);
+  } else {
+    $x = 0;
+    while(date('Y-m-d H:i:s', intval($event->event_dates[$x])) < $date) {
+      $x++;
     }
-  
-    // Send confirmation email  
-    // TODO: user the stuff from site settings
-    $to                 = $recipient;
-    $subject            = 'Confirmation to ' . $event->title;
-  
-    // if()
+    $event_date = date('Y-m-d', $event->event_dates[$x]);
+    $event_time = date('H:i', $event->event_dates[$x]);
+  }
 
-    // TODO: replace 
-      // [event] - event title
-      // [date] - event date
-      // [venue] - venue location and time
-    $body               = $settings['confirmation_email']['body'];
+  // Send confirmation email  
+  // TODO: user the stuff from site settings
+  $to                 = $recipient;
+  $subject            = 'Confirmation to ' . $event->title;
 
-    $tags               = array('[event]', '[date]', '[venue]');
-    $values             = array($event->title, $event_date, $location->post_title);
-    $body               = str_replace($tags, $values, $body);
-    // $body               = "Thank you for registering for " . $event->title . " on " . $event_date . " at " . $event_time . ". If you have any questions, please email us at <a href='publicprograms@arnarb.harvard.edu'>publicprograms@arnarb.harvard.edu</a> or call us at <a href='tel:617-384-5209'>(617) 384-5209</a>.";
-    // $body               .= "<br><br>We welcome people of all abilities and are committed to facilitating a safe and engaging experience for all who visit. To request services such as an interpreter, wheelchair, or other assistance prior to attending an event, please contact us.";
+  // if()
+
+  // TODO: replace 
+    // [event] - event title
+    // [date] - event date
+    // [venue] - venue location and time
+  $body               = $settings['confirmation_email']['body'];
+
+  $tags               = array('[event]', '[date]', '[venue]');
+  $values             = array($event->title, $event_date, $location->post_title);
+  $body               = str_replace($tags, $values, $body);
+  // $body               = "Thank you for registering for " . $event->title . " on " . $event_date . " at " . $event_time . ". If you have any questions, please email us at <a href='publicprograms@arnarb.harvard.edu'>publicprograms@arnarb.harvard.edu</a> or call us at <a href='tel:617-384-5209'>(617) 384-5209</a>.";
+  // $body               .= "<br><br>We welcome people of all abilities and are committed to facilitating a safe and engaging experience for all who visit. To request services such as an interpreter, wheelchair, or other assistance prior to attending an event, please contact us.";
   
   
   // <Directions>
@@ -292,74 +283,72 @@ function arboretum_event_registration_callback() {
   // Your registration details are below:
   // <all of the fields that the person filled in>
   
-    wp_mail($to, $subject, $body, $headers);
-    // Send their confirmation email
-  
-  
-    $response = '';
-  
-    for ($i = 0; $i < $requested; $i++) {
-      // insert the post and set the category
-      $ticket_id = wp_insert_post(
-        array (
-          'post_type' => 'ticket',
-          'post_title' => $event->title . ' - ' . $first_name . ' ' . $last_name,
-          'post_status' => 'publish',
-          'meta_input' => array(
-            'user' => $user_id,
-            'first_name' => $first_name,
-            'last_name' => $last_name,
-            'email' => $recipient,
-            'event' => array(
-              $event_id
-            ),
-            'location' => array(
-              $location_id
-            ),
-            'time_registered' => $date,
-          )
+  wp_mail($to, $subject, $body, $headers);
+  // Send their confirmation email
+
+
+  $response = '';
+
+  for ($i = 0; $i < $requested; $i++) {
+    // insert the post and set the category
+    $ticket_id = wp_insert_post(
+      array (
+        'post_type' => 'ticket',
+        'post_title' => $event->title . ' - ' . $first_name . ' ' . $last_name,
+        'post_status' => 'publish',
+        'meta_input' => array(
+          'user' => $user_id,
+          'first_name' => $first_name,
+          'last_name' => $last_name,
+          'email' => $recipient,
+          'event' => array(
+            $event_id
+          ),
+          'location' => array(
+            $location_id
+          ),
+          'time_registered' => $date,
         )
-      );
-  
-      $response .= $ticket_id . ', ';
-      for ($j = 0; $j < $_POST['questions']; $j++) {
-        // $question_num = 'question_' . $j;
-        $question = $_POST['question_' . $j]; // $question_num];
-        // $answer_num = 'answer_' .$j;
-        $answer = $_POST['answer_' .$j]; // $answer_num];
-  
-        add_row('custom_questions', array(
-          'question' => $question,
-          'answer' => $answer
-        ), $ticket_id);
-      };
-    }
-  
-    if($response === false) {
-      $result['type'] = "error";
-      $result['data'] = $body;
-    }
-    else {
-      $result['type'] = "success";
-      $result['ticket_ids'] = $response;
-    }
-  
-    if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
-      $result = json_encode($result);
-      echo var_dump($result);
-    }
-    else {
-      header("Location: ".$_SERVER["HTTP_REFERER"]);
-      echo var_dump($result);
-    }
-  
-    date_default_timezone_set('UTC');
-    die;
+      )
+    );
+
+    $response .= $ticket_id . ', ';
+    for ($j = 0; $j < $_POST['questions']; $j++) {
+      // $question_num = 'question_' . $j;
+      $question = $_POST['question_' . $j]; // $question_num];
+      // $answer_num = 'answer_' .$j;
+      $answer = $_POST['answer_' .$j]; // $answer_num];
+
+      add_row('custom_questions', array(
+        'question' => $question,
+        'answer' => $answer
+      ), $ticket_id);
+    };
+  }
+
+  if($response === false) {
+    $result['type'] = "error";
+    $result['data'] = $body;
+  }
+  else {
+    $result['type'] = "success";
+    $result['ticket_ids'] = $response;
+  }
+
+  if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
+    $result = json_encode($result);
+    echo var_dump($result);
+  }
+  else {
+    header("Location: ".$_SERVER["HTTP_REFERER"]);
+    echo var_dump($result);
+  }
+
+  date_default_timezone_set('UTC');
+  die;
 }
 add_action('wp_ajax_arboretum_event_registration', 'arboretum_event_registration_callback');
 add_action('wp_ajax_nopriv_arboretum_event_registration', 'arboretum_event_registration_callback');
-
-
 
 
 /**
