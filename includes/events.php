@@ -156,7 +156,7 @@ function custom_event_column($column, $post_id) {
 
             if ($venue['event_dates']) {
               foreach ($venue['event_dates'] as $event_date) {
-                echo date("Y-m-d h:i a, l", strtotime($event_date['date'])) . '<br>';
+                echo date("m-d-Y g:i a, l", strtotime($event_date['date'])) . '<br>';
               }
             } else {
               if ($venue['end_date']) {
@@ -167,10 +167,10 @@ function custom_event_column($column, $post_id) {
                 $period = new DatePeriod($begin, $interval, $end);
                 
                 foreach ($period as $date) {
-                  echo $date->format("Y-m-d h:i a, l") . '<br>';
+                  echo $date->format("m-d-Y g:i a, l") . '<br>';
                 }
               } else {
-                echo date("Y-m-d h:i a, l", strtotime($venue['start_date'])) . '<br>';// strtotime($venue['start_date']) . '<br>';
+                echo date("m-d-Y g:i a, l", strtotime($venue['start_date'])) . '<br>';// strtotime($venue['start_date']) . '<br>';
               }              
             }
 
