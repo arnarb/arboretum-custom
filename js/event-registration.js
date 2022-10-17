@@ -1,7 +1,5 @@
 jQuery(document).ready(function() {
-
   if(document.querySelector('.arb-form__register')) {
-
     document.querySelectorAll('[data-required-field]').forEach(reqElement => {
 
       // const parentElement = element.parentElement;

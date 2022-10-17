@@ -19,6 +19,7 @@ function set_custom_ticket_columns($columns) {
   $columns['user'] = __('User', 'arboretum');
   $columns['registrant'] = __('Registrant', 'arboretum');
   $columns['event'] = __('Event', 'arboretum');
+  $columns['event_date'] = __('Event Date', 'arboretum');
   $columns['location'] = __('Location', 'arboretum');
   $columns['time_registered'] = __('Time Registered', 'arboretum');
   $columns['time_attended'] = __('Time Attended', 'arboretum');
@@ -74,6 +75,10 @@ function custom_ticket_column($column, $post_id) {
       echo $events;
       break;
 
+    case 'event_date':
+      ////////////////////////////////
+      break;
+
     case 'location':
       $locations = '';
 
@@ -117,6 +122,7 @@ function custom_ticket_column($column, $post_id) {
 }
 add_action('manage_ticket_posts_custom_column', 'custom_ticket_column', 10, 2);
   
+
 /**
  * Make custom columns sortable
  */
@@ -131,6 +137,7 @@ function set_custom_ticket_sortable_columns( $columns ) {
   return $columns;
 }
 add_filter('manage_edit-ticket_sortable_columns', 'set_custom_ticket_sortable_columns');
+
 
 /**
  * Order tickets by filters
@@ -162,6 +169,7 @@ function ticket_orderby($query) {
   }
 }
 add_action('pre_get_posts', 'ticket_orderby');
+
 
 /**
  * Add filter dropdowns for tickets

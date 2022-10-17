@@ -411,8 +411,12 @@ function check_for_translations() {
 /**
  * Extend AFC DatePicker field range
  */
-function extend_afc_date_picker_range() {
-    wp_enqueue_script('date-picker-js', ARBORETUM_CUSTOM . '/js/custom-date-picker.js', array(), '1.0.0', true);
+function extend_afc_date_picker_range() {    
+  wp_register_script('date-picker-js', ARBORETUM_CUSTOM_URL . 'js/custom-date-picker.js', array('jquery'));
+  wp_localize_script('date-picker-js', 'arbAjax', array('ajaxurl' => admin_url('admin-ajax.php')));
+
+  wp_enqueue_script('date-picker-js', '', array(), false, true);
+  wp_enqueue_script('event-registration');
 }
 add_action('admin_enqueue_scripts', 'extend_afc_date_picker_range');
   
