@@ -20,6 +20,7 @@ function set_custom_ticket_columns($columns) {
   $columns['registrant'] = __('Registrant', 'arboretum');
   $columns['event'] = __('Event', 'arboretum');
   $columns['event_date'] = __('Event Date', 'arboretum');
+  $columns['type'] = __('Type', 'arboretum');
   $columns['location'] = __('Location', 'arboretum');
   $columns['time_registered'] = __('Time Registered', 'arboretum');
   $columns['time_attended'] = __('Time Attended', 'arboretum');
@@ -76,7 +77,13 @@ function custom_ticket_column($column, $post_id) {
       break;
 
     case 'event_date':
-      ////////////////////////////////
+      $event_date = strtotime($custom_fields['event_date'][0]);
+      echo date("F j, Y g:i a", $event_date);
+      break;
+
+    case 'type':
+      $type = get_field('type', $post_id);
+      echo $type['label'];
       break;
 
     case 'location':

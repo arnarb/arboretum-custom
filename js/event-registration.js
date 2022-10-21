@@ -105,13 +105,15 @@ function submitForm() {
         if (element.checked) {
           input = true;
         }
-      })
+      });
 
       // For checkboxes check if there is at least one entry
       if(!input) {
         // console.log('no input');
         topElement = validationCheck(reqElement, topElement);
       }
+    } else if (requiredElements.dataset.date) {
+      console.log("************************ FOUND THE DATE!");
     } else if(reqElement.value == '' || reqElement.value == 0 || reqElement.value == null){
       // console.log('empty value');
       topElement = validationCheck(reqElement, topElement);
@@ -175,7 +177,8 @@ function submitForm() {
     data.firstName = document.querySelector('#first-name').value;
     data.lastName = document.querySelector('#last-name').value;
     data.action = 'arboretum_event_registration';
-
+    data.type = document.querySelector('.arb-form__venue__type.active').dataset.type;
+    data.date = document.querySelector('.arb-form__venue__date-time.active').dataset.date;
 
     ////////////////////////////////
     // data.venue

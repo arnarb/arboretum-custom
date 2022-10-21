@@ -255,12 +255,12 @@ function convert_to_array_of_objects($items) {
     $array_of_objs = [];
 
     if(isset($items)):
-    foreach($items as $item):
-        $obj = new stdClass();
-        $obj->custom = $item;
+        foreach($items as $item):
+            $obj = new stdClass();
+            $obj->custom = $item;
 
-        array_push($array_of_objs, $obj);
-    endforeach;
+            array_push($array_of_objs, $obj);
+        endforeach;
     endif;
 
     return $array_of_objs;
