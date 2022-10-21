@@ -78,7 +78,7 @@ function custom_ticket_column($column, $post_id) {
 
     case 'event_date':
       $event_date = strtotime($custom_fields['event_date'][0]);
-      echo date("F j, Y g:i a", $event_date);
+      echo date("M d Y g:i a, D", $event_date);
       break;
 
     case 'type':
@@ -107,14 +107,14 @@ function custom_ticket_column($column, $post_id) {
 
     case 'time_registered':
       $time_registered = strtotime($custom_fields['time_registered'][0]);
-      echo date("F j, Y g:i a", $time_registered);
+      echo date("M d Y g:i a, D", $time_registered);
       break;
 
     case 'time_attended':
       $time_attended = $custom_fields['time_attended'][0];
       if (isset($time_attended) && $time_attended != '') {
         $time_attended = strtotime($time_attended);
-        echo date("F j, Y g:i a", $time_attended);
+        echo date("M d Y g:i a, D", $time_attended);
       } 
       break;
 
@@ -122,7 +122,7 @@ function custom_ticket_column($column, $post_id) {
       $time_canceled = $custom_fields['time_canceled'][0];
       if (isset($time_canceled) && $time_canceled != '') {
         $time_canceled = strtotime($time_canceled);
-        echo 'Canceled on ' . date("F j, Y g:i a", $time_canceled);
+        echo 'Canceled on ' . date("M d Y g:i a, D", $time_canceled);
       }
       break;
   }
