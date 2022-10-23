@@ -172,13 +172,15 @@ function submitForm() {
 
     if (document.querySelector('#venue')) {
       data.location = document.querySelector('.arb-form__venue:not(.arb-form__hidden)').dataset.venue;
+      data.type = document.querySelector('.arb-form__venue:not(.arb-form__hidden) .arb-form__venue__type').dataset.type;
+      data.date = document.querySelector('.arb-form__venue:not(.arb-form__hidden) .arb-form__venue__date-time').dataset.date;
     } 
     data.email = document.querySelector('#e-mail').value;
     data.firstName = document.querySelector('#first-name').value;
     data.lastName = document.querySelector('#last-name').value;
     data.action = 'arboretum_event_registration';
-    data.type = document.querySelector('.arb-form__venue__type.active').dataset.type;
-    data.date = document.querySelector('.arb-form__venue__date-time.active').dataset.date;
+
+    // data.location = document.querySelector('.arb-form__venue__location.active').dataaset.location;
 
     ////////////////////////////////
     // data.venue

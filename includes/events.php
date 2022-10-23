@@ -6,6 +6,38 @@ use Arboretum\Models\Ticket as Ticket;
 use Arboretum\Models\Location as Location;
 use Timber\User as User;
 
+/**
+ * Sort the event dates into chronological order
+ */
+function save_event($post_id) {
+  $type = 'event';
+  if (isset($_GET['post_type'])) {
+      $type = $_GET['post_type'];
+  }
+  if('event' !== $type) {
+    return;
+  }
+
+  // $event = new Event($post_id);
+  $venues = get_field('venues', $post_id);
+  $i = 1;
+  foreach ($venues as $venue) {
+    if ($venues['event_days']) {
+      $dates = array();
+
+      foreach ($venue['event_dates'] as $event_date) {
+        array_push($dates, $event_date['date']);
+      }
+      sort($dates);
+
+      update_sub_field(array('venues', $i, 'event_dates'), $dates, $post_id);
+    }
+    $i ++;
+  }
+}
+add_action('save_post','save_event');
+
+
 
 /**
  * Adds custom columns to the admin section for Events
@@ -365,7 +397,7 @@ function arboretum_event_registration_callback() {
     $user_id = $_POST['user'];
     // $user = new User($user_id);
   } else {
-    // GET GUEST USER
+    // GET GUEST USER - SET TO Public Programs
     $user_id = 68;
     // $user = new User($user_id);
   }    
@@ -381,6 +413,9 @@ function arboretum_event_registration_callback() {
   $location_id = $_POST['location'];
   $location = new Location($location_id);
 
+  $event_date = $_POST['date'];
+  $type = $_POST['type'];
+
 
   $email_data .= 'Number of tickets requested: ' . $requested;
   $email_data .= '   EVENT: ' . $event_id . '    RECIPIENT: ' . $recipient;   // "\nAvailability left: " . $_POST['availability'] . '  USER: ' . $user_id . 
@@ -392,17 +427,18 @@ function arboretum_event_registration_callback() {
 
   wp_mail($to, $subject, $body, $headers);
 
-  if(!empty($event->start_date)) {
-    $event_date = date('Y-m-d H:i:s', $event->start_date);
-    $event_time = date('H:i', $event->start_date);
-  } else {
-    $x = 0;
-    while(date('Y-m-d H:i:s', intval($event->event_dates[$x])) < $date) {
-      $x++;
-    }
-    $event_date = date('Y-m-d', $event->event_dates[$x]);
-    $event_time = date('H:i', $event->event_dates[$x]);
-  }
+  ///// TODO: This should be where I need to edit the date logic
+  // if (!empty($event->start_date)) {
+  //   $event_date = date('Y-m-d H:i:s', $event->start_date);
+  //   // $event_time = date('H:i', $event->start_date);
+  // } else {
+  //   $x = 0;
+  //   while (date('Y-m-d H:i:s', intval($event->event_dates[$x])) < $date) {
+  //     $x++;
+  //   }
+  //   $event_date = date('Y-m-d H:i:s', $event->event_dates[$x]);
+  //   // $event_time = date('H:i', $event->event_dates[$x]);
+  // }
 
   // Send confirmation email  
   // TODO: user the stuff from site settings
@@ -449,6 +485,10 @@ function arboretum_event_registration_callback() {
           'email' => $recipient,
           'event' => array(
             $event_id
+          ),
+          'event_date' => $event_date,
+          'type' => array(
+            $type
           ),
           'location' => array(
             $location_id

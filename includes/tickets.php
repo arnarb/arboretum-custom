@@ -204,7 +204,7 @@ function ticket_filters_restrict_manage_posts($post_type){
 
     // User column
     $values = array();
-    foreach($tickets as $ticket) {
+    foreach ($tickets as $ticket) {
       setup_postdata($ticket);
       $user_id = get_field('user', $ticket->ID);
 
@@ -238,10 +238,10 @@ function ticket_filters_restrict_manage_posts($post_type){
   <?php
     // Event column
     $values = array();
-    foreach($tickets as $ticket) {
+    foreach ($tickets as $ticket) {
       setup_postdata($ticket);
       $event_ids = get_field('event', $ticket->ID);
-      foreach($event_ids as $event_id) {
+      foreach ($event_ids as $event_id) {
         $event = new Event($event_id);
         $values[$event_id] = $event->title;
       }
@@ -266,10 +266,10 @@ function ticket_filters_restrict_manage_posts($post_type){
   <?php
   // Location column
   $values = array();
-  foreach($tickets as $ticket) {
+  foreach ($tickets as $ticket) {
     setup_postdata($ticket);
     $location_ids = get_field('location', $ticket->ID);
-    foreach($location_ids as $location_id) {
+    foreach ($location_ids as $location_id) {
       $location = new Location($location_id);
       $values[$location_id] = $location->title;
     }
