@@ -1,6 +1,6 @@
 jQuery(document).ready(function() {
   if(document.querySelector('.arb-form__register')) {
-    document.querySelectorAll('[data-required-field]').forEach(reqElement => {
+    document.querySelectorAll('[data-required-field]').forEach(requiredElement => {
 
       // const parentElement = element.parentElement;
       // if(element.dataset.questionType == 'radio' && element.dataset.questionType == 'source' && element.dataset.questionType == 'checkbox') {
@@ -10,16 +10,16 @@ jQuery(document).ready(function() {
       // }
 
       
-      const elements = reqElement.querySelectorAll('input, option');
+      const elements = requiredElement.querySelectorAll('input, option');
 
-      if(reqElement.dataset.questionType != 'select' && elements != null && elements.length > 0) {
+      if(requiredElement.dataset.questionType != 'select' && elements != null && elements.length > 0) {
         elements.forEach(element => {
           element.addEventListener('click', resetValidationCheck, false);
           element.addEventListener('focus', resetValidationCheck, false);
         });
       } else {
-        reqElement.addEventListener('click', resetValidationCheck, false);
-        reqElement.addEventListener('focus', resetValidationCheck, false);
+        requiredElement.addEventListener('click', resetValidationCheck, false);
+        requiredElement.addEventListener('focus', resetValidationCheck, false);
       }
     });
 
@@ -89,16 +89,16 @@ function submitForm() {
   const requiredElements = document.querySelectorAll('[data-required-field]');
 
   // Reset the validation elements
-  requiredElements.forEach(reqElement => {
-    const validationElement = document.querySelector(`.${reqElement.dataset.requiredField}`);
+  requiredElements.forEach(requiredElement => {
+    const validationElement = document.querySelector(`.${requiredElement.dataset.requiredField}`);
     validationElement.innerHTML = '';
-  });
+  // });
 
-  // Check form validation
-  requiredElements.forEach(reqElement => {
-    const elements = reqElement.querySelectorAll('input, option');
+  // // Check form validation
+  // requiredElements.forEach(requiredElement => {
+    const elements = requiredElement.querySelectorAll('input, option');
 
-    if(reqElement.dataset.questionType != 'select' && elements != null && elements.length > 0) {
+    if(requiredElement.dataset.questionType != 'select' && elements != null && elements.length > 0) {
       let input = false;
       elements.forEach(element => {
         // console.log(element);
@@ -110,18 +110,18 @@ function submitForm() {
       // For checkboxes check if there is at least one entry
       if(!input) {
         // console.log('no input');
-        topElement = validationCheck(reqElement, topElement);
+        topElement = validationCheck(requiredElement, topElement);
       }
-    } else if (requiredElements.dataset.date) {
+    } else if (requiredElement.dataset.date) {
       console.log("************************ FOUND THE DATE!");
-    } else if(reqElement.value == '' || reqElement.value == 0 || reqElement.value == null){
+    } else if(requiredElement.value == '' || requiredElement.value == 0 || requiredElement.value == null){
       // console.log('empty value');
-      topElement = validationCheck(reqElement, topElement);
-    } else if(reqElement.id == 'e-mail') {
+      topElement = validationCheck(requiredElement, topElement);
+    } else if(requiredElement.id == 'e-mail') {
       var mailformat = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-      if(!reqElement.value.toLowerCase().match(mailformat)) {
+      if(!requiredElement.value.toLowerCase().match(mailformat)) {
         // console.log('invalid email');
-        topElement = validationCheck(reqElement, topElement);
+        topElement = validationCheck(requiredElement, topElement);
       }
     }
   })
@@ -168,16 +168,16 @@ function submitForm() {
       data[`question_${n}`] = question;
       data[`answer_${n}`] = answer;
       n++;
-    })
+    });
 
-    if (document.querySelector('#venue')) {
-      data.location = document.querySelector('.arb-form__venue:not(.arb-form__hidden)').dataset.venue;
-      data.type = document.querySelector('.arb-form__venue:not(.arb-form__hidden) .arb-form__venue__type').dataset.type;
-      data.date = document.querySelector('.arb-form__venue:not(.arb-form__hidden) .arb-form__venue__date-time').dataset.date;
-    } 
+    const venue = document.querySelector('#venue');
+
     data.email = document.querySelector('#e-mail').value;
     data.firstName = document.querySelector('#first-name').value;
     data.lastName = document.querySelector('#last-name').value;
+    data.location = venue.querySelector('.arb-form__venue:not(.arb-form__hidden)').dataset.venue;
+    data.type = venue.querySelector('.arb-form__venue:not(.arb-form__hidden) .arb-form__venue__type').dataset.type;
+    data.date = venue.querySelector('.arb-form__venue:not(.arb-form__hidden) .arb-form__venue__date-time').dataset.date;
     data.action = 'arboretum_event_registration';
 
     // data.location = document.querySelector('.arb-form__venue__location.active').dataaset.location;

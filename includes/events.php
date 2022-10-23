@@ -9,7 +9,7 @@ use Timber\User as User;
 /**
  * Sort the event dates into chronological order
  */
-function save_event($post_id) {
+function sort_event_dates($post_id) {
   $type = 'event';
   if (isset($_GET['post_type'])) {
       $type = $_GET['post_type'];
@@ -20,24 +20,40 @@ function save_event($post_id) {
 
   // $event = new Event($post_id);
   $venues = get_field('venues', $post_id);
-  $i = 1;
+  $i = 0;
   foreach ($venues as $venue) {
-    if ($venues['event_days']) {
+    if ($venue['event_days']) {
       $dates = array();
 
       foreach ($venue['event_dates'] as $event_date) {
         array_push($dates, $event_date['date']);
       }
-      sort($dates);
+      usort($dates, function($time1, $time2) {
+        if (strtotime($time1) > strtotime($time2))
+          return 1;
+        else if (strtotime($time1) < strtotime($time2)) 
+          return -1;
+        
+        return 0;
+      });
 
-      update_sub_field(array('venues', $i, 'event_dates'), $dates, $post_id);
+      for ($n = 0; count($dates); $n++) {
+        $field_name = 'venues_' . $i . '_event_dates_' . $n . '_date';
+        update_post_meta($post_id, $field_name, $dates[$n]);
+        // update_sub_field(array('venues', $i, 'event_dates', $n, 'date'), $dates[$n], $post_id);
+      }
     }
     $i ++;
   }
 }
-add_action('save_post','save_event');
+add_action('post_updated','sort_event_dates');
 
-
+// user-defined comparison function 
+// based on timestamp
+function compareByTimeStamp($time1, $time2)
+{
+   
+}
 
 /**
  * Adds custom columns to the admin section for Events
