@@ -212,12 +212,15 @@ function submitForm() {
       success: function(response) {
         if (response.type == 'success') {
           alert("Success - Woohoo");
+          console.log(JSON.stringify(response))
         } else {
           alert(JSON.stringify(response));
+          console.log(JSON.stringify(response))
         }
       },
       error: function(response) {
         alert(JSON.stringify(response));
+        console.log(JSON.stringify(response));
       }
     })
     .done(function(data) {

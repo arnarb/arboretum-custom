@@ -503,9 +503,7 @@ function arboretum_event_registration_callback() {
             $event_id
           ),
           'event_date' => $event_date,
-          'type' => array(
-            $type
-          ),
+          'type' => $type,
           'location' => array(
             $location_id
           ),
