@@ -177,6 +177,7 @@ function submitForm() {
     data.lastName = document.querySelector('#last-name').value;
     data.location = venue.querySelector('.arb-form__venue:not(.arb-form__hidden)').dataset.venue;
     data.type = venue.querySelector('.arb-form__venue:not(.arb-form__hidden) .arb-form__venue__type').dataset.type;
+    data.key = venue.querySelector('.arb-form__venue:not(.arb-form__hidden) .arb-form__venue__type').dataset.key;
     data.date = venue.querySelector('.arb-form__venue:not(.arb-form__hidden) .arb-form__venue__date-time').dataset.date;
     data.action = 'arboretum_event_registration';
 

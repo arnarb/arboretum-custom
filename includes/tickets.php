@@ -19,9 +19,9 @@ function set_custom_ticket_columns($columns) {
   $columns['user'] = __('User', 'arboretum');
   $columns['registrant'] = __('Registrant', 'arboretum');
   $columns['event'] = __('Event', 'arboretum');
-  $columns['event_date'] = __('Event Date', 'arboretum');
+  $columns['venue'] = __('Venue', 'arboretum');
   $columns['type'] = __('Type', 'arboretum');
-  $columns['location'] = __('Location', 'arboretum');
+  $columns['event_date'] = __('Event Date', 'arboretum');
   $columns['time_registered'] = __('Time Registered', 'arboretum');
   $columns['time_attended'] = __('Time Attended', 'arboretum');
   $columns['canceled'] = __('Canceled', 'arboretum');
@@ -81,12 +81,7 @@ function custom_ticket_column($column, $post_id) {
       echo date("M d Y g:i a, D", $event_date);
       break;
 
-    case 'type':
-      $type = get_field('type', $post_id);
-      echo $type['label'];
-      break;
-
-    case 'location':
+    case 'venue':
       $locations = '';
 
       $location_ids = get_field('location', $post_id);
@@ -103,6 +98,11 @@ function custom_ticket_column($column, $post_id) {
       }
 
       echo $locations;
+      break;
+
+    case 'type':
+      $type = get_field('type', $post_id);
+      echo $type['label'];
       break;
 
     case 'time_registered':
@@ -135,8 +135,8 @@ add_action('manage_ticket_posts_custom_column', 'custom_ticket_column', 10, 2);
  */
 function set_custom_ticket_sortable_columns( $columns ) {
   $columns['user'] = 'user';
+  $columns['venue'] = 'venue';
   $columns['event'] = 'event';
-  $columns['location'] = 'location';
   $columns['time_registered'] = 'time_registered';
   $columns['time_attended'] = 'time_attended';
   $columns['canceled'] = 'time_canceled';
@@ -161,7 +161,7 @@ function ticket_orderby($query) {
   } else if('event' == $orderby) {
     $query->set('meta_key', 'event');
     $query->set('orderby', 'meta_value');
-  } else if('location' == $orderby) {
+  } else if('venue' == $orderby) {
     $query->set('meta_key', 'location');
     $query->set('orderby', 'meta_value');
   } else if('time_registered' == $orderby) {

@@ -18,6 +18,17 @@ function sort_event_dates($post_id) {
     return;
   }
 
+  $post_status = get_post_status( $post_id );
+
+  switch ( $post_status ) {
+    case 'draft':
+    case 'auto-draft':
+    case 'pending':
+    case 'inherit':
+    case 'trash':
+      return;
+  }
+
   // $event = new Event($post_id);
   $venues = get_field('venues', $post_id);
   $i = 0;
@@ -37,6 +48,7 @@ function sort_event_dates($post_id) {
         return 0;
       });
 
+      var_dump($dates);
       for ($n = 0; count($dates); $n++) {
         $field_name = 'venues_' . $i . '_event_dates_' . $n . '_date';
         update_post_meta($post_id, $field_name, $dates[$n]);
@@ -64,8 +76,8 @@ function set_custom_event_columns($columns) {
 
   $columns['venue'] = __('Venue', 'arboretum');
   $columns['type'] = __('Type', 'arboretum');
-  $columns['registrations'] = __('Registrations', 'arboretum');
   $columns['event_date'] = __('Event Date', 'arboretum');
+  $columns['registrations'] = __('Registrations', 'arboretum');
   $columns['date'] = __('Date', $date);
 
   return $columns;
@@ -156,10 +168,47 @@ function custom_event_column($column, $post_id) {
     }
     break;
 
+    case 'event_date':
+      // Need to expand this for which date / time was chosen
+      
+      $venues = get_field('venues', $post_id);
+      if ($venues > 0) {
+        $x = 1;
+        $count = count($venues);
+        foreach ($venues as $venue) {
+
+          if ($venue['event_dates']) {
+            foreach ($venue['event_dates'] as $event_date) {
+              echo date("M d Y g:i a, D", strtotime($event_date['date'])) . '<br>';
+            }
+          } else {
+            if ($venue['end_date']) {
+              $begin = new DateTime($venue['start_date']);
+              $end = new DateTime($venue['end_date']);
+
+              $interval = DateInterval::createFromDateString('1 day');
+              $period = new DatePeriod($begin, $interval, $end);
+              
+              foreach ($period as $date) {
+                echo $date->format("M d Y g:i a, D") . '<br>';
+              }
+            } else {
+              echo date("M d Y g:i a, D", strtotime($venue['start_date'])) . '<br>';// strtotime($venue['start_date']) . '<br>';
+            }              
+          }
+
+          if ($count != $x) {
+            echo '<hr>';
+            $x ++;
+          }
+        }
+      }
+      //  echo date("F j, Y g:i a", $event_date);
+      break;
+
     case 'registrations':
       $ticketRepo = new TicketRepository();
       $venues = get_field('venues', $post_id);
-
       if ($venues > 0) {
         $x = 1;
         $count = count($venues);
@@ -167,11 +216,13 @@ function custom_event_column($column, $post_id) {
           if ($venue['event_dates']) {
             foreach ($venue['event_dates'] as $event_date) {
               $eventTickets = $ticketRepo->getEventTickets($post_id, $event_date)->get();
-
               $location_id = $venue['location'][0]->ID;
               $sold = 0;
 
+              echo count($eventTickets) . '<hr><br><br>';
+
               foreach ($eventTickets as $ticket) {
+                echo $venue['location'][0] . '-' . $location_id . ': ' . $ticket . '<br><br>';
                 if ($location_id == $ticket->location[0]) {
                   $sold ++;
                 }
@@ -230,44 +281,6 @@ function custom_event_column($column, $post_id) {
         }
       }
       break;
-
-      case 'event_date':
-        // Need to expand this for which date / time was chosen
-        
-        $venues = get_field('venues', $post_id);
-        if ($venues > 0) {
-          $x = 1;
-          $count = count($venues);
-          foreach ($venues as $venue) {
-
-            if ($venue['event_dates']) {
-              foreach ($venue['event_dates'] as $event_date) {
-                echo date("M d Y g:i a, D", strtotime($event_date['date'])) . '<br>';
-              }
-            } else {
-              if ($venue['end_date']) {
-                $begin = new DateTime($venue['start_date']);
-                $end = new DateTime($venue['end_date']);
-
-                $interval = DateInterval::createFromDateString('1 day');
-                $period = new DatePeriod($begin, $interval, $end);
-                
-                foreach ($period as $date) {
-                  echo $date->format("M d Y g:i a, D") . '<br>';
-                }
-              } else {
-                echo date("M d Y g:i a, D", strtotime($venue['start_date'])) . '<br>';// strtotime($venue['start_date']) . '<br>';
-              }              
-            }
-
-            if ($count != $x) {
-              echo '<hr>';
-              $x ++;
-            }
-          }
-        }
-        //  echo date("F j, Y g:i a", $event_date);
-        break;
   }
 }
 add_action('manage_event_posts_custom_column', 'custom_event_column', 10, 2);
@@ -431,6 +444,7 @@ function arboretum_event_registration_callback() {
 
   $event_date = $_POST['date'];
   $type = $_POST['type'];
+  $kKey = $_POST['key'];
 
 
   $email_data .= 'Number of tickets requested: ' . $requested;
@@ -503,7 +517,7 @@ function arboretum_event_registration_callback() {
             $event_id
           ),
           'event_date' => $event_date,
-          'type' => $type,
+          'type' => array( 'value' => $key, 'label' => $type ),
           'location' => array(
             $location_id
           ),
