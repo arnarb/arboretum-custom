@@ -214,8 +214,9 @@ function custom_event_column($column, $post_id) {
         $count = count($venues);
         foreach ($venues as $venue) {
           if ($venue['event_dates']) {
+            $eventTickets = $ticketRepo->getEventTickets($post_id)->get();
+
             foreach ($venue['event_dates'] as $event_date) {
-              $eventTickets = $ticketRepo->getEventTickets($post_id)->get();
               $location_id = $venue['location'][0]->ID;
               $sold = 0;
 
@@ -223,7 +224,7 @@ function custom_event_column($column, $post_id) {
 
               foreach ($eventTickets as $ticket) {
                 echo $venue['location'][0] . '-' . $location_id . ': ' . $ticket . '<br><br>';
-                if ($location_id == $ticket->location[0]) {
+                if ($location_id == $ticket->location[0] && $event_date['date'] == $ticket['event_date']) {
                   $sold ++;
                 }
               }
@@ -238,15 +239,16 @@ function custom_event_column($column, $post_id) {
 
               $interval = DateInterval::createFromDateString('1 day');
               $period = new DatePeriod($begin, $interval, $end);
+              $eventTickets = $ticketRepo->getEventTickets($post_id)->get();
               
               foreach ($period as $date) {
-                $eventTickets = $ticketRepo->getEventTickets($post_id)->get();
-
+                echo 'Date : ';
+                var_dump($date);
                 $location_id = $venue['location'][0]->ID;
                 $sold = 0;
 
                 foreach ($eventTickets as $ticket) {
-                  if ($location_id == $ticket->location[0]) {
+                  if ($location_id == $ticket->location[0] && $date == $ticket['event_date']) {
                     $sold ++;
                   }
                 }
@@ -261,7 +263,7 @@ function custom_event_column($column, $post_id) {
               $sold = 0;
 
               foreach ($eventTickets as $ticket) {
-                if ($location_id == $ticket->location[0]) {
+                if ($location_id == $ticket->location[0] && $venue['start_date'] == $ticket['event_date']) {
                   $sold ++;
                 }
               }
