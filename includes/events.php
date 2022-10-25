@@ -215,7 +215,7 @@ function custom_event_column($column, $post_id) {
         foreach ($venues as $venue) {
           if ($venue['event_dates']) {
             foreach ($venue['event_dates'] as $event_date) {
-              $eventTickets = $ticketRepo->getEventTickets($post_id, $event_date)->get();
+              $eventTickets = $ticketRepo->getEventTickets($post_id)->get();
               $location_id = $venue['location'][0]->ID;
               $sold = 0;
 
@@ -240,7 +240,7 @@ function custom_event_column($column, $post_id) {
               $period = new DatePeriod($begin, $interval, $end);
               
               foreach ($period as $date) {
-                $eventTickets = $ticketRepo->getEventTickets($post_id, $event_date)->get();
+                $eventTickets = $ticketRepo->getEventTickets($post_id)->get();
 
                 $location_id = $venue['location'][0]->ID;
                 $sold = 0;
@@ -255,7 +255,7 @@ function custom_event_column($column, $post_id) {
                 echo $sold . ' out of ' . $capacity . '<br>';
               }
             } else {
-              $eventTickets = $ticketRepo->getEventTickets($post_id, $event_date)->get();
+              $eventTickets = $ticketRepo->getEventTickets($post_id)->get();
 
               $location_id = $venue['location'][0]->ID;
               $sold = 0;
