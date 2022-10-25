@@ -219,7 +219,7 @@ function custom_event_column($column, $post_id) {
               $location_id = $venue['location'][0]->ID;
               $sold = 0;
 
-              echo count($eventTickets) . '<hr><br><br>';
+              echo '<hr>' . count($eventTickets) . '<hr><br><br>';
 
               foreach ($eventTickets as $ticket) {
                 echo $venue['location'][0] . '-' . $location_id . ': ' . $ticket . '<br><br>';
