@@ -175,11 +175,12 @@ function custom_event_column($column, $post_id) {
         $x = 1;
         $count = count($venues);
         foreach ($venues as $venue) {
-
           if ($venue['event_dates']) {
+            $eventTickets = $ticketRepo->getEventTickets($post_id)->get();
+            $location_id = intval($venue['location'][0]->ID);
+
             foreach ($venue['event_dates'] as $event_date) {
-              $eventTickets = $ticketRepo->getEventTickets($post_id)->get();
-              $location_id = intval($venue['location'][0]->ID);
+              $sold = 0;
 
               foreach ($eventTickets as $ticket) {
                 if ($event_date['date'] == $ticket->event_date
@@ -269,7 +270,6 @@ function custom_event_column($column, $post_id) {
               $sold = 0;
 
               foreach ($eventTickets as $ticket) {
-                
                 if ($event_date['date'] == $ticket->event_date
                   && $location_id == $ticket->location[0] 
                   && $venue['type'] == $ticket->type) {
