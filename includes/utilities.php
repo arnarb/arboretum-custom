@@ -110,7 +110,7 @@ function sort_shows_and_events($events) {
                 }
                 // $event->start_date = date($format, strtotime($start_date));
                 // $event->end_date = date($format, strtotime($end_date));
-                $event->start_date2 = date($format, strtotime($event_dates[0]));
+                // $event->start_date2 = date($format, strtotime($event_dates[0]));
             } else {
                 $event->start_date = date($format, strtotime($start_date));
                 $event->end_date = date($format, strtotime($end_date));
@@ -456,3 +456,11 @@ function get_algolia_data() {
 
     return $json;
 }
+
+/**
+ * Add GoogleMaps to ACF
+ */
+function arboretum_acf_init() {
+    acf_update_setting('google_api_key', 'AIzaSyDfdSX90Sc8q7ozRMEnX3YjEK0LLhd6DpQ');
+}
+add_action('acf/init', 'arboretum_acf_init');
