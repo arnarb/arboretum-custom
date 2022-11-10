@@ -451,7 +451,7 @@ add_shortcode('get_solar_data', 'get_solar_data');
  */
 function get_algolia_data() {
     $filename = $_SERVER['DOCUMENT_ROOT'] . '/algolia_calc.json';
-    $file = trim(file_get_contents($filename), "\xEF\xBB\xBF");
+    $file = file_get_contents($filename);
     $json = json_decode($file, true);
 
     return $json;
