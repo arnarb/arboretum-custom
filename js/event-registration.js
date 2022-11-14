@@ -20,7 +20,7 @@ jQuery(document).ready(function() {
         });
       } else {
         requiredElement.addEventListener('click', resetValidationCheck, false);
-        requiredElement.addEventListener('focus', resetValidationCheck, false);
+        // requiredElement.addEventListener('focus', resetValidationCheck, false);
       }
     });
 
@@ -33,25 +33,16 @@ jQuery(document).ready(function() {
     }
     
     document.querySelector('.arb-form__register').addEventListener('click', submitForm);
-
-    document.querySelectorAll('.event-calendar__set-date').forEach(dateButton => {
-      dateButton.addEventListener('click', setDate, false);
-    })
   }
 });
 
-function setDate(event) {
-  parentElement = event.target.parentElement.parentElement.parentElement.parentElement;
-  if (parentElement.classList.contains('date-past')) {
-    console.log('is a past event date');
-  } else {
-    console.log('active event date');
-  }
-  console.log(`Event %o`, event);
-}
-
 // Clear validation text on focus
 function resetValidationCheck(event) {
+
+  if (event.target.classList.contains('event-calendar__set-date') || event.target.classList.contains('pager ')) {
+    console.log('Dont react to these elements');
+    return;
+  }
   console.log(`Event: %o, target %o`, event, event.target);
   let target = event.target;
   let validationElement = "";
