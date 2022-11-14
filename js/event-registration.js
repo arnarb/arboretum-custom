@@ -15,12 +15,12 @@ jQuery(document).ready(function() {
 
       if(requiredElement.dataset.questionType != 'select' && elements != null && elements.length > 0) {
         elements.forEach(element => {
-          element.addEventListener('click', resetValidationCheck, { once: true });
-          element.addEventListener('focus', resetValidationCheck, { once: true });
+          element.addEventListener('click', resetValidationCheck);
+          element.addEventListener('focus', resetValidationCheck);
         });
       } else {
-        requiredElement.addEventListener('click', resetValidationCheck, { once: true });
-        requiredElement.addEventListener('focus', resetValidationCheck, { once: true });
+        requiredElement.addEventListener('click', resetValidationCheck);
+        requiredElement.addEventListener('focus', resetValidationCheck);
       }
     });
 
@@ -29,10 +29,10 @@ jQuery(document).ready(function() {
       if (venueSelect.value != '') {
         toggleVenue(venueSelect.value);
       }
-      venueSelect.addEventListener('change', toggleVenue, { once: true });
+      venueSelect.addEventListener('change', toggleVenue);
     }
     
-    document.querySelector('.arb-form__register').addEventListener('click', function() {submitForm}, { once: true });
+    document.querySelector('.arb-form__register').addEventListener('click', submitForm);
   }
 });
 
