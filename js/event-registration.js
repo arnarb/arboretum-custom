@@ -11,6 +11,7 @@ jQuery(document).ready(function() {
 
       
       const elements = requiredElement.querySelectorAll('input, option');
+      console.log(`Elements: %o`, elements);
 
       if(requiredElement.dataset.questionType != 'select' && elements != null && elements.length > 0) {
         elements.forEach(element => {
@@ -32,13 +33,20 @@ jQuery(document).ready(function() {
     }
     
     document.querySelector('.arb-form__register').addEventListener('click', submitForm);
+
+    document.querySelectorAll('.event-calendar__set-date').forEach(dateButton => {
+      dateButton.addEventListener('click', setDate, false);
+    })
   }
 });
 
+function setDate(event) {
+  console.log(`Event %o`, event);
+}
+
 // Clear validation text on focus
 function resetValidationCheck(event) {
-  console.log('Event target');
-  console.log(event.target);
+  console.log(`Event: %o, target %o`, event, event.target);
   let target = event.target;
   let validationElement = "";
   const parentElement = target.parentElement;

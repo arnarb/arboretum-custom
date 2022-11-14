@@ -464,3 +464,9 @@ function arboretum_acf_init() {
     acf_update_setting('google_api_key', 'AIzaSyDfdSX90Sc8q7ozRMEnX3YjEK0LLhd6DpQ');
 }
 add_action('acf/init', 'arboretum_acf_init');
+
+function acf_google_map_api( $api ){
+	$api['key'] = 'AIzaSyDfdSX90Sc8q7ozRMEnX3YjEK0LLhd6DpQ';
+	return $api;
+}
+add_filter('acf/fields/google_map/api', 'acf_google_map_api');
