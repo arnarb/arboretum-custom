@@ -41,6 +41,12 @@ jQuery(document).ready(function() {
 });
 
 function setDate(event) {
+  parentElement = event.target.parentElement.parentElement.parentElement.parentElement;
+  if (parentElement.classList.contains('date-past')) {
+    console.log('is a past event date');
+  } else {
+    console.log('active event date');
+  }
   console.log(`Event %o`, event);
 }
 
