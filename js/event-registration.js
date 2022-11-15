@@ -11,15 +11,16 @@ jQuery(document).ready(function() {
 
       
       const elements = requiredElement.querySelectorAll('input, option');
+      console.log(`Elements: %o`, elements);
 
       if(requiredElement.dataset.questionType != 'select' && elements != null && elements.length > 0) {
         elements.forEach(element => {
-          element.addEventListener('click', resetValidationCheck, false);
-          element.addEventListener('focus', resetValidationCheck, false);
+          element.addEventListener('click', resetValidationCheck);
+          element.addEventListener('focus', resetValidationCheck);
         });
       } else {
-        requiredElement.addEventListener('click', resetValidationCheck, false);
-        requiredElement.addEventListener('focus', resetValidationCheck, false);
+        requiredElement.addEventListener('click', resetValidationCheck);
+        requiredElement.addEventListener('focus', resetValidationCheck);
       }
     });
 
@@ -37,8 +38,12 @@ jQuery(document).ready(function() {
 
 // Clear validation text on focus
 function resetValidationCheck(event) {
-  console.log('Event target');
-  console.log(event.target);
+
+  if (event.target.classList.contains('event-calendar__set-date') || event.target.classList.contains('pager ')) {
+    console.log('Dont react to these elements');
+    return;
+  }
+  console.log(`Event: %o, target %o`, event, event.target);
   let target = event.target;
   let validationElement = "";
   const parentElement = target.parentElement;

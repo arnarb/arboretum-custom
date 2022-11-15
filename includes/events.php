@@ -448,9 +448,13 @@ function event_scripts_enqueuer() {
   wp_register_script('ticket-cancelation', ARBORETUM_CUSTOM_URL . 'js/ticket-cancelation.js', array('jquery'));
   wp_localize_script('ticket-cancelation', 'arbAjax', array('ajaxurl' => admin_url('admin-ajax.php')));
 
+  wp_register_script('event-map', ARBORETUM_CUSTOM_URL . 'js/event-map.js', array('jquery'));
+  wp_localize_script('event-map', 'arbAjax', array('ajaxurl' => admin_url('admin-ajax.php')));
+
   wp_enqueue_script('jquery');
   wp_enqueue_script('event-registration');
   wp_enqueue_script('ticket-cancelation');
+  wp_enqueue_script('event-map');
 }
 add_action('wp_enqueue_scripts', 'event_scripts_enqueuer');
 
@@ -501,7 +505,7 @@ function arboretum_event_registration_callback() {
 
   $event_date = $_POST['date'];
   $type = $_POST['type'];
-  $kKey = $_POST['key'];
+  $key = $_POST['key'];
 
 
   $email_data .= 'Number of tickets requested: ' . $requested;
