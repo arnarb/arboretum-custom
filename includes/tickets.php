@@ -206,17 +206,17 @@ function ticket_filters_restrict_manage_posts($post_type){
     $values = array();
     foreach ($tickets as $ticket) {
       setup_postdata($ticket);
-      $user_id = get_field('user', $ticket->ID);
+      $user = get_field('user', $ticket->ID);
 
       
-      if ($user_id != GUEST_ID) {
-        $user = new User($user_id);
+      if ($user->ID != GUEST_ID) {
+        $user = new User($user->ID);
   
         $name = $user->first_name . ' ' . $user->last_name;
       } else {
-        $name = 'Guest';
+        $name = 'Guest'; // : first name, last name they entered
       }
-      $values[$user_id] = $name;
+      $values[$user->ID] = $name;
       wp_reset_postdata();
     }
   ?>

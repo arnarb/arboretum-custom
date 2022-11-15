@@ -505,7 +505,7 @@ function arboretum_event_registration_callback() {
 
   $event_date = $_POST['date'];
   $type = $_POST['type'];
-  $kKey = $_POST['key'];
+  $key = $_POST['key'];
 
 
   $email_data .= 'Number of tickets requested: ' . $requested;
@@ -578,7 +578,7 @@ function arboretum_event_registration_callback() {
             $event_id
           ),
           'event_date' => $event_date,
-          'type' => $key, //array( 'value' => $key, 'label' => $type ),
+          'type' => array( 'value' => $key, 'label' => $type ),
           'location' => array(
             $location_id
           ),
