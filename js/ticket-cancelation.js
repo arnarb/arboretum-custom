@@ -12,7 +12,7 @@ jQuery(document).ready(function() {
       ticket_id: ticket_id,
       nonce: nonce
     };
-    alert(`WTF ${ticket_id} and ${nonce}`);
+    alert(`${ticket_id} and ${nonce}`);
 
     jQuery.ajax({
       type: 'post',

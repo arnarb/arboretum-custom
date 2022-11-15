@@ -508,8 +508,8 @@ function arboretum_event_registration_callback() {
   $email_data .= '   EVENT: ' . $event_id . '    RECIPIENT: ' . $recipient;   // "\nAvailability left: " . $_POST['availability'] . '  USER: ' . $user_id . 
 
   // Send notification of new registrant
-  $to                 = 'matthew_caulkins@harvard.edu';
-  $subject            = 'New Event Registration BY AJAX';
+  $to                 = 'publicprograms@arnarb.harvard.edu';
+  $subject            = 'TEST EMAIL: New Registration for ' . $event->title;
   $body               = $email_data;
 
   wp_mail($to, $subject, $body, $headers);
@@ -538,10 +538,13 @@ function arboretum_event_registration_callback() {
     // [event] - event title
     // [date] - event date
     // [venue] - venue location and time
+    // New Lines
+    // Bold
+    // Italics
   $body               = $settings['confirmation_email']['body'];
 
-  $tags               = array('[event]', '[date]', '[venue]');
-  $values             = array($event->title, $event_date, $location->post_title);
+  $tags               = array('[event]', '[date]', '[venue]', '<div></div>');
+  $values             = array($event->title, $event_date, $location->post_title,'<br><br>');
   $body               = str_replace($tags, $values, $body);
   // $body               = "Thank you for registering for " . $event->title . " on " . $event_date . " at " . $event_time . ". If you have any questions, please email us at <a href='publicprograms@arnarb.harvard.edu'>publicprograms@arnarb.harvard.edu</a> or call us at <a href='tel:617-384-5209'>(617) 384-5209</a>.";
   // $body               .= "<br><br>We welcome people of all abilities and are committed to facilitating a safe and engaging experience for all who visit. To request services such as an interpreter, wheelchair, or other assistance prior to attending an event, please contact us.";
@@ -574,7 +577,7 @@ function arboretum_event_registration_callback() {
             $event_id
           ),
           'event_date' => $event_date,
-          'type' => $key, //array( 'value' => $key, 'label' => $type ),
+          'type' => array( 'value' => $key, 'label' => $type ),
           'location' => array(
             $location_id
           ),
