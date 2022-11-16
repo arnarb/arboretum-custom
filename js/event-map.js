@@ -1,6 +1,5 @@
 // Render maps on page load.
 jQuery(document).ready(function(){
-    console.log("EVENT MAP");
     jQuery('.js-event-map').each(function(){
         var map = initMap( jQuery(this) );
     });
@@ -19,6 +18,7 @@ jQuery(document).ready(function(){
  */
 function initMap( $el ) {
 
+    console.log("EVENT MAP");
     // Find marker elements within map.
     var $markers = $el.find('.marker');
 
