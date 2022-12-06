@@ -375,7 +375,7 @@ add_filter('bulk_actions-edit-ticket', 'register_generate_spreadsheet_bulk_actio
 
 
 /**
- * 
+ * Generate the spreadsheet for tickets
  */
 function generate_spreadsheet_bulk_action($redirect_url, $action, $post_ids) {
   $date = date("Y-m-d");
@@ -399,15 +399,16 @@ function generate_spreadsheet_bulk_action($redirect_url, $action, $post_ids) {
     $sheet->setCellValue("A1", "Ticket");
     $sheet->setCellValue("B1", "Ticket Number");
     $sheet->setCellValue("C1", "Time Registered");
-    $sheet->setCellValue("D1", "User Name");
-    $sheet->setCellValue("E1", "User Email");
-    $sheet->setCellValue("F1", "City");
-    $sheet->setCellValue("G1", "State");
-    $sheet->setCellValue("H1", "Country");
-    $sheet->setCellValue("I1", "Zip Code");
-    $sheet->setCellValue("J1", "Event Title");
-    $sheet->setCellValue("K1", "Start Date");
-    $sheet->setCellValue("L1", "Selected Venue Location");
+    $sheet->setCellValue("D1", "User");
+    $sheet->setCellValue("E1", "Participant Name");
+    $sheet->setCellValue("F1", "User Email");
+    $sheet->setCellValue("G1", "City");
+    $sheet->setCellValue("H1", "State");
+    $sheet->setCellValue("I1", "Country");
+    $sheet->setCellValue("J1", "Zip Code");
+    $sheet->setCellValue("K1", "Event Title");
+    $sheet->setCellValue("L1", "Start Date");
+    $sheet->setCellValue("M1", "Selected Venue Location");
 
     // Add custom questions
     $custom_question_positions = array();
@@ -434,7 +435,7 @@ function generate_spreadsheet_bulk_action($redirect_url, $action, $post_ids) {
     }
 
     // Combine custom questions onto the column array
-    $columns = array_merge(array('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'), array_values($custom_question_positions));
+    $columns = array_merge(array('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M'), array_values($custom_question_positions));
 
     $num = 1;
     // Populate rows with submissions
@@ -444,13 +445,14 @@ function generate_spreadsheet_bulk_action($redirect_url, $action, $post_ids) {
 
       $sheet->setCellValue("A$num", $ticket->post_title);
       $sheet->setCellValue("B$num", $ticket->ID);
-      $sheet->setCellValue("C$num", $ticket->time_registered);        
+      $sheet->setCellValue("C$num", $ticket->time_registered);    
       $sheet->setCellValue("D$num", "$user->first_name $user->last_name");
-      $sheet->setCellValue("E$num", $user->user_email);
-      $sheet->setCellValue("F$num", $user->city);
-      $sheet->setCellValue("G$num", $user->state);
-      $sheet->setCellValue("H$num", $user->country);
-      $sheet->setCellValue("I$num", $user->zip);
+      $sheet->setCellValue("E$num", $custom_fields['first_name'][0] . " " . $custom_fields['last_name'][0]);
+      $sheet->setCellValue("F$num", $custom_fields['email'][0]);
+      $sheet->setCellValue("G$num", $user->city);
+      $sheet->setCellValue("H$num", $user->state);
+      $sheet->setCellValue("I$num", $user->country);
+      $sheet->setCellValue("J$num", $user->zip);
 
       // Consolidate event data into one string for entry into spreadsheet
       $n = 0;
@@ -484,9 +486,9 @@ function generate_spreadsheet_bulk_action($redirect_url, $action, $post_ids) {
         }
       }
 
-      $sheet->setCellValue("J$num", $titles);
-      $sheet->setCellValue("K$num", $dates);
-      $sheet->setCellValue("L$num", $locations);
+      $sheet->setCellValue("K$num", $titles);
+      $sheet->setCellValue("L$num", $dates);
+      $sheet->setCellValue("M$num", $locations);
 
       
       $get_post_custom = get_post_custom($ticket->ID); 
@@ -495,7 +497,7 @@ function generate_spreadsheet_bulk_action($redirect_url, $action, $post_ids) {
 
           $question_num = substr($name, 0, strlen($name) - 9);
           $answer_name = $question_num . '_answer';
-          $answer = $get_post_custom[$answer_name][0];
+          $answer = $get_post_custom[$answer_name][0] . '<br>';
           foreach($value as $value_name=>$question) {
             $column_letter = $custom_question_positions[$question];
             $column = $column_letter . $num;

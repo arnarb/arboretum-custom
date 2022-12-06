@@ -564,7 +564,9 @@ function arboretum_event_registration_callback() {
 
 
   $response = '';
+  $tickets = [];
 
+  // Create ticket(s)
   for ($i = 0; $i < $requested; $i++) {
     // insert the post and set the category
     $ticket_id = wp_insert_post(
@@ -602,6 +604,59 @@ function arboretum_event_registration_callback() {
         'answer' => $answer
       ), $ticket_id);
     };
+
+    array_push($tickets, $ticket_id); 
+  }
+
+  // Create consent form(s)
+  
+  // Get the registrant
+  $consent_name = $_POST['consentName'];
+  $consent_date = $_POST['consentDate'];
+
+  if ($_POST['guardianName']) {
+    $guardian_name = $_POST['guardianName'];
+  }
+  if ($_POST['guardianDate']) {
+    $guardian_date = $_POST['guardianDate'];;    
+  }
+
+  $participant_text = $event->get_field('participant_text') ? $event->get_field('participant_text') : $settings['participant_text'];
+  $guardian_text = $event->get_field('guardian_text') ? $event->get_field('guardian_text') : $settings['guardian_text'];
+
+  $consent_form_id = wp_insert_post(
+    array (
+      'post_type' => 'consent_form',
+      'post_title' => $event->title . ' - ' . $first_name . ' ' . $last_name,
+      'post_status' => 'publish',
+      'meta_input' => array(
+        'event' => array(
+          $event_id
+        ),
+        'user' => $user_id,
+        'name' => $consent_name,
+        'date' => $consent_date,
+        'participant_text' => $participant_text,
+        'guardian_text' => $guardian_text,
+        'guaridian_name' => $guardian_name,
+        'guardian_date' => $guardian_date,
+      )
+    )
+  );
+
+  foreach($tickets as $ticket_id) {
+    add_row('tickets', array(
+      'ticket' => $ticket_id,
+    ), $consent_form_id);
+  }
+
+  for ($n = 1; $n < $_POST['participantNum']; $n++) {
+    $participant_name = $_POST['participantName' . $n];
+    $participant_date = $_POST['participantDate' . $n];
+    add_row('participants', array(
+      'participant_name' => $participant_name,
+      'participant_date' => $participant_date
+    ), $consent_form_id);
   }
 
   if($response === false) {

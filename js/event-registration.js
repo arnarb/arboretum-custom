@@ -186,6 +186,19 @@ function submitForm() {
     data.date = venue.querySelector('.arb-form__venue:not(.arb-form__hidden) .arb-form__venue__date-time').dataset.date;
     data.action = 'arboretum_event_registration';
 
+    // Consent form data
+    data.consentName = returned.dataset.consentName;
+    data.consentDate = returned.dataset.consentDate;
+    data.participantNum = returned.dataset.participantNum;
+
+    for (n = 1; n <= returned.dataset.participantNum; n++) {
+      data[`participantName${n}`] = returned.getAttribute(`data-participant-name__${n}`);
+      data[`participantDate${n}`] = returned.getAttribute(`data-participant-date__${n}`);
+    }
+
+    data.guardianName = returned.dataset.guardianName;
+    data.guardianDate = returned.dataset.guardianDate;
+
     // data.location = document.querySelector('.arb-form__venue__location.active').dataaset.location;
 
     ////////////////////////////////
@@ -199,7 +212,7 @@ function submitForm() {
     if (returned.dataset.user) {
       data.user = returned.dataset.user;
     } else {
-      data.user = 68;
+      data.user = 68; /// hardcoded of the Guest user
     }
     data.nonce = returned.dataset.nonce;
 
