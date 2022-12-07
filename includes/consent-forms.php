@@ -1,5 +1,6 @@
 <?php
 use Arboretum\Models\Event as Event;
+use Arboretum\Models\Ticket as Ticket;
 use Timber\User as User;
 
 /**
@@ -38,7 +39,7 @@ function custom_consent_form_column($column, $post_id) {
       
             foreach($event_ids as $event_id) {
               $event = new Event($event_id);
-              $events .= $event->title;
+              $events .= '<a href="/wp-admin/edit.php?s&post_type=ticket&ticket_event_filter=' . $event_id .'">' . $event->title . '</a>';
       
               if(++$i != $num) {
                 $events .= ', ';
@@ -52,17 +53,20 @@ function custom_consent_form_column($column, $post_id) {
             $ticket_ids = get_field('tickets', $post_id);
             $num = count($ticket_ids);
             $i = 0;
+            $tickets = '';
 
             foreach($ticket_ids as $ticket_id) {
-                $ticket = new Ticket($ticket_id);
-                $tickets .= $ticket->title;
-        
-                if(++$i != $num) {
-                  $events .= ', ';
-                }
+              $ticket = new Ticket($ticket_id->ticket);
+              $tickets .= $ticket->post_title;
+      
+              if(++$i != $num) {
+                $tickets .= '<br>';
               }
+            }
         
-            echo $tickets;
+            echo $tickets . '<br><br>';
+            var_dump($ticket_ids);
+            echo '<br><br>' . $num;
 
             break;
 
@@ -82,6 +86,7 @@ function custom_consent_form_column($column, $post_id) {
             break;
 
         case 'participant_names':        
+          // This needs work
             echo $custom_fields['name'][0];
             break;
     }

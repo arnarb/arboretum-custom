@@ -24,6 +24,7 @@ jQuery(document).ready(function() {
       }
     });
 
+    // Add the venue select
     const venueSelect = document.querySelector('.arb-form__venue-select');
     if (venueSelect) {
       if (venueSelect.value != '') {
@@ -32,6 +33,10 @@ jQuery(document).ready(function() {
       venueSelect.addEventListener('change', toggleVenue);
     }
     
+    // Set the venue limit
+    toggleLimit();
+
+    // Validate the form and submit it
     document.querySelector('.arb-form__register').addEventListener('click', submitForm);
   }
 });
@@ -83,6 +88,32 @@ function toggleVenue(event) {
   console.log(venueDiv);
 
   venueDiv.classList.remove('arb-form__hidden');
+
+  toggleLimit();
+}
+
+// Switch up the values for the limit of each venue
+function toggleLimit() {
+  const limit = document.querySelectorAll('.arb-form__venue:not(.hidden)').dataset.limit;
+  const requested = document.querySelector('#requested');
+
+   for(let i = requested.options.length - 1; i >= 0; i--) {
+      selectElement.remove(i);
+   }
+
+  const option = document.createElement('option');
+  option.value = '';
+  option.selected;
+  option.disabled;
+
+  requested.appendChild(option);
+  for (let n = 0; n < limit; n++) {
+    option = document.createElement('option');
+    option.value = n;
+    option.innerHTML = n;
+
+    requested.appendChild(option);
+  }
 }
 
 function submitForm() {

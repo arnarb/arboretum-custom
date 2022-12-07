@@ -592,6 +592,14 @@ function arboretum_event_registration_callback() {
       )
     );
 
+    // Get the post id in there so it's unique for each ticket
+    $post_update = array(
+      'ID'         => $ticket_id,
+      'post_title' => $ticket_id . ': ' . $event->title . ' - ' . $first_name . ' ' . $last_name,
+    );
+
+    wp_update_post($post_update);
+
     $response .= $ticket_id . ', ';
     for ($j = 0; $j < $_POST['questions']; $j++) {
       // $question_num = 'question_' . $j;
@@ -638,7 +646,7 @@ function arboretum_event_registration_callback() {
         'date' => $consent_date,
         'participant_text' => $participant_text,
         'guardian_text' => $guardian_text,
-        'guaridian_name' => $guardian_name,
+        'guardian_name' => $guardian_name,
         'guardian_date' => $guardian_date,
       )
     )
@@ -650,7 +658,7 @@ function arboretum_event_registration_callback() {
     ), $consent_form_id);
   }
 
-  for ($n = 1; $n < $_POST['participantNum']; $n++) {
+  for ($n = 1; $n <= $_POST['participantNum']; $n++) {
     $participant_name = $_POST['participantName' . $n];
     $participant_date = $_POST['participantDate' . $n];
     add_row('participants', array(
