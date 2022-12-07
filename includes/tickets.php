@@ -208,7 +208,6 @@ function ticket_filters_restrict_manage_posts($post_type){
       setup_postdata($ticket);
       $user = get_field('user', $ticket->ID);
 
-      
       if ($user->ID != GUEST_ID) {
         $user = new User($user->ID);
   

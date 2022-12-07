@@ -156,7 +156,7 @@ function consent_form_filters_restrict_manage_posts($post_type){
       return;
     }
 
-    $consent_forms = get_posts(array('numberposts' => -1, 'post_type' => 'consent-form', 'posts_per_page' => -1));
+    $consent_forms = get_posts(array('numberposts' => -1, 'post_type' => 'consent_form', 'posts_per_page' => -1));
 
     // User column
     $values = array();
@@ -164,7 +164,6 @@ function consent_form_filters_restrict_manage_posts($post_type){
       setup_postdata($consent_form);
       $user = get_field('user', $consent_form->ID);
 
-      
       if ($user->ID != GUEST_ID) {
         $user = new User($user->ID);
   

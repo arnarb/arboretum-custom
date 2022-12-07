@@ -135,7 +135,7 @@ function changeRequestedNumber() {
   const notice = document.querySelector('.arb-form__notice');
 
   console.log(`Capacity %o, new value %o, remaining capacity %o`, capacity, parseInt(requested.value), remainingCapacity);
-  if (capacity + parseInt(requested.value) > remainingCapacity) {
+  if (remainingCapacity - parseInt(requested.value) < 0) {
     notice.innerHTML = notice.dataset.overLimit;
   } else {
     notice.innerHTML = '';
