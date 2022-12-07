@@ -136,9 +136,9 @@ function changeRequestedNumber() {
 
   console.log(`Capacity %o, new value %o, remaining capacity %o`, capacity, parseInt(requested.value), remainingCapacity);
   if (capacity + parseInt(requested.value) > remainingCapacity) {
-    notice.classList.remove('arb-form__hidden');
+    notice.innerHTML = notice.dataset.overLimit;
   } else {
-    notice.classList.add('arb-form__hidden');
+    notice.innerHTML = '';
   }
 }
 
