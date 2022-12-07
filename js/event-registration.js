@@ -94,20 +94,20 @@ function toggleVenue(event) {
 
 // Switch up the values for the limit of each venue
 function toggleLimit() {
-  const limit = document.querySelectorAll('.arb-form__venue:not(.hidden)').dataset.limit;
+  const limit = document.querySelector('.arb-form__venue:not(.arb-form__hidden)').dataset.limit;
   const requested = document.querySelector('#requested');
 
    for(let i = requested.options.length - 1; i >= 0; i--) {
-      selectElement.remove(i);
+    requested.remove(i);
    }
 
-  const option = document.createElement('option');
+  let option = document.createElement('option');
   option.value = '';
   option.selected;
   option.disabled;
 
   requested.appendChild(option);
-  for (let n = 0; n < limit; n++) {
+  for (let n = 1; n <= limit; n++) {
     option = document.createElement('option');
     option.value = n;
     option.innerHTML = n;
@@ -183,12 +183,32 @@ function submitForm() {
     data.requested = document.querySelector('#requested').value;
     data.questions = returned.dataset.customQuestions;
 
+    // Source question
+    const sourceQuestion = document.querySelector('#source_question');
+    let answer;
+    let elements = [];
+
+    let question = sourceQuestion.dataset.question;
+    let questionType = sourceQuestion.dataset.questionType;
+
+    answer = [];
+    elements = sourceQuestion.querySelectorAll('input');
+    elements.forEach(element => {
+      if (element.checked) {
+        answer.push(element.value);
+      }
+    });
+    
+    answer = answer.join(', ');
+
+    data[`question${n}`] = question;
+    data[`answer${n}`] = answer;
+    n++;
+    
     // Store custom question/answer pairs
     customQuestions.forEach(customQuestion => {
-      let answer;
-      let elements = [];
-      let question = customQuestion.dataset.question;
-      let questionType = customQuestion.dataset.questionType;
+      question = customQuestion.dataset.question;
+      questionType = customQuestion.dataset.questionType;
 
       answer = [];
       elements = customQuestion.querySelectorAll('input');
@@ -198,11 +218,11 @@ function submitForm() {
         }
       })
 
-        alert(`${questionType}: ${answer.join()}`);
+      alert(`${questionType}: ${answer.join()}`);
       answer = answer.join(', ');
       
-      data[`question_${n}`] = question;
-      data[`answer_${n}`] = answer;
+      data[`question${n}`] = question;
+      data[`answer${n}`] = answer;
       n++;
     });
 

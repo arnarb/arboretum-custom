@@ -507,9 +507,10 @@ function arboretum_event_registration_callback() {
   $type = $_POST['type'];
   $key = $_POST['key'];
 
-
+  $email_data .= 'Event registration to ' . $event->title . ' for recipient: ' . $recipient . '<br>';
   $email_data .= 'Number of tickets requested: ' . $requested;
-  $email_data .= '   EVENT: ' . $event_id . '    RECIPIENT: ' . $recipient;   // "\nAvailability left: " . $_POST['availability'] . '  USER: ' . $user_id . 
+
+     // "\nAvailability left: " . $_POST['availability'] . '  USER: ' . $user_id . 
 
   // Send notification of new registrant
   $to                 = 'publicprograms@arnarb.harvard.edu';
@@ -548,7 +549,8 @@ function arboretum_event_registration_callback() {
   $body               = $settings['confirmation_email']['body'];
 
   $tags               = array('[event]', '[date]', '[venue]', '<div></div>');
-  $values             = array($event->title, $event_date, $location->post_title,'<br><br>');
+  $time               = date("jS M Y",strtotime($event_date)) . ' at ' . date("H:m",strtotime($event_date));
+  $values             = array($event->title, $time, $location->post_title,'<br><br>');
   $body               = str_replace($tags, $values, $body);
   // $body               = "Thank you for registering for " . $event->title . " on " . $event_date . " at " . $event_time . ". If you have any questions, please email us at <a href='publicprograms@arnarb.harvard.edu'>publicprograms@arnarb.harvard.edu</a> or call us at <a href='tel:617-384-5209'>(617) 384-5209</a>.";
   // $body               .= "<br><br>We welcome people of all abilities and are committed to facilitating a safe and engaging experience for all who visit. To request services such as an interpreter, wheelchair, or other assistance prior to attending an event, please contact us.";
