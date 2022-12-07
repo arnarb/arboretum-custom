@@ -13,7 +13,6 @@ function set_custom_consent_form_columns($columns) {
     $columns['event'] = __('Event', 'arboretum');
     $columns['tickets'] = __('Tickets', 'arboretum');
     $columns['user'] = __('User', 'arboretum');
-    $columns['name'] = __('Name', 'arboretum');
     $columns['participant_names'] = __('Participant Names', 'arboretum');
 
     $columns['date'] = __('Date', $date);
@@ -34,15 +33,16 @@ function custom_consent_form_column($column, $post_id) {
             $events = '';
       
             $event_ids = get_field('event', $post_id);
-            $num = count($event_ids);
+            $num = empty($ticket_ids) ? 0 : count($event_ids);
             $i = 0;
       
             foreach($event_ids as $event_id) {
               $event = new Event($event_id);
               $events .= '<a href="/wp-admin/edit.php?s&post_type=ticket&ticket_event_filter=' . $event_id .'">' . $event->title . '</a>';
       
-              if(++$i != $num) {
+              if($i != $num) {
                 $events .= ', ';
+                $i++;
               }
             }
       
@@ -51,23 +51,21 @@ function custom_consent_form_column($column, $post_id) {
 
         case 'tickets':
             $ticket_ids = get_field('tickets', $post_id);
-            $num = count($ticket_ids);
+            $num = empty($ticket_ids) ? 0 : count($ticket_ids);
             $i = 0;
             $tickets = '';
 
             foreach($ticket_ids as $ticket_id) {
-              $ticket = new Ticket($ticket_id->ticket);
+              $ticket = new Ticket($ticket_id['ticket']);
               $tickets .= $ticket->post_title;
       
-              if(++$i != $num) {
+              if($i != $num) {
                 $tickets .= '<br>';
+                $i++;
               }
             }
         
-            echo $tickets . '<br><br>';
-            var_dump($ticket_ids);
-            echo '<br><br>' . $num;
-
+            echo $tickets;
             break;
 
         case 'user':
@@ -81,14 +79,23 @@ function custom_consent_form_column($column, $post_id) {
             }
             break;
 
-        case 'name':        
-            echo $custom_fields['name'][0];
-            break;
+        case 'participant_names':
+          $participants = get_field('participants', $post_id);
+          $num = empty($participants) ? 0 : count($participants);
+          $i = 0;
+          $participant_names = '';
+          
+          foreach($participants as $participant) {
+            $participant_names .= $participant['participant_name'];
 
-        case 'participant_names':        
-          // This needs work
-            echo $custom_fields['name'][0];
-            break;
+            if($i != $num) {
+              $participant_names .= '<br>';
+              $i++;
+            }
+          }
+
+          echo $participant_names;
+          break;
     }
 }
 add_action('manage_consent_form_posts_custom_column' , 'custom_consent_form_column', 10, 2);

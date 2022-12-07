@@ -11,7 +11,7 @@ jQuery(document).ready(function() {
 
       
       const elements = requiredElement.querySelectorAll('input, option');
-      console.log(`Elements: %o`, elements);
+      // console.log(`Elements: %o`, elements);
 
       if(requiredElement.dataset.questionType != 'select' && elements != null && elements.length > 0) {
         elements.forEach(element => {
@@ -38,6 +38,11 @@ jQuery(document).ready(function() {
 
     // Validate the form and submit it
     document.querySelector('.arb-form__register').addEventListener('click', submitForm);
+
+    const requestedSelect = document.querySelector('.arb-form__requested');
+    if (requestedSelect) {
+      requestedSelect.addEventListener('change', changeRequestedNumber);
+    }
   }
 });
 
@@ -45,10 +50,10 @@ jQuery(document).ready(function() {
 function resetValidationCheck(event) {
 
   if (event.target.classList.contains('event-calendar__set-date') || event.target.classList.contains('pager ')) {
-    console.log('Dont react to these elements');
+    // console.log('Dont react to these elements');
     return;
   }
-  console.log(`Event: %o, target %o`, event, event.target);
+  // console.log(`Event: %o, target %o`, event, event.target);
   let target = event.target;
   let validationElement = "";
   const parentElement = target.parentElement;
@@ -94,10 +99,11 @@ function toggleVenue(event) {
 
 // Switch up the values for the limit of each venue
 function toggleLimit() {
-  const limit = document.querySelector('.arb-form__venue:not(.arb-form__hidden)').dataset.limit;
+  const venue = document.querySelector('.arb-form__venue:not(.arb-form__hidden)');
+  const limit = venue.dataset.limit;
   const requested = document.querySelector('#requested');
 
-   for(let i = requested.options.length - 1; i >= 0; i--) {
+   for (let i = requested.options.length - 1; i >= 0; i--) {
     requested.remove(i);
    }
 
@@ -116,9 +122,29 @@ function toggleLimit() {
   }
 }
 
+//
+function changeRequestedNumber() {
+  // console.log(`changed requested number: %o`, e);
+
+  const venue = document.querySelector('.arb-form__venue:not(.arb-form__hidden)');
+  const requested = document.querySelector('#requested');
+
+  const capacity = parseInt(venue.dataset.capacity);
+  const remainingCapacity = parseInt(venue.dataset.remainingCapacity)
+
+  const notice = document.querySelector('.arb-form__notice');
+
+  console.log(`Capacity %o, new value %o, remaining capacity %o`, capacity, parseInt(requested.value), remainingCapacity);
+  if (capacity + parseInt(requested.value) > remainingCapacity) {
+    notice.classList.remove('arb-form__hidden');
+  } else {
+    notice.classList.add('arb-form__hidden');
+  }
+}
+
 function submitForm() {
   // el.preventDefault();
-  console.log('submit form');
+  // console.log('submit form');
   // let requestedNum;
   let topElement = null;
 
@@ -149,7 +175,7 @@ function submitForm() {
         topElement = validationCheck(requiredElement, topElement);
       }
     } else if (requiredElement.dataset.date) {
-      console.log("************************ FOUND THE DATE!");
+      // console.log("************************ FOUND THE DATE!");
     } else if(requiredElement.value == '' || requiredElement.value == 0 || requiredElement.value == null){
       // console.log('empty value');
       topElement = validationCheck(requiredElement, topElement);
@@ -204,7 +230,7 @@ function submitForm() {
     data[`question${n}`] = question;
     data[`answer${n}`] = answer;
     n++;
-    
+
     // Store custom question/answer pairs
     customQuestions.forEach(customQuestion => {
       question = customQuestion.dataset.question;
