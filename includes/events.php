@@ -504,6 +504,7 @@ function arboretum_event_registration_callback() {
   $location = new Location($location_id);
 
   $event_date = $_POST['date'];
+  $end_time = $_POST['endTime'];
   $type = $_POST['type'];
   $key = $_POST['key'];
 
@@ -549,7 +550,7 @@ function arboretum_event_registration_callback() {
   $body               = $settings['confirmation_email']['body'];
 
   $tags               = array('[event]', '[date]', '[venue]', '<div></div>');
-  $time               = date("jS M Y",strtotime($event_date)) . ' at ' . date("H:m",strtotime($event_date));
+  $time               = date("F jS", strtotime($event_date)) . ' at ' . date("H:m",strtotime($event_date)) . ' - ' . $end_time;
   $values             = array($event->title, $time, $location->post_title,'<br><br>');
   $body               = str_replace($tags, $values, $body);
   // $body               = "Thank you for registering for " . $event->title . " on " . $event_date . " at " . $event_time . ". If you have any questions, please email us at <a href='publicprograms@arnarb.harvard.edu'>publicprograms@arnarb.harvard.edu</a> or call us at <a href='tel:617-384-5209'>(617) 384-5209</a>.";
@@ -605,9 +606,9 @@ function arboretum_event_registration_callback() {
     $response .= $ticket_id . ', ';
     for ($j = 0; $j < $_POST['questions']; $j++) {
       // $question_num = 'question_' . $j;
-      $question = $_POST['question_' . $j]; // $question_num];
+      $question = $_POST['question' . $j]; // $question_num];
       // $answer_num = 'answer_' .$j;
-      $answer = $_POST['answer_' .$j]; // $answer_num];
+      $answer = $_POST['answer' .$j]; // $answer_num];
 
       add_row('custom_questions', array(
         'question' => $question,

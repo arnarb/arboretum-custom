@@ -39,10 +39,10 @@ jQuery(document).ready(function() {
     // Validate the form and submit it
     document.querySelector('.arb-form__register').addEventListener('click', submitForm);
 
-    const requestedSelect = document.querySelector('.arb-form__requested');
-    if (requestedSelect) {
-      requestedSelect.addEventListener('change', changeRequestedNumber);
-    }
+    // const requestedSelect = document.querySelector('.arb-form__requested');
+    // if (requestedSelect) {
+    //   requestedSelect.addEventListener('change', changeRequestedNumber);
+    // }
   }
 });
 
@@ -95,13 +95,30 @@ function toggleVenue(event) {
   venueDiv.classList.remove('arb-form__hidden');
 
   toggleLimit();
+
+  // Set to waitlist text
+  const requested = document.querySelector('#requested');
+  const remainingCapacity = parseInt(venue.dataset.remainingCapacity);
+  const header = document.querySelector('.arb-form__title');
+  const capacity = document.querySelector('.arb-form__venue__capacity');
+
+  if (remainingCapacity - parseInt(requested.value) < 0) {
+    header.innerHTML = 'Waitlist Registration';
+//////    capacity.innerHTML = ``;
+  } else {
+    header.innerHTML = 'Event Registration';
+//////    capacity.innerHTML = `Spots remaining: ${capacity} / ${venue.capacity}`;
+  }
 }
 
 // Switch up the values for the limit of each venue
 function toggleLimit() {
+  const notice = document.querySelector('.arb-form__notice');
+  notice.innerHTML = '';
   const venue = document.querySelector('.arb-form__venue:not(.arb-form__hidden)');
   const limit = venue.dataset.limit;
   const requested = document.querySelector('#requested');
+  const remainingCapacity = parseInt(venue.dataset.remainingCapacity);
 
    for (let i = requested.options.length - 1; i >= 0; i--) {
     requested.remove(i);
@@ -112,35 +129,49 @@ function toggleLimit() {
   option.selected;
   option.disabled;
 
+  let out = false;
+
   requested.appendChild(option);
   for (let n = 1; n <= limit; n++) {
-    option = document.createElement('option');
-    option.value = n;
-    option.innerHTML = n;
 
-    requested.appendChild(option);
+    // Limit the maximum values
+    if (out) {
+      return;
+    }
+    if (remainingCapacity - parseInt(n) + 1 > 0) {
+      option = document.createElement('option');
+      option.value = n;
+      option.innerHTML = n;
+
+      requested.appendChild(option);
+    } else {
+      const number = n === 2 ? `is only 1 spot` : `are only ${remainingCapacity} spots`;
+      const number2 = n === 2 ? `spot` : `${remainingCapacity} spots`
+      notice.innerHTML = `There ${number} left.  If you would like to register for more spots, please register for the remaining ${number2} and refresh the page to add participants to the waitlist.`;
+      out = true;
+    }
   }
 }
 
 //
-function changeRequestedNumber() {
-  // console.log(`changed requested number: %o`, e);
+// function changeRequestedNumber() {
+//   // console.log(`changed requested number: %o`, e);
 
-  const venue = document.querySelector('.arb-form__venue:not(.arb-form__hidden)');
-  const requested = document.querySelector('#requested');
+//   const venue = document.querySelector('.arb-form__venue:not(.arb-form__hidden)');
+//   const requested = document.querySelector('#requested');
 
-  const capacity = parseInt(venue.dataset.capacity);
-  const remainingCapacity = parseInt(venue.dataset.remainingCapacity)
+//   // const capacity = parseInt(venue.dataset.capacity);
+//   const remainingCapacity = parseInt(venue.dataset.remainingCapacity)
 
-  const notice = document.querySelector('.arb-form__notice');
+//   // const notice = document.querySelector('.arb-form__notice');
 
-  console.log(`Capacity %o, new value %o, remaining capacity %o`, capacity, parseInt(requested.value), remainingCapacity);
-  if (remainingCapacity - parseInt(requested.value) < 0) {
-    notice.innerHTML = notice.dataset.overLimit;
-  } else {
-    notice.innerHTML = '';
-  }
-}
+//   // console.log(`Capacity %o, new value %o, remaining capacity %o`, capacity, parseInt(requested.value), remainingCapacity);
+//   // if (remainingCapacity - parseInt(requested.value) < 0) {
+//   //   notice.innerHTML = notice.dataset.overLimit;
+//   // } else {
+//   //   notice.innerHTML = '';
+//   // }
+// }
 
 function submitForm() {
   // el.preventDefault();
@@ -207,7 +238,7 @@ function submitForm() {
       }
     });
     data.requested = document.querySelector('#requested').value;
-    data.questions = returned.dataset.customQuestions;
+    data.questions = returned.dataset.customQuestions + 1;
 
     // Source question
     const sourceQuestion = document.querySelector('#source_question');
@@ -227,8 +258,8 @@ function submitForm() {
     
     answer = answer.join(', ');
 
-    data[`question${n}`] = question;
-    data[`answer${n}`] = answer;
+    data[`sourceQuestion${n}`] = question;
+    data[`sourceAnswer${n}`] = answer;
     n++;
 
     // Store custom question/answer pairs
@@ -261,9 +292,10 @@ function submitForm() {
     data.type = venue.querySelector('.arb-form__venue:not(.arb-form__hidden) .arb-form__venue__type').dataset.type;
     data.key = venue.querySelector('.arb-form__venue:not(.arb-form__hidden) .arb-form__venue__type').dataset.key;
     data.date = venue.querySelector('.arb-form__venue:not(.arb-form__hidden) .arb-form__venue__date-time').dataset.date;
+    data.endTime = venue.querySelector('.arb-form__venue:not(.arb-form__hidden) .arb-form__venue__date-time').dataset.endTime;
     data.action = 'arboretum_event_registration';
 
-    // Consent form data
+    // Consent form data ///////////////////////////////////////////
     data.consentName = returned.dataset.consentName;
     data.consentDate = returned.dataset.consentDate;
     data.participantNum = returned.dataset.participantNum;
@@ -275,6 +307,7 @@ function submitForm() {
 
     data.guardianName = returned.dataset.guardianName;
     data.guardianDate = returned.dataset.guardianDate;
+    /////////////////////////////////////////////////////////////////  
 
     // data.location = document.querySelector('.arb-form__venue__location.active').dataaset.location;
 
