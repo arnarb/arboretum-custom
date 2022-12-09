@@ -83,7 +83,7 @@ function validationCheck(element, topElement) {
 function toggleVenue(event) {
   document.querySelectorAll('.arb-form__venue').forEach(venue => {
     venue.classList.add('arb-form__hidden');
-  })
+  });
 
   // Get this to work for original pass or if they change it
   const value = event.target ? event.target.value : event;
