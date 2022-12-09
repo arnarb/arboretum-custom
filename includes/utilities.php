@@ -115,14 +115,13 @@ function sort_shows_and_events($events) {
                 $event->start_date = date($format, strtotime($start_date));
                 $event->end_date = date($format, strtotime($end_date));
             }
-        } else {  // Art Shows - use the end date to sort these
-            // if ($event->start_date) {
-            //     $event->start_date = date($format, strtotime($event->start_date)); // substr($event->start_date, 0, 4) . '-' . substr($event->start_date, 4, 2) . '-' . substr($event->start_date, 6) . ' 00:00:00'; // 23:59:59
-            // }
-            // if ($event->end_date) { //} && !strpos($event->end_date, '-')) {
-                $event->start_date = date($format, strtotime($event->end_date)); // substr($event->end_date, 0, 4) . '-' . substr($event->end_date, 4, 2) . '-' . substr($event->end_date, 6) . ' 00:00:00'; // 23:59:59
-            //     $event->end_date = date($format, strtotime($event->end_date));
-            // }
+        } else {  // Art Shows
+            if ($event->start_date) {
+                $event->start_date = date($format, strtotime($event->start_date)); // substr($event->start_date, 0, 4) . '-' . substr($event->start_date, 4, 2) . '-' . substr($event->start_date, 6) . ' 00:00:00'; // 23:59:59
+            }
+            if ($event->end_date) { //} && !strpos($event->end_date, '-')) {
+                $event->end_date = date($format, strtotime($event->end_date)); // substr($event->end_date, 0, 4) . '-' . substr($event->end_date, 4, 2) . '-' . substr($event->end_date, 6) . ' 00:00:00'; // 23:59:59
+            }
         }
 
         // Don't add multi-day events that have already passed
