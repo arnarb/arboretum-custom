@@ -12,6 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 define('ARBORETUM_CUSTOM', plugin_dir_path( __FILE__ ));
 define('ARBORETUM_CUSTOM_URL', plugin_dir_url( __FILE__ ));
 define('GUEST_ID', 68);  // Hard coding the guest ID
+define('PUBLIC_PROGRAMS_EMAIL', 'publicprograms@arnarb.harvard.edu');
 
 include_once ARBORETUM_CUSTOM . 'includes/art-shows.php';
 include_once ARBORETUM_CUSTOM . 'includes/consent-forms.php';

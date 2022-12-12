@@ -488,7 +488,7 @@ function arboretum_event_registration_callback() {
     // $user = new User($user_id);
   } else {
     // GET GUEST USER - SET TO Public Programs
-    $user_id = 68;
+    $user_id = GUEST_ID;
     // $user = new User($user_id);
   }    
 
@@ -514,11 +514,18 @@ function arboretum_event_registration_callback() {
      // "\nAvailability left: " . $_POST['availability'] . '  USER: ' . $user_id . 
 
   // Send notification of new registrant
-  $to                 = 'publicprograms@arnarb.harvard.edu';
-  $subject            = 'TEST EMAIL: New Registration for ' . $event->title;
+  $to                 = PUBLIC_PROGRAMS_EMAIL;
+  $subject            = 'New Registration for ' . $event->title;
   $body               = $email_data;
 
-  wp_mail($to, $subject, $body, $headers);
+  wp_mail($to, $subject, $body);
+
+  $venues = get_field('venues', $event_id);
+  foreach($venues as $venue) {
+    if ($venue['location'] = $location_id) {
+      $directions = !empty($venue['directions']) ? $venue['directions'] : $location['directions'];
+    }
+  }
 
   ///// TODO: This should be where I need to edit the date logic
   // if (!empty($event->start_date)) {
@@ -533,37 +540,6 @@ function arboretum_event_registration_callback() {
   //   // $event_time = date('H:i', $event->event_dates[$x]);
   // }
 
-  // Send confirmation email  
-  // TODO: user the stuff from site settings
-  $to                 = $recipient;
-  $subject            = 'Confirmation to ' . $event->title;
-
-  // if()
-
-  // TODO: replace 
-    // [event] - event title
-    // [date] - event date
-    // [venue] - venue location and time
-    // New Lines
-    // Bold
-    // Italics
-  $body               = $settings['confirmation_email']['body'];
-
-  $tags               = array('[event]', '[date]', '[venue]', '<div></div>');
-  $time               = date("F jS", strtotime($event_date)) . ' at ' . date("H:m",strtotime($event_date)) . ' - ' . $end_time;
-  $values             = array($event->title, $time, $location->post_title,'<br><br>');
-  $body               = str_replace($tags, $values, $body);
-  // $body               = "Thank you for registering for " . $event->title . " on " . $event_date . " at " . $event_time . ". If you have any questions, please email us at <a href='publicprograms@arnarb.harvard.edu'>publicprograms@arnarb.harvard.edu</a> or call us at <a href='tel:617-384-5209'>(617) 384-5209</a>.";
-  // $body               .= "<br><br>We welcome people of all abilities and are committed to facilitating a safe and engaging experience for all who visit. To request services such as an interpreter, wheelchair, or other assistance prior to attending an event, please contact us.";
-  
-  
-  // <Directions>
-  // <Event Description>
-  // Your registration details are below:
-  // <all of the fields that the person filled in>
-  
-  wp_mail($to, $subject, $body, $headers);
-  // Send their confirmation email
 
 
   $response = '';
@@ -617,6 +593,28 @@ function arboretum_event_registration_callback() {
     };
 
     array_push($tickets, $ticket_id); 
+
+    // Send confirmation email  
+    $to                 = $recipient;
+    $subject            = 'Confirmation to ' . $event->title;
+
+    /**
+     * [event] - event title
+     * [date] - event date
+     * [venue] - venue location and time
+     * [cancelation_link] - link to cancel the ticket
+     * [directions] - location directions
+     * New Lines
+     * Bold
+     * Italics
+     */
+    $body               = $settings['confirmation_email']['body'];
+    $tags               = array('[event]', '[date]', '[venue]', '[cancelation_link]', '[directions]');
+    $time               = date("F jS", strtotime($event_date)) . ' at ' . date("H:m",strtotime($event_date)) . ' - ' . $end_time;
+    $values             = array($event->title, $time, $location->post_title, `/cancel-registration/$ticket_id`, $directions);
+    $body               = str_replace($tags, $values, $body);
+    
+    wp_mail($to, $subject, $body);
   }
 
   // Create consent form(s)
@@ -703,6 +701,7 @@ function arboretum_ticket_cancelation() {
   //   exit ("No naughty business" . $_POST['nonce'] . ' ticket id: ' . $_POST['ticket_id']);
   // }
 
+  $headers .= "Content-Type: text/html; charset=UTF-8\r\n";
   $time_canceled = get_post_meta($_POST["ticket_id"], "time_canceled", true);
 
   date_default_timezone_set('America/New_York');
@@ -729,7 +728,7 @@ function arboretum_ticket_cancelation() {
       echo $result;
   }
 
-  $to                 = 'matthew_caulkins@harvard.edu';
+  $to                 = get_option('admin_email');
   $subject            = 'Cancel Fired BY NONCE AJAX APPROACH';
   $body               = $response . '    ' . $result;
   wp_mail($to, $subject, $body, $headers);
