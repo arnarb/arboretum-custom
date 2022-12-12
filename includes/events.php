@@ -608,10 +608,11 @@ function arboretum_event_registration_callback() {
      * Bold
      * Italics
      */
+    $cancel_link        = '/cancel-event-registration/?id=' . $ticket_id;
     $body               = $settings['confirmation_email']['body'];
     $tags               = array('[event]', '[date]', '[venue]', '[cancelation_link]', '[directions]');
     $time               = date("F jS", strtotime($event_date)) . ' at ' . date("H:m",strtotime($event_date)) . ' - ' . $end_time;
-    $values             = array($event->title, $time, $location->post_title, `/cancel-registration/$ticket_id`, $directions);
+    $values             = array($event->title, $time, $location->post_title, $cancel_link, $directions);
     $body               = str_replace($tags, $values, $body);
     
     wp_mail($to, $subject, $body);
