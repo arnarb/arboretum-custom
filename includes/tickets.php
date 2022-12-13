@@ -13,7 +13,7 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
  * Adds custom columns to the admin section for Tickets
  */
 function set_custom_ticket_columns($columns) {
-  $date = $colunns['date'];
+  $date = $columns['date'];
   unset($columns['date']);
 
   $columns['user'] = __('User', 'arboretum');
@@ -111,16 +111,16 @@ function custom_ticket_column($column, $post_id) {
       break;
 
     case 'time_attended':
-      $time_attended = $custom_fields['time_attended'][0];
-      if (isset($time_attended) && $time_attended != '') {
+      if (isset($custom_fields['time_attended'][0]) && $custom_fields['time_attended'][0] != '') {
+        $time_attended = $custom_fields['time_attended'][0];
         $time_attended = strtotime($time_attended);
         echo date("M d Y g:i a, D", $time_attended);
       } 
       break;
 
     case 'canceled':
-      $time_canceled = $custom_fields['time_canceled'][0];
-      if (isset($time_canceled) && $time_canceled != '') {
+      if (isset($custom_fields['time_canceled'][0]) && $custom_fields['time_canceled'][0] != '') {
+        $time_canceled = $custom_fields['time_canceled'][0];
         $time_canceled = strtotime($time_canceled);
         echo 'Canceled on ' . date("M d Y g:i a, D", $time_canceled);
       }
@@ -207,13 +207,16 @@ function ticket_filters_restrict_manage_posts($post_type){
     foreach ($tickets as $ticket) {
       setup_postdata($ticket);
       $user = get_field('user', $ticket->ID);
+      //$user = new User($user_id);
+
+      if (gettype($user) === 'string') {
+        $user = new User($user);
+      }
 
       if ($user->ID != GUEST_ID) {
-        $user = new User($user->ID);
-  
         $name = $user->first_name . ' ' . $user->last_name;
       } else {
-        $name = 'Guest'; // : first name, last name they entered
+         $name = 'Guest'; // : first name, last name they entered
       }
       $values[$user->ID] = $name;
       wp_reset_postdata();

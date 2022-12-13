@@ -160,13 +160,17 @@ function consent_form_filters_restrict_manage_posts($post_type){
 
     // User column
     $values = array();
+
     foreach ($consent_forms as $consent_form) {
       setup_postdata($consent_form);
       $user = get_field('user', $consent_form->ID);
 
-      if ($user->ID != GUEST_ID) {
-        $user = new User($user->ID);
-  
+      
+      if (gettype($user) === 'string') {
+        $user = new User($user);
+      }
+
+      if ($user->ID != GUEST_ID) {  
         $name = $user->first_name . ' ' . $user->last_name;
       } else {
         $name = 'Guest'; // : first name, last name they entered

