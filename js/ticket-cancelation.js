@@ -24,7 +24,10 @@ jQuery(document).ready(function() {
           alert('success');
           console.log("WTF");
 
-          jQuery(`.my-account-event[data-ticket=${ticket_id}]`).remove();
+          const ticket = jQuery(`.my-account-event[data-ticket=${ticket_id}]`);
+          if (ticket) {
+            ticket.remove();
+          }
         }
       }
     });

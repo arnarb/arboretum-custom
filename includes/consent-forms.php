@@ -13,7 +13,7 @@ function set_custom_consent_form_columns($columns) {
     $columns['event'] = __('Event', 'arboretum');
     $columns['tickets'] = __('Tickets', 'arboretum');
     $columns['user'] = __('User', 'arboretum');
-    $columns['participant_names'] = __('Participant Names', 'arboretum');
+    $columns['user_name'] = __('User Names', 'arboretum');
 
     $columns['date'] = __('Date', $date);
 
@@ -79,22 +79,22 @@ function custom_consent_form_column($column, $post_id) {
             }
             break;
 
-        case 'participant_names':
-          $participants = get_field('participants', $post_id);
-          $num = empty($participants) ? 0 : count($participants);
-          $i = 0;
-          $participant_names = '';
+        case 'user_name':
+          $user_name = get_field('user_name', $post_id);
+          // $num = empty($participants) ? 0 : count($participants);
+          // $i = 0;
+          // $participant_names = '';
           
-          foreach($participants as $participant) {
-            $participant_names .= $participant['participant_name'];
+          // foreach($participants as $participant) {
+          //   $participant_names .= $participant['participant_name'];
 
-            if($i != $num) {
-              $participant_names .= '<br>';
-              $i++;
-            }
-          }
+          //   if($i != $num) {
+          //     $participant_names .= '<br>';
+          //     $i++;
+          //   }
+          // }
 
-          echo $participant_names;
+          echo $user_name;
           break;
     }
 }

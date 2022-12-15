@@ -114,6 +114,7 @@ function toggleVenue(event) {
 // Switch up the values for the limit of each venue
 function toggleLimit() {
   const notice = document.querySelector('.arb-form__notice');
+  const header = document.querySelector('.arb-form__title');
   notice.innerHTML = '';
   const venue = document.querySelector('.arb-form__venue:not(.arb-form__hidden)');
   const limit = venue.dataset.limit;
@@ -130,15 +131,22 @@ function toggleLimit() {
   option.disabled;
 
   let out = false;
+  let canBeOut = true;
 
   requested.appendChild(option);
   for (let n = 1; n <= limit; n++) {
 
     // Limit the maximum values
+    if (n === 1 && remainingCapacity === 0) {
+      header.innerHTML = 'Waitlist Registration';
+      notice.innerHTML = `These reservations will be added to the waitlist and you will be notified if a spot opens up.`;
+      canBeOut = false;
+    } 
+
     if (out) {
       return;
     }
-    if (remainingCapacity - parseInt(n) + 1 > 0) {
+    else if (!canBeOut || remainingCapacity - parseInt(n) + 1 > 0) {
       option = document.createElement('option');
       option.value = n;
       option.innerHTML = n;
@@ -148,7 +156,9 @@ function toggleLimit() {
       const number = n === 2 ? `is only 1 spot` : `are only ${remainingCapacity} spots`;
       const number2 = n === 2 ? `spot` : `${remainingCapacity} spots`
       notice.innerHTML = `There ${number} left.  If you would like to register for more spots, please register for the remaining ${number2} and refresh the page to add participants to the waitlist.`;
-      out = true;
+      if (canBeOut) {
+        out = true;
+      }
     }
   }
 }

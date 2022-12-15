@@ -444,16 +444,12 @@ add_filter('parse_query', 'event_filters');
 function event_scripts_enqueuer() {
   wp_register_script('event-registration', ARBORETUM_CUSTOM_URL . 'js/event-registration.js', array('jquery'));
   wp_localize_script('event-registration', 'arbAjax', array('ajaxurl' => admin_url('admin-ajax.php')));
-  
-  wp_register_script('ticket-cancelation', ARBORETUM_CUSTOM_URL . 'js/ticket-cancelation.js', array('jquery'));
-  wp_localize_script('ticket-cancelation', 'arbAjax', array('ajaxurl' => admin_url('admin-ajax.php')));
 
   wp_register_script('event-map', ARBORETUM_CUSTOM_URL . 'js/event-map.js', array('jquery'));
   wp_localize_script('event-map', 'arbAjax', array('ajaxurl' => admin_url('admin-ajax.php')));
 
   wp_enqueue_script('jquery');
   wp_enqueue_script('event-registration');
-  wp_enqueue_script('ticket-cancelation');
   wp_enqueue_script('event-map');
 }
 add_action('wp_enqueue_scripts', 'event_scripts_enqueuer');
@@ -479,7 +475,10 @@ function arboretum_event_registration_callback() {
 
   // Get Site Settings values
   $settings = get_fields('options');
-
+  
+  if (wp_verify_nonce($_POST['nonce'], 'ajax-nonce')) {
+    die;
+  }
   $recipient = $_POST['email'];
   $requested = $_POST['requested'];
 
@@ -566,14 +565,18 @@ function arboretum_event_registration_callback() {
           'location' => array(
             $location_id
           ),
+          'hash' => $hash,
           'time_registered' => $date,
         )
       )
     );
+    
+    $hash = hash('crc32c', $ticket_id . ': ' . $event->title . ' - ' . $first_name . ' ' . $last_name);
 
     // Get the post id in there so it's unique for each ticket
     $post_update = array(
       'ID'         => $ticket_id,
+      'hash'       => $hash,
       'post_title' => $ticket_id . ': ' . $event->title . ' - ' . $first_name . ' ' . $last_name,
     );
 
@@ -608,7 +611,7 @@ function arboretum_event_registration_callback() {
      * Bold
      * Italics
      */
-    $cancel_link        = '/cancel-event-registration/?id=' . $ticket_id;
+    $cancel_link        = '/cancel-event-registration/?id=' . $ticket_id . '&hash=' . $hash;
     $body               = $settings['confirmation_email']['body'];
     $tags               = array('[event]', '[date]', '[venue]', '[cancelation_link]', '[directions]');
     $time               = date("F jS", strtotime($event_date)) . ' at ' . date("H:m",strtotime($event_date)) . ' - ' . $end_time;
@@ -692,49 +695,3 @@ function arboretum_event_registration_callback() {
 }
 add_action('wp_ajax_arboretum_event_registration', 'arboretum_event_registration_callback');
 add_action('wp_ajax_nopriv_arboretum_event_registration', 'arboretum_event_registration_callback');
-
-
-/**
- * 
- */
-function arboretum_ticket_cancelation() {
-  // if(!wp_verify_nonce($_POST['nonce'], "cancel_ticket_nonce_" . $_POST['ticket_id'])) {
-  //   exit ("No naughty business" . $_POST['nonce'] . ' ticket id: ' . $_POST['ticket_id']);
-  // }
-
-  $headers .= "Content-Type: text/html; charset=UTF-8\r\n";
-  $time_canceled = get_post_meta($_POST["ticket_id"], "time_canceled", true);
-
-  date_default_timezone_set('America/New_York');
-  $date = date("Y-m-d H:i:s");
-
-  $response = update_post_meta($_POST['ticket_id'], 'time_canceled', $date);
-
-  if($response === false) {
-    $result['type'] = "error";
-    $result['time_canceled'] = $time_canceled;
-  }
-  else {
-    $result['type'] = "success";
-    $result['time_canceled'] = $date;
-  }
-
-  if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
-    $result['if-else'] = 'HTTP_X_REQUESTED_WITH NOT EMPTY AND = xmlhttprequest';
-    $result = json_encode($result);
-      echo $result;
-  }
-  else {
-      header("Location: ".$_SERVER["HTTP_REFERER"]);
-      echo $result;
-  }
-
-  $to                 = get_option('admin_email');
-  $subject            = 'Cancel Fired BY NONCE AJAX APPROACH';
-  $body               = $response . '    ' . $result;
-  wp_mail($to, $subject, $body, $headers);
-
-  date_default_timezone_set('UTC');
-  die();
-}
-add_action("wp_ajax_arboretum_ticket_cancelation", "arboretum_ticket_cancelation");
