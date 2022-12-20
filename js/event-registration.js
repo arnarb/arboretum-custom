@@ -98,19 +98,20 @@ function toggleVenue(event) {
 
   // Set to waitlist text
   // const requested = document.querySelector('#requested');
-  const remainingCapacity = parseInt(venueDiv.dataset.remainingCapacity);
-  const header = document.querySelector('.arb-form__title');
-  const capacity = venueDiv.querySelector('.arb-form__venue__capacity');
+  // const remainingCapacity = parseInt(venueDiv.dataset.remainingCapacity);
+  // const header = document.querySelector('.arb-form__title');
+//   const capacity = venueDiv.querySelector('.arb-form__venue__capacity');
 
-  if (remainingCapacity <= 0) {
-    header.innerHTML = 'Waitlist Registration';
-    // TODO: If there is a waitlist
-    capacity.innerHTML = 'Waitlist';
-//////    capacity.innerHTML = ``;
-  } else {
-    header.innerHTML = 'Event Registration';
-    capacity.innerHTML = `Spots remaining: ${remainingCapacity} / ${venueDiv.dataset.capacity}`;
-  }
+//   if (remainingCapacity <= 0) {
+//     header.innerHTML = 'Waitlist Registration';
+//     // TODO: If there is a waitlist
+//     capacity.innerHTML = 'Waitlist';
+// //////    capacity.innerHTML = ``;
+//   } else {
+//     header.innerHTML = 'Event Registration';
+//     capacity.innerHTML = `Spots remaining: ${remainingCapacity} / ${venueDiv.dataset.capacity}`;
+//   }
+// }
 }
 
 // Switch up the values for the limit of each venue
@@ -122,6 +123,7 @@ function toggleLimit() {
   const limit = venue.dataset.limit;
   const requested = document.querySelector('#requested');
   const remainingCapacity = parseInt(venue.dataset.remainingCapacity);
+  const capacity = venue.querySelector('.arb-form__venue__capacity');
 
    for (let i = requested.options.length - 1; i >= 0; i--) {
     requested.remove(i);
@@ -141,9 +143,13 @@ function toggleLimit() {
     // Limit the maximum values
     if (n === 1 && remainingCapacity <= 0) {
       header.innerHTML = 'Waitlist Registration';
+      capacity.innerHTML = 'Waitlist';
       notice.innerHTML = `These reservations will be added to the waitlist and you will be notified if a spot opens up.`;
       canBeOut = false;
-    } 
+    } else if(canBeOut) {
+      header.innerHTML = 'Event Registration';
+      capacity.innerHTML = `Spots remaining: ${remainingCapacity} / ${venueDiv.dataset.capacity}`;
+    }
 
     if (out) {
       return;
@@ -229,7 +235,7 @@ function submitForm() {
         topElement = validationCheck(requiredElement, topElement);
       }
     }
-  })
+  });
   
   if(topElement != null) {
     // If didn't pass validation, set the first faulty element as the scroll focus and return
@@ -287,7 +293,7 @@ function submitForm() {
         }
       })
 
-      alert(`${questionType}: ${answer.join()}`);
+      // alert(`${questionType}: ${answer.join()}`);
       answer = answer.join(', ');
       
       data[`question${n}`] = question;
@@ -339,7 +345,7 @@ function submitForm() {
     data.nonce = returned.dataset.nonce;
 
     console.log(data);
-    alert(JSON.stringify(data));
+    // alert(JSON.stringify(data));
     
     document.querySelector('#event-registration-form').remove();
     document.querySelector('#result').classList.remove('arb-form__hidden');
@@ -352,21 +358,21 @@ function submitForm() {
       data: data,
       success: function(response) {
         if (response.type == 'success') {
-          alert("Success - Woohoo");
+          // alert("Success - Woohoo");
           console.log(JSON.stringify(response))
         } else {
-          alert(JSON.stringify(response));
+          // alert(JSON.stringify(response));
           console.log(JSON.stringify(response))
         }
       },
       error: function(response) {
-        alert(JSON.stringify(response));
+        // alert(JSON.stringify(response));
         console.log(JSON.stringify(response));
       }
     })
     .done(function(data) {
-      alert("DONE");
-      alert(data);
+      // alert("DONE");
+      // alert(data);
     });
   }
 }
