@@ -97,17 +97,19 @@ function toggleVenue(event) {
   toggleLimit();
 
   // Set to waitlist text
-  const requested = document.querySelector('#requested');
-  const remainingCapacity = parseInt(venue.dataset.remainingCapacity);
+  // const requested = document.querySelector('#requested');
+  const remainingCapacity = parseInt(venueDiv.dataset.remainingCapacity);
   const header = document.querySelector('.arb-form__title');
-  const capacity = document.querySelector('.arb-form__venue__capacity');
+  const capacity = venueDiv.querySelector('.arb-form__venue__capacity');
 
-  if (remainingCapacity - parseInt(requested.value) < 0) {
+  if (remainingCapacity <= 0) {
     header.innerHTML = 'Waitlist Registration';
+    // TODO: If there is a waitlist
+    capacity.innerHTML = 'Waitlist';
 //////    capacity.innerHTML = ``;
   } else {
     header.innerHTML = 'Event Registration';
-//////    capacity.innerHTML = `Spots remaining: ${capacity} / ${venue.capacity}`;
+    capacity.innerHTML = `Spots remaining: ${remainingCapacity} / ${venueDiv.dataset.capacity}`;
   }
 }
 
@@ -137,7 +139,7 @@ function toggleLimit() {
   for (let n = 1; n <= limit; n++) {
 
     // Limit the maximum values
-    if (n === 1 && remainingCapacity === 0) {
+    if (n === 1 && remainingCapacity <= 0) {
       header.innerHTML = 'Waitlist Registration';
       notice.innerHTML = `These reservations will be added to the waitlist and you will be notified if a spot opens up.`;
       canBeOut = false;

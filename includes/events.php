@@ -471,7 +471,7 @@ function arboretum_event_registration_callback() {
   date_default_timezone_set('America/New_York');
   $date = date("Y-m-d H:i:s");
 
-  $headers .= "Content-Type: text/html; charset=UTF-8\r\n";
+  $headers = "Content-Type: text/html; charset=UTF-8\r\n";
 
   // Get Site Settings values
   $settings = get_fields('options');
@@ -507,7 +507,7 @@ function arboretum_event_registration_callback() {
   $type = $_POST['type'];
   $key = $_POST['key'];
 
-  $email_data .= 'Event registration to ' . $event->title . ' for recipient: ' . $recipient . '<br>';
+  $email_data .= 'Event registration to ' . $event->title . ' for recipient: ' . $recipient . '. ';
   $email_data .= 'Number of tickets requested: ' . $requested;
 
      // "\nAvailability left: " . $_POST['availability'] . '  USER: ' . $user_id . 
@@ -517,14 +517,18 @@ function arboretum_event_registration_callback() {
   $subject            = 'New Registration for ' . $event->title;
   $body               = $email_data;
 
-  wp_mail($to, $subject, $body);
+  wp_mail($to, $subject, $body, $headers);
 
+  // Get the map and directions
   $venues = get_field('venues', $event_id);
   foreach($venues as $venue) {
-    if ($venue['location'] = $location_id) {
-      $directions = !empty($venue['directions']) ? $venue['directions'] : $location['directions'];
+    if ($venue['location'] = $location) {
+      $directions = !empty($venue['directions']) ? $venue['directions'] : $location->directions;
+      $map = $venue['map'] ? $venue['map'] : ($location->map ? $location->map : null);
     }
   }
+
+  $map_link = $map ? '<a href="https://www.google.com/maps/search/' . $map['lat'] . '+' . $map['lng'] . '">You can view a map here</a>' : 'no map'; // 42.299662200000007+-71.123806099999996
 
   ///// TODO: This should be where I need to edit the date logic
   // if (!empty($event->start_date)) {
@@ -565,22 +569,26 @@ function arboretum_event_registration_callback() {
           'location' => array(
             $location_id
           ),
-          'hash' => $hash,
           'time_registered' => $date,
         )
       )
     );
     
-    $hash = hash('crc32c', $ticket_id . ': ' . $event->title . ' - ' . $first_name . ' ' . $last_name);
+    $hash = hash('md2', $ticket_id . ': ' . $event->title . ' - ' . $first_name . ' ' . $last_name);
 
     // Get the post id in there so it's unique for each ticket
     $post_update = array(
       'ID'         => $ticket_id,
-      'hash'       => $hash,
-      'post_title' => $ticket_id . ': ' . $event->title . ' - ' . $first_name . ' ' . $last_name,
+      // 'hash'       => $hash,
+      'post_title' => $ticket_id . ': ' . $event->title . ' - ' . $first_name . ' ' . $last_name
     );
-
     wp_update_post($post_update);
+
+    update_field('hash', $hash, $ticket_id);
+    // $post_update = array(
+    //   'ID'         => $ticket_id,
+    // );
+    // wp_update_post($post_update);
 
     $response .= $ticket_id . ', ';
     for ($j = 0; $j < $_POST['questions']; $j++) {
@@ -611,28 +619,28 @@ function arboretum_event_registration_callback() {
      * Bold
      * Italics
      */
-    $cancel_link        = '/cancel-event-registration/?id=' . $ticket_id . '&hash=' . $hash;
+    $cancel_link        = 'https://staging-arnoldarboretumwebsite.kinsta.cloud/events/cancel-event-registration/?id=' . $ticket_id . '&q=' . $hash;
     $body               = $settings['confirmation_email']['body'];
-    $tags               = array('[event]', '[date]', '[venue]', '[cancelation_link]', '[directions]');
-    $time               = date("F jS", strtotime($event_date)) . ' at ' . date("H:m",strtotime($event_date)) . ' - ' . $end_time;
-    $values             = array($event->title, $time, $location->post_title, $cancel_link, $directions);
+    $tags               = array('[event]', '[date]', '[venue]', '[cancelation_link]', '[directions]', '[map]');
+    $time               = date("F jS", strtotime($event_date)) . ' at ' . date("g:ma",strtotime($event_date)) . ' - ' . $end_time;
+    $values             = array($event->title, $time, $location->post_title, $cancel_link, $directions, $map_link);
     $body               = str_replace($tags, $values, $body);
     
-    wp_mail($to, $subject, $body);
+    wp_mail($to, $subject, $body, $headers);
   }
 
   // Create consent form(s)
   
   // Get the registrant
-  $consent_name = $_POST['consentName'];
-  $consent_date = $_POST['consentDate'];
+  // $consent_name = $_POST['consentName'];
+  // $consent_date = $_POST['consentDate'];
 
-  if ($_POST['guardianName']) {
-    $guardian_name = $_POST['guardianName'];
-  }
-  if ($_POST['guardianDate']) {
-    $guardian_date = $_POST['guardianDate'];;    
-  }
+  // if ($_POST['guardianName']) {
+  //   $guardian_name = $_POST['guardianName'];
+  // }
+  // if ($_POST['guardianDate']) {
+  //   $guardian_date = $_POST['guardianDate'];
+  // }
 
   $participant_text = $event->get_field('participant_text') ? $event->get_field('participant_text') : $settings['participant_text'];
   $guardian_text = $event->get_field('guardian_text') ? $event->get_field('guardian_text') : $settings['guardian_text'];
@@ -647,12 +655,12 @@ function arboretum_event_registration_callback() {
           $event_id
         ),
         'user' => $user_id,
-        'name' => $consent_name,
-        'date' => $consent_date,
-        'participant_text' => $participant_text,
-        'guardian_text' => $guardian_text,
-        'guardian_name' => $guardian_name,
-        'guardian_date' => $guardian_date,
+        'user_name' => $_POST['firstName'] . ' ' . $_POST['lastName']
+        // 'date' => $consent_date,
+        // 'participant_text' => $participant_text,
+        // 'guardian_text' => $guardian_text,
+        // 'guardian_name' => $guardian_name,
+        // 'guardian_date' => $guardian_date,
       )
     )
   );
@@ -663,14 +671,14 @@ function arboretum_event_registration_callback() {
     ), $consent_form_id);
   }
 
-  for ($n = 1; $n <= $_POST['participantNum']; $n++) {
-    $participant_name = $_POST['participantName' . $n];
-    $participant_date = $_POST['participantDate' . $n];
-    add_row('participants', array(
-      'participant_name' => $participant_name,
-      'participant_date' => $participant_date
-    ), $consent_form_id);
-  }
+  // for ($n = 1; $n <= $_POST['participantNum']; $n++) {
+  //   $participant_name = $_POST['participantName' . $n];
+  //   $participant_date = $_POST['participantDate' . $n];
+  //   add_row('participants', array(
+  //     'participant_name' => $participant_name,
+  //     'participant_date' => $participant_date
+  //   ), $consent_form_id);
+  // }
 
   if($response === false) {
     $result['type'] = "error";
