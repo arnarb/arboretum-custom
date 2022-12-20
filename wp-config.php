@@ -75,6 +75,8 @@ define( 'ALGOLIA_ADMIN_API_KEY', '5744d98ad3638124ff6d15e0796c10db');
 define( 'ALGOLIA_SEARCH_ONLY_API_KEY', 'a5638a5b52e24eec05af1cf4b22838c3');
 define( 'ALGOLIA_INDEX_PREFIX', 'staging');
 
+
+define('DISABLE_WP_CRON', true);
 /* That's all, stop editing! Happy blogging. */
 
 /** Absolute path to the WordPress directory. */

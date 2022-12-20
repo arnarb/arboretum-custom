@@ -143,7 +143,7 @@ function toggleLimit() {
     // Limit the maximum values
     if (n === 1 && remainingCapacity <= 0) {
       header.innerHTML = 'Waitlist Registration';
-      capacity.innerHTML = 'Waitlist';
+      capacity.innerHTML = '<strong>Waitlist</strong>';
       notice.innerHTML = `These reservations will be added to the waitlist and you will be notified if a spot opens up.`;
       canBeOut = false;
     } else if(canBeOut) {
@@ -276,8 +276,8 @@ function submitForm() {
     
     answer = answer.join(', ');
 
-    data[`sourceQuestion${n}`] = question;
-    data[`sourceAnswer${n}`] = answer;
+    data[`question${n}`] = question;
+    data[`answer${n}`] = answer;
     n++;
 
     // Store custom question/answer pairs
@@ -345,7 +345,7 @@ function submitForm() {
     data.nonce = returned.dataset.nonce;
 
     console.log(data);
-    // alert(JSON.stringify(data));
+    alert(JSON.stringify(data));
     
     document.querySelector('#event-registration-form').remove();
     document.querySelector('#result').classList.remove('arb-form__hidden');

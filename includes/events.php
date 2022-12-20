@@ -595,7 +595,7 @@ function arboretum_event_registration_callback() {
       // $question_num = 'question_' . $j;
       $question = $_POST['question' . $j]; // $question_num];
       // $answer_num = 'answer_' .$j;
-      $answer = $_POST['answer' .$j]; // $answer_num];
+      $answer = $_POST['answer' . $j]; // $answer_num];
 
       add_row('custom_questions', array(
         'question' => $question,
@@ -621,9 +621,10 @@ function arboretum_event_registration_callback() {
      */
     $cancel_link        = 'https://staging-arnoldarboretumwebsite.kinsta.cloud/events/cancel-event-registration/?id=' . $ticket_id . '&q=' . $hash;
     $body               = $settings['confirmation_email']['body'];
-    $tags               = array('[event]', '[date]', '[venue]', '[cancelation_link]', '[directions]', '[map]');
-    $time               = date("F jS", strtotime($event_date)) . ' at ' . date("g:ma",strtotime($event_date)) . ' - ' . $end_time;
-    $values             = array($event->title, $time, $location->post_title, $cancel_link, $directions, $map_link);
+    $tags               = array('[event]', '[date]', '[time]', '[venue]', '[cancelation_link]', '[directions]', '[map]');
+    $date               = date("F jS", strtotime($event_date));
+    $time               = date("g:ma",strtotime($event_date)) . ' - ' . $end_time;
+    $values             = array($event->title, $date, $time, $location->post_title, $cancel_link, $directions, $map_link);
     $body               = str_replace($tags, $values, $body);
     
     wp_mail($to, $subject, $body, $headers);

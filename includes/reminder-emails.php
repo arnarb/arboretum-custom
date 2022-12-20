@@ -72,5 +72,5 @@ function send_email() {
     
     wp_mail($to, $subject, $body);
 }
-// send_email();
-find_events_today();
+send_email();
+//find_events_today();

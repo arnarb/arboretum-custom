@@ -1,5 +1,9 @@
 <?php
+use Arboretum\Repositories\EventRepository;
+use Arboretum\Repositories\TicketRepository;
+
 use Arboretum\Models\Event as Event;
+use Arboretum\Models\Ticket as Ticket;
 use Arboretum\Models\Location as Location;
 use Timber\User as User;
 
@@ -596,3 +600,31 @@ function arboretum_ticket_cancelation() {
 }
 add_action("wp_ajax_arboretum_ticket_cancelation", "arboretum_ticket_cancelation");
 add_action("wp_ajax_nopriv_arboretum_ticket_cancelation", "arboretum_ticket_cancelation");
+
+
+
+/**
+ * Create custom WP cron job for sending out email reminders
+ */
+function arboretum_ticket_send_reminder_email() {
+  $body = 'STAGING Woohoo!  In Tickets:<hr><br>';
+  $headers = "Content-Type: text/html; charset=UTF-8\r\n";
+
+  $eventRepo = new EventRepository();
+  $eventsToday = $eventRepo->getUpcomingEvents(-1, date('Y-m-d'))->get();
+  
+  foreach($eventsToday as $event) {
+    $body .= '   ' . $event->title . '<br>/n';
+  }
+
+
+  $to                 = 'matt.caulkins@gmail.com';
+  $subject            = 'test WP Cron hook for every 1min';
+  
+  wp_mail($to, $subject, $body, $headers);
+}
+add_action('arboretum_ticket_reminder_email', 'arboretum_ticket_send_reminder_email');
+
+if (!wp_next_scheduled('arboretum_ticket_reminder_email')) {
+  wp_schedule_event(time(), 'every_minute', 'arboretum_ticket_reminder_email');
+}
