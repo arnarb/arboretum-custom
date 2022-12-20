@@ -611,7 +611,7 @@ function arboretum_ticket_send_reminder_email() {
   $headers = "Content-Type: text/html; charset=UTF-8\r\n";
 
   $eventRepo = new EventRepository();
-  $eventsToday = $eventRepo->getUpcomingEvents(-1, date('Y-m-d'))->get();
+  $eventsToday = $eventRepo->getEvents(-1)->get(); // $eventRepo->getEventsOnDate(-1, date('Y-m-d'))->get();
   
   foreach($eventsToday as $event) {
     $body .= '   ' . $event->title . '<br>/n';
