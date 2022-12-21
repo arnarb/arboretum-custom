@@ -29,6 +29,8 @@ function set_custom_ticket_columns($columns) {
   $columns['time_registered'] = __('Time Registered', 'arboretum');
   $columns['time_attended'] = __('Time Attended', 'arboretum');
   $columns['canceled'] = __('Canceled', 'arboretum');
+  $columns['in_advance'] = __('In Advance', 'arboretum');
+  $columns['reminder_sent'] = __('Reminder Sent', 'arboretum');
   $columns['date'] = __('Date', $date);
 
   return $columns;
@@ -128,6 +130,16 @@ function custom_ticket_column($column, $post_id) {
         $time_canceled = strtotime($time_canceled);
         echo 'Canceled on ' . date("M d Y g:i a, D", $time_canceled);
       }
+      break;
+
+    case 'in_advance':
+      echo (($custom_fields['added_to_advance'][0] === '1') || ($custom_fields['added_to_advance'][0] === 1)) ? '<span style="color: #00c037; font-weight: 600;">✓</span>' : '<span style="color: #ff4400; font-weight: 600;">☓</span>';
+      // echo $custom_fields['added_to_advance'][0];
+      break;
+
+    case 'reminder_sent':
+      echo (($custom_fields['reminder_email_sent'][0] === '1') || ($custom_fields['reminder_email_sent'][0] === 1))? '<span style="color: #00c037; font-weight: 600;">✓</span>' : '<span style="color: #ff4400; font-weight: 600;">☓</span>';
+      // echo $custom_fields['reminder_email_sent'][0];
       break;
   }
 }
@@ -611,13 +623,103 @@ function arboretum_ticket_send_reminder_email() {
   $headers = "Content-Type: text/html; charset=UTF-8\r\n";
 
   $eventRepo = new EventRepository();
-  $eventsToday = $eventRepo->getEvents(-1)->get(); // $eventRepo->getEventsOnDate(-1, date('Y-m-d'))->get();
+  $events = $eventRepo->getEvents(-1)->get();
   
-  foreach($eventsToday as $event) {
-    $body .= '   ' . $event->title . '<br>';
+  $date_format = 'Y-m-d H:i';
+  $current_date = date($date_format);
+
+  $event_ids = array();
+
+  // Find events with an instance tomorrow
+  foreach($events as $event) {
+    $venues = get_field('venues', $event->ID);
+
+    $body .= '<strong>' . $event->title . ':</strong><br>';
+    if ($venues > 0) {
+      foreach ($venues as $venue) {
+        $body .= 'Venue: ' . $venue['location'][0]->post_title . '<br>';
+        if ($venue['event_dates']) { // Has an assortment of dates
+          $body .= 'Array of dates:<br>';
+
+          foreach ($venue['event_dates'] as $event_date) {
+            $date = date($date_format, strtotime($event_date['date']));
+            $body .= 'CurrentDate: ' . $current_date . '<br>Date: ' . $date . '<br>';
+            $difference = abs(round((strtotime($date) - strtotime($current_date)) / 3600, 1));
+            $body .= 'Difference: ' . $difference . '<br><br>';            
+
+            if ($difference <= 24) {
+              $body .= 'FOUND AN EVENT TO QUERY ' . $event->ID;
+              array_push($event_ids, $event->ID);
+            }
+          }
+
+        } elseif ($venue['end_date']) { // Has a date range from start_date to end_date
+          $begin = new DateTime($venue['start_date']);
+          $end = new DateTime($venue['end_date']);
+
+          $interval = DateInterval::createFromDateString('1 day');
+          $period = new DatePeriod($begin, $interval, $end);
+
+          foreach ($period as $date) {
+            $body .= 'CurrentDate: ' . $current_date . '<br>Date: ' . $date->format($date_format) . '<br>';
+            $difference = abs(round((strtotime($date->format($date_format) ) - strtotime($current_date)) / 3600, 1));
+            $body .= 'Difference: ' . $difference . '<br><br>';
+
+            if ($difference <= 24) {
+              $body .= 'FOUND AN EVENT TO QUERY ' . $event->ID;
+              array_push($event_ids, $event->ID);
+            }
+          }
+        } else { // Just has a start_date
+          if ($venue['start_date']) {
+            $date = date($date_format, strtotime($venue['start_date']));
+
+            $body .= 'CurrentDate: ' . $current_date . '<br>Date: ' . $date . '<br>';
+            $difference = abs(round((strtotime($date) - strtotime($current_date)) / 3600, 1));
+            $body .= 'Difference: ' . $difference . '<br><br>';
+
+            if ($difference <= 24) {
+              $body .= 'FOUND AN EVENT TO QUERY ' . $event->ID;
+              array_push($event_ids, $event->ID);
+            }
+          }
+        }
+        $body .= '<br>';
+      }
+    }
+    $body .= '<hr><br>';
   }
 
+  $body .= 'Events to check for tickets: ' . implode(',  ', $event_ids) . '<br>';
+  $body .= 'Ticket IDs: ' . '<br>';
 
+  if (!empty($event_ids)) {
+    $ticketRepo = new TicketRepository();
+    
+    foreach ($event_ids as $event_id) {
+      $tickets = $ticketRepo->getEventTickets($event_id)->get();
+      foreach ($tickets as $ticket) {
+        $ticket_id = $ticket->ID;
+        $body .= $ticket_id . '<br>';
+  
+        $date = $ticket->get_field('event_date');
+        $body .= 'Date: ' . $date . '<br>';
+        $reminder_sent = $ticket->get_field('reminder_email_sent');
+        $body .= 'Reminder Sent: ' . $reminder_sent . '<br>';
+      
+        $difference = abs(round((strtotime($date) - strtotime($current_date)) / 3600, 1));
+        if ($difference <= 24 && $reminder_sent != 1){
+          $body .= 'Send a reminder email to ' . $ticket_id . ' and mark it as sent<br><br>';
+              
+          update_field('reminder_email_sent', 1, $ticket_id);
+        } else {
+          $body .= "Don't send a reminder email to " . $ticket_id . " as it is already marked<br><br>";
+        }
+      }
+    }
+  }
+  
+  // Send these to the proper recipients and a list of everything that was sent to pubic programs?
   $to                 = 'matt.caulkins@gmail.com';
   $subject            = 'test WP Cron hook for every 1min';
   

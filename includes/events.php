@@ -569,6 +569,8 @@ function arboretum_event_registration_callback() {
           'location' => array(
             $location_id
           ),
+          'added_to_advance' => array(0),
+          'reminder_email_sent' => array(0),
           'time_registered' => $date,
         )
       )

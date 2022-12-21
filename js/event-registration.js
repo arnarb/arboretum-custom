@@ -119,11 +119,11 @@ function toggleLimit() {
   const notice = document.querySelector('.arb-form__notice');
   const header = document.querySelector('.arb-form__title');
   notice.innerHTML = '';
-  const venue = document.querySelector('.arb-form__venue:not(.arb-form__hidden)');
-  const limit = venue.dataset.limit;
+  const venueDiv = document.querySelector('.arb-form__venue:not(.arb-form__hidden)');
+  const limit = venueDiv.dataset.limit;
   const requested = document.querySelector('#requested');
-  const remainingCapacity = parseInt(venue.dataset.remainingCapacity);
-  const capacity = venue.querySelector('.arb-form__venue__capacity');
+  const remainingCapacity = parseInt(venueDiv.dataset.remainingCapacity);
+  const capacity = venueDiv.querySelector('.arb-form__venue__capacity');
 
    for (let i = requested.options.length - 1; i >= 0; i--) {
     requested.remove(i);
