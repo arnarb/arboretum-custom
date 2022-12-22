@@ -313,18 +313,22 @@ function submitForm() {
     data.endTime = venue.querySelector('.arb-form__venue:not(.arb-form__hidden) .arb-form__venue__date-time').dataset.endTime;
     data.action = 'arboretum_event_registration';
 
+    data.eventTitle = returned.dataset.eventTitle;
+    data.locationTitle = venue.querySelector('.arb-form__venue:not(.arb-form__hidden)').dataset.venueTitle;
+
+    const result = document.querySelector('#result');
     // Consent form data ///////////////////////////////////////////
-    data.consentName = returned.dataset.consentName;
-    data.consentDate = returned.dataset.consentDate;
-    data.participantNum = returned.dataset.participantNum;
+    // data.consentName = returned.dataset.consentName;
+    // data.consentDate = returned.dataset.consentDate;
+    // data.participantNum = returned.dataset.participantNum;
 
-    for (n = 1; n <= returned.dataset.participantNum; n++) {
-      data[`participantName${n}`] = returned.getAttribute(`data-participant-name__${n}`);
-      data[`participantDate${n}`] = returned.getAttribute(`data-participant-date__${n}`);
-    }
+    // for (n = 1; n <= returned.dataset.participantNum; n++) {
+    //   data[`participantName${n}`] = returned.getAttribute(`data-participant-name__${n}`);
+    //   data[`participantDate${n}`] = returned.getAttribute(`data-participant-date__${n}`);
+    // }
 
-    data.guardianName = returned.dataset.guardianName;
-    data.guardianDate = returned.dataset.guardianDate;
+    // data.guardianName = returned.dataset.guardianName;
+    // data.guardianDate = returned.dataset.guardianDate;
     /////////////////////////////////////////////////////////////////  
 
     // data.location = document.querySelector('.arb-form__venue__location.active').dataaset.location;
@@ -345,10 +349,44 @@ function submitForm() {
     data.nonce = returned.dataset.nonce;
 
     console.log(data);
-    alert(JSON.stringify(data));
-    
+
+    let successMessage = result.innerHTML;
+    const dateOptions = { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' };
+    const timeOptions = { timeStyle: 'short', timeZone: 'America/New_York' };
+
+    // const requested = data.requested;
+    // const eventTitle = data.eventTitle;
+    const dateRaw = new Date(data.date);
+    const date = dateRaw.toLocaleString(this.US, dateOptions);
+    const time = dateRaw.toLocaleString(this.US, timeOptions) + ' - ' + data.endTime;
+    const title = '<strong>' + data.eventTitle + '</strong>';
+    // const locationTitle = data.locationTitle;
+
+
+    // const tags               = array('[requested]', '[title]', '[date]', '[time]', '[location]');
+  
+    // data.requested
+    // data.eventTitle     -- get eventname
+    // data.date      -- convert from 2022-12-21 17:00:00 to Dec 12, 2022 at 5pm.
+    // data.endTime
+    // data.locationTitle
+    // $date               = new Date(data.date);
+    // $time               = date("g:ma",strtotime(data.date)) . ' - ' . data.endTime;
+
+    // $values             = array($event->title, $date, $time, $location->post_title, $cancel_link, $directions, $map_link);
+    // $body               = str_replace($tags, $values, $body);
+    // $successMessage.replace('[title]', `${event->}`)
+
+    successMessage = successMessage.replace('[requested]', data.requested);
+    successMessage = successMessage.replace('[title]', title);
+    successMessage = successMessage.replace('[date]', date);
+    successMessage = successMessage.replace('[time]', time);
+    successMessage = successMessage.replace('[location]', data.locationTitle);
+
+    result.innerHTML = successMessage;
+    result.classList.remove('arb-form__hidden');
+
     document.querySelector('#event-registration-form').remove();
-    document.querySelector('#result').classList.remove('arb-form__hidden');
 
     //      
     //  dataType: 'json',
@@ -358,21 +396,16 @@ function submitForm() {
       data: data,
       success: function(response) {
         if (response.type == 'success') {
-          // alert("Success - Woohoo");
-          console.log(JSON.stringify(response))
+          console.log(JSON.stringify(response));
+
         } else {
-          // alert(JSON.stringify(response));
-          console.log(JSON.stringify(response))
+          console.log(JSON.stringify(response));
         }
       },
       error: function(response) {
-        // alert(JSON.stringify(response));
-        console.log(JSON.stringify(response));
       }
     })
     .done(function(data) {
-      // alert("DONE");
-      // alert(data);
     });
   }
 }

@@ -645,8 +645,8 @@ function arboretum_event_registration_callback() {
   //   $guardian_date = $_POST['guardianDate'];
   // }
 
-  $participant_text = $event->get_field('participant_text') ? $event->get_field('participant_text') : $settings['participant_text'];
-  $guardian_text = $event->get_field('guardian_text') ? $event->get_field('guardian_text') : $settings['guardian_text'];
+  // $participant_text = $event->get_field('participant_text') ? $event->get_field('participant_text') : $settings['participant_text'];
+  // $guardian_text = $event->get_field('guardian_text') ? $event->get_field('guardian_text') : $settings['guardian_text'];
 
   $consent_form_id = wp_insert_post(
     array (

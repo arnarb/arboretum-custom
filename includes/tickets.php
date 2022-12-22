@@ -619,7 +619,11 @@ add_action("wp_ajax_nopriv_arboretum_ticket_cancelation", "arboretum_ticket_canc
  * Create custom WP cron job for sending out email reminders
  */
 function arboretum_ticket_send_reminder_email() {
-  $body = 'STAGING Woohoo!  In Tickets:<hr><br>';
+  // Get Site Settings values
+  $settings = get_fields('options');
+  $body = $settings['reminder_email']['body'];
+
+  $testingBody = 'STAGING Woohoo!  In Tickets:<hr><br>';
   $headers = "Content-Type: text/html; charset=UTF-8\r\n";
 
   $eventRepo = new EventRepository();
@@ -632,23 +636,27 @@ function arboretum_ticket_send_reminder_email() {
 
   // Find events with an instance tomorrow
   foreach($events as $event) {
-    $venues = get_field('venues', $event->ID);
+    $reminder_buffer = $event->get_field('reminder_buffer');
+    if (!$reminder_buffer || $reminder_buffer === 0) {
+      $reminder_buffer = $settings['reminder_email']['hours_prior'];
+    }
+    $venues = $event->get_field('venues');
 
-    $body .= '<strong>' . $event->title . ':</strong><br>';
+    $testingBody .= '<strong>' . $event->title . ':</strong><br>';
     if ($venues > 0) {
       foreach ($venues as $venue) {
-        $body .= 'Venue: ' . $venue['location'][0]->post_title . '<br>';
+        $testingBody .= 'Venue: ' . $venue['location'][0]->post_title . '<br>';
         if ($venue['event_dates']) { // Has an assortment of dates
-          $body .= 'Array of dates:<br>';
+          $testingBody .= 'Array of dates:<br>';
 
           foreach ($venue['event_dates'] as $event_date) {
             $date = date($date_format, strtotime($event_date['date']));
-            $body .= 'CurrentDate: ' . $current_date . '<br>Date: ' . $date . '<br>';
+            $testingBody .= 'CurrentDate: ' . $current_date . '<br>Date: ' . $date . '<br>';
             $difference = abs(round((strtotime($date) - strtotime($current_date)) / 3600, 1));
-            $body .= 'Difference: ' . $difference . '<br><br>';            
+            $botestingBodydy .= 'Difference: ' . $difference . '<br><br>';            
 
-            if ($difference <= 24) {
-              $body .= 'FOUND AN EVENT TO QUERY ' . $event->ID;
+            if ($difference <= $reminder_buffer) {
+              $testingBody .= 'FOUND AN EVENT TO QUERY ' . $event->ID;
               array_push($event_ids, $event->ID);
             }
           }
@@ -661,12 +669,12 @@ function arboretum_ticket_send_reminder_email() {
           $period = new DatePeriod($begin, $interval, $end);
 
           foreach ($period as $date) {
-            $body .= 'CurrentDate: ' . $current_date . '<br>Date: ' . $date->format($date_format) . '<br>';
+            $testingBody .= 'CurrentDate: ' . $current_date . '<br>Date: ' . $date->format($date_format) . '<br>';
             $difference = abs(round((strtotime($date->format($date_format) ) - strtotime($current_date)) / 3600, 1));
-            $body .= 'Difference: ' . $difference . '<br><br>';
+            $testingBody .= 'Difference: ' . $difference . '<br><br>';
 
-            if ($difference <= 24) {
-              $body .= 'FOUND AN EVENT TO QUERY ' . $event->ID;
+            if ($difference <= $reminder_buffer) {
+              $testingBody .= 'FOUND AN EVENT TO QUERY ' . $event->ID;
               array_push($event_ids, $event->ID);
             }
           }
@@ -674,24 +682,24 @@ function arboretum_ticket_send_reminder_email() {
           if ($venue['start_date']) {
             $date = date($date_format, strtotime($venue['start_date']));
 
-            $body .= 'CurrentDate: ' . $current_date . '<br>Date: ' . $date . '<br>';
+            $testingBody .= 'CurrentDate: ' . $current_date . '<br>Date: ' . $date . '<br>';
             $difference = abs(round((strtotime($date) - strtotime($current_date)) / 3600, 1));
-            $body .= 'Difference: ' . $difference . '<br><br>';
+            $testingBody .= 'Difference: ' . $difference . '<br><br>';
 
-            if ($difference <= 24) {
-              $body .= 'FOUND AN EVENT TO QUERY ' . $event->ID;
+            if ($difference <= $reminder_buffer) {
+              $testingBody .= 'FOUND AN EVENT TO QUERY ' . $event->ID;
               array_push($event_ids, $event->ID);
             }
           }
         }
-        $body .= '<br>';
+        $testingBody .= '<br>';
       }
     }
-    $body .= '<hr><br>';
+    $testingBody .= '<hr><br>';
   }
 
-  $body .= 'Events to check for tickets: ' . implode(',  ', $event_ids) . '<br>';
-  $body .= 'Ticket IDs: ' . '<br>';
+  $testingBody .= 'Events to check for tickets: ' . implode(',  ', $event_ids) . '<br>';
+  $testingBody .= 'Ticket IDs: ' . '<br>';
 
   if (!empty($event_ids)) {
     $ticketRepo = new TicketRepository();
@@ -700,30 +708,43 @@ function arboretum_ticket_send_reminder_email() {
       $tickets = $ticketRepo->getEventTickets($event_id)->get();
       foreach ($tickets as $ticket) {
         $ticket_id = $ticket->ID;
-        $body .= $ticket_id . '<br>';
+        $testingBody .= $ticket_id . '<br>';
   
         $date = $ticket->get_field('event_date');
-        $body .= 'Date: ' . $date . '<br>';
+        $testingBody .= 'Date: ' . $date . '<br>';
         $reminder_sent = $ticket->get_field('reminder_email_sent');
-        $body .= 'Reminder Sent: ' . $reminder_sent . '<br>';
+        $testingBody .= 'Reminder Sent: ' . $reminder_sent . '<br>';
       
         $difference = abs(round((strtotime($date) - strtotime($current_date)) / 3600, 1));
-        if ($difference <= 24 && $reminder_sent != 1){
-          $body .= 'Send a reminder email to ' . $ticket_id . ' and mark it as sent<br><br>';
+        if ($difference <= $reminder_buffer && $reminder_sent != 1){
+          $testingBody .= 'Send a reminder email to ' . $ticket_id . ' and mark it as sent<br><br>';
               
           update_field('reminder_email_sent', 1, $ticket_id);
         } else {
-          $body .= "Don't send a reminder email to " . $ticket_id . " as it is already marked<br><br>";
+          $testingBody .= "Don't send a reminder email to " . $ticket_id . " as it is already marked<br><br>";
         }
       }
     }
   }
+
+  $testingBody .= '<hr><br><br>' . $body;
+
+  /**
+   * 
+   * You have an event coming up! This is a reminder that you have registered for {program title} scheduled for {date} at {time}. Please meet at {location}. For directions, see below. 
+   *
+   *If you have any questions, please email us at publicprograms@arnarb.harvard.edu or call us at (617) 384-5209. If you can no longer attend this program, click here to cancel your registration. 
+   *
+   *Thank you!  
+   *
+   *{directions} 
+   */
   
   // Send these to the proper recipients and a list of everything that was sent to pubic programs?
   $to                 = 'matt.caulkins@gmail.com';
   $subject            = 'test WP Cron hook for every 1min';
   
-  wp_mail($to, $subject, $body, $headers);
+  wp_mail($to, $subject, $testingBody, $headers);
 }
 add_action('arboretum_ticket_reminder_email', 'arboretum_ticket_send_reminder_email');
 
