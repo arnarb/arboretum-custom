@@ -546,7 +546,7 @@ function arboretum_event_registration_callback() {
   // }
   
   $ticketRepo = new TicketRepository();
-  $eventTickets = $ticketRepo->getEventTickets($post_id)->get();
+  $eventTickets = $ticketRepo->getEventTickets($event_id)->get();
   $ticketsSold = count($eventTickets);
 
 
@@ -640,6 +640,8 @@ function arboretum_event_registration_callback() {
     // $time               = date("g:ma",strtotime($event_date)) . ' - ' . $end_time;
     $values             = array($event->title, $date, $location->post_title, $cancel_link, $directions, $map_link); // array($event->title, $date, $time, $location->post_title, $cancel_link, $directions, $map_link);
     $body               = str_replace($tags, $values, $body);
+
+    $body .= 'Capacity: ' . $capacity . ', Requested: ' . $requested . ', Sold: ' . $ticketsSold;
     
     wp_mail($to, $subject, $body, $headers);
   }
