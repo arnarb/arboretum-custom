@@ -525,6 +525,8 @@ function arboretum_event_registration_callback() {
     if ($venue['location'] = $location) {
       $directions = !empty($venue['directions']) ? $venue['directions'] : $location->directions;
       $map = $venue['map'] ? $venue['map'] : ($location->map ? $location->map : null);
+
+      $capacity = $venue['capacity'];
     }
   }
 
@@ -542,7 +544,10 @@ function arboretum_event_registration_callback() {
   //   $event_date = date('Y-m-d H:i:s', $event->event_dates[$x]);
   //   // $event_time = date('H:i', $event->event_dates[$x]);
   // }
-
+  
+  $ticketRepo = new TicketRepository();
+  $eventTickets = $ticketRepo->getEventTickets($post_id)->get();
+  $ticketsSold = count($eventTickets);
 
 
   $response = '';
@@ -611,6 +616,13 @@ function arboretum_event_registration_callback() {
     $to                 = $recipient;
     $subject            = 'Confirmation to ' . $event->title;
 
+
+    // Is it a waitlist confirmation?
+    $waitlist = false;
+    if ($requested + $ticketsSold > $capacity) {
+      $waitlist = true;
+    }
+
     /**
      * [event] - event title
      * [date] - event date
@@ -622,11 +634,11 @@ function arboretum_event_registration_callback() {
      * Italics
      */
     $cancel_link        = 'https://staging-arnoldarboretumwebsite.kinsta.cloud/events/cancel-event-registration/?id=' . $ticket_id . '&q=' . $hash;
-    $body               = $settings['confirmation_email']['body'];
-    $tags               = array('[event]', '[date]', '[time]', '[venue]', '[cancelation_link]', '[directions]', '[map]');
+    $body               = $waitlist ? $settings['waitlist_confirmation_email']['body'] : $settings['confirmation_email']['body'];
+    $tags               = array('[event]', '[date]', '[venue]', '[cancelation_link]', '[directions]', '[map]'); // array('[event]', '[date]', '[time]', '[venue]', '[cancelation_link]', '[directions]', '[map]');
     $date               = date("F jS", strtotime($event_date));
-    $time               = date("g:ma",strtotime($event_date)) . ' - ' . $end_time;
-    $values             = array($event->title, $date, $time, $location->post_title, $cancel_link, $directions, $map_link);
+    // $time               = date("g:ma",strtotime($event_date)) . ' - ' . $end_time;
+    $values             = array($event->title, $date, $location->post_title, $cancel_link, $directions, $map_link); // array($event->title, $date, $time, $location->post_title, $cancel_link, $directions, $map_link);
     $body               = str_replace($tags, $values, $body);
     
     wp_mail($to, $subject, $body, $headers);
@@ -658,10 +670,10 @@ function arboretum_event_registration_callback() {
           $event_id
         ),
         'user' => $user_id,
-        'user_name' => $_POST['firstName'] . ' ' . $_POST['lastName']
+        'user_name' => $_POST['firstName'] . ' ' . $_POST['lastName'],
         // 'date' => $consent_date,
-        // 'participant_text' => $participant_text,
-        // 'guardian_text' => $guardian_text,
+        'participant_text' => $participant_text,
+        'guardian_text' => $guardian_text
         // 'guardian_name' => $guardian_name,
         // 'guardian_date' => $guardian_date,
       )
