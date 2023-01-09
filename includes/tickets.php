@@ -31,6 +31,7 @@ function set_custom_ticket_columns($columns) {
   $columns['canceled'] = __('Canceled', 'arboretum');
   $columns['in_advance'] = __('In Advance', 'arboretum');
   $columns['reminder_sent'] = __('Reminder Sent', 'arboretum');
+  $columns['on_waitlist'] = __('Waitlist', 'arboretum');
   $columns['date'] = __('Date', $date);
 
   return $columns;
@@ -141,6 +142,11 @@ function custom_ticket_column($column, $post_id) {
       echo (($custom_fields['reminder_email_sent'][0] === '1') || ($custom_fields['reminder_email_sent'][0] === 1))? '<span style="color: #00c037; font-weight: 600;">✓</span>' : '<span style="color: #ff4400; font-weight: 600;">☓</span>';
       // echo $custom_fields['reminder_email_sent'][0];
       break;
+
+    case 'on_waitlist':
+      echo (($custom_fields['on_waitlist'][0] === '1') || ($custom_fields['on_waitlist'][0] === 1))? '<span style="color: #00c037; font-weight: 600;">✓</span>' : '<span style="color: #ff4400; font-weight: 600;">☓</span>';
+      // echo $custom_fields['on_waitlist'][0];
+      break;
   }
 }
 add_action('manage_ticket_posts_custom_column', 'custom_ticket_column', 10, 2);
@@ -156,6 +162,7 @@ function set_custom_ticket_sortable_columns( $columns ) {
   $columns['time_registered'] = 'time_registered';
   $columns['time_attended'] = 'time_attended';
   $columns['canceled'] = 'time_canceled';
+  $columns['on_waitlist'] = 'on_waitlist';
 
   return $columns;
 }
@@ -188,6 +195,9 @@ function ticket_orderby($query) {
     $query->set('orderby', 'meta_value');
   } else if('time_canceled' == $orderby) {
     $query->set('meta_key', 'time_canceled');
+    $query->set('orderby', 'meta_value');
+  } else if('on_waitlist' == $orderby) {
+    $query->set('meta_key', 'on_waitlist');
     $query->set('orderby', 'meta_value');
   }
 }
@@ -606,6 +616,9 @@ function arboretum_ticket_cancelation() {
   $subject            = 'Cancel Fired BY NONCE AJAX APPROACH';
   $body               = $response . '    ' . $result;
   wp_mail($to, $subject, $body, $headers);
+
+  // Send a notice to waitlist that they are off waitlist
+
 
   date_default_timezone_set('UTC');
   die();
