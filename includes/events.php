@@ -537,7 +537,7 @@ function arboretum_event_registration_callback() {
   foreach($venues as $venue) {
     $capacity = $venue['capacity'];
     $location_id = intval($venue['location'][0]->ID);
-    $location = new Location($location_id);
+    $location = new Location($location_id); 
 
     if ($venue['location'] = $location) {
       $directions = !empty($venue['directions']) ? $venue['directions'] : $location->directions;
