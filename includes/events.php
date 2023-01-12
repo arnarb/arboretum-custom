@@ -83,200 +83,141 @@ function set_custom_event_columns($columns) {
 
     return $columns;
   }
-  add_filter('manage_event_posts_columns', 'set_custom_event_columns');
+}
+add_filter('manage_event_posts_columns', 'set_custom_event_columns');
 
 
-  /**
-   * Sets what each custom column displays
-   */
-  function custom_event_column($column, $post_id) {
-    switch ($column) {
-      case 'venue':
-        $venues = get_field('venues', $post_id);
+/**
+ * Sets what each custom column displays
+ */
+function custom_event_column($column, $post_id) {
+  switch ($column) {
+    case 'venue':
+      $venues = get_field('venues', $post_id);
 
-        if ($venues > 0) {
-          $x = 1;
-          $count = count($venues);
-          foreach ($venues as $venue) {
-            if ($venue['event_dates']) {
+      if ($venues > 0) {
+        $x = 1;
+        $count = count($venues);
+        foreach ($venues as $venue) {
+          if ($venue['event_dates']) {
+            $location = $venue['location'][0]->post_title;
+            foreach ($venue['event_dates'] as $event_date) {
+              $location .= '<br>';
+            }
+          } else {
+            if ($venue['end_date']) {
+              $begin = new DateTime($venue['start_date']);
+              $end = new DateTime($venue['end_date']);
+
+              $interval = DateInterval::createFromDateString('1 day');
+              $period = new DatePeriod($begin, $interval, $end);
+
               $location = $venue['location'][0]->post_title;
-              foreach ($venue['event_dates'] as $event_date) {
+              
+              foreach ($period as $date) {
                 $location .= '<br>';
               }
             } else {
-              if ($venue['end_date']) {
-                $begin = new DateTime($venue['start_date']);
-                $end = new DateTime($venue['end_date']);
-
-                $interval = DateInterval::createFromDateString('1 day');
-                $period = new DatePeriod($begin, $interval, $end);
-
-                $location = $venue['location'][0]->post_title;
-                
-                foreach ($period as $date) {
-                  $location .= '<br>';
-                }
-              } else {
-                $location = $venue['location'][0]->post_title . '<br>';              
-              }
-            }
-            echo '<b>' . $location . '<b>';
-            
-            if ($count != $x) {
-              echo '<hr>';
-              $x ++;
+              $location = $venue['location'][0]->post_title . '<br>';              
             }
           }
-        }
-        break;
-
-      case 'type':
-        $venues = get_field('venues', $post_id);
-
-        if ($venues > 0) {
-          $x = 1;
-          $count = count($venues);
-          foreach ($venues as $venue) {
-            if ($venue['event_dates']) {
-              $type = $venue['type']['label'];
-              foreach ($venue['event_dates'] as $event_date) {
-                $type .= '<br>';
-              }
-            } else {
-              if ($venue['end_date']) {
-                $begin = new DateTime($venue['start_date']);
-                $end = new DateTime($venue['end_date']);
-
-                $interval = DateInterval::createFromDateString('1 day');
-                $period = new DatePeriod($begin, $interval, $end);
-
-                $type = $venue['type']['label'];
-                
-                foreach ($period as $date) {
-                  $type .= '<br>';
-                }
-              } else {
-                $type = $venue['type']['label'] . '<br>';              
-              }
-            }
-            echo '<b>' . $type . '<b>';
-            
-            if ($count != $x) {
-              echo '<hr>';
-              $x ++;
-            }
+          echo '<b>' . $location . '<b>';
+          
+          if ($count != $x) {
+            echo '<hr>';
+            $x ++;
+          }
         }
       }
       break;
 
-      case 'event_date':
-        $ticketRepo = new TicketRepository();
-        $venues = get_field('venues', $post_id);
-        if ($venues > 0) {
-          $x = 1;
-          $count = count($venues);
-          foreach ($venues as $venue) {
-            $capacity = $venue['capacity'];
+    case 'type':
+      $venues = get_field('venues', $post_id);
 
-            if ($venue['event_dates']) {
-              $eventTickets = $ticketRepo->getEventTickets($post_id)->get();
-              $location_id = intval($venue['location'][0]->ID);
+      if ($venues > 0) {
+        $x = 1;
+        $count = count($venues);
+        foreach ($venues as $venue) {
+          if ($venue['event_dates']) {
+            $type = $venue['type']['label'];
+            foreach ($venue['event_dates'] as $event_date) {
+              $type .= '<br>';
+            }
+          } else {
+            if ($venue['end_date']) {
+              $begin = new DateTime($venue['start_date']);
+              $end = new DateTime($venue['end_date']);
 
-              foreach ($venue['event_dates'] as $event_date) {
-                $sold = 0;
+              $interval = DateInterval::createFromDateString('1 day');
+              $period = new DatePeriod($begin, $interval, $end);
 
-                foreach ($eventTickets as $ticket) {
-                  if (
-                    $event_date['date'] == $ticket->event_date
-                    && $location_id == $ticket->location[0] 
-                    && $venue['type'] == $ticket->type
-                  ) {
-                    $sold ++;
-                  }
-                }
-
-                $day = ($sold > $capacity) ? '<b style="color: #ff4400">' . date("M d Y g:i a, D", strtotime($event_date['date'])) . '</b><br>' : 
-                  (($sold > 0) ? '<b style="color: #2288ff">' . date("M d Y g:i a, D", strtotime($event_date['date'])) . '</b><br>' : 
-                  (date("M d Y g:i a, D", strtotime($event_date['date'])) . '<br>'));
-                echo $day;
+              $type = $venue['type']['label'];
+              
+              foreach ($period as $date) {
+                $type .= '<br>';
               }
             } else {
-              if ($venue['end_date']) {
-                $begin = new DateTime($venue['start_date']);
-                $end = new DateTime($venue['end_date']);
-                $interval = DateInterval::createFromDateString('1 day');
-                $period = new DatePeriod($begin, $interval, $end);
-
-                $eventTickets = $ticketRepo->getEventTickets($post_id)->get();
-                $location_id = intval($venue['location'][0]->ID);
-                
-                foreach ($period as $date) {
-                  $sold = 0;
-
-                  foreach ($eventTickets as $ticket) {
-                    if (
-                      $date->format('Y-m-d H:i:s') == $ticket->event_date
-                      && $location_id == $ticket->location[0] 
-                      && $venue['type'] == $ticket->type
-                    ) {
-                      $sold ++;
-                    }
-                  }
-
-                  $day = ($sold > $capacity) ? '<b style="color: #ff4400">' . $date->format("M d Y g:i a, D") . '</b><br>' :
-                    (($sold > 0) ? '<b style="color: #2288ff">' . $date->format("M d Y g:i a, D") . '</b><br>' :
-                    ($date->format("M d Y g:i a, D") . '<br>'));
-                  echo $day;
-                }
-              } else {
-                $eventTickets = $ticketRepo->getEventTickets($post_id)->get();
-                $location_id = intval($venue['location'][0]->ID);
-                $sold = 0;
-
-                foreach ($eventTickets as $ticket) {
-                  if (
-                    $venue['start_date'] == $ticket->event_date
-                    && $location_id == $ticket->location[0] 
-                    && $venue['type'] == $ticket->type
-                  ) {
-                    $sold ++;
-                  }
-                }
-
-                $day = ($sold > $capacity) ? '<b style="color: #ff4400">' . date("M d Y g:i a, D", strtotime($venue['start_date'])) . '</b><br>' :
-                  (($sold > 0) ? '<b style="color: #2288ff">' . date("M d Y g:i a, D", strtotime($venue['start_date'])) . '</b><br>' :
-                  (date("M d Y g:i a, D", strtotime($venue['start_date'])) . '<br>'));
-                echo $day;
-              }              
-            }
-
-            if ($count != $x) {
-              echo '<hr>';
-              $x ++;
+              $type = $venue['type']['label'] . '<br>';              
             }
           }
-        }
-        break;
+          echo '<b>' . $type . '<b>';
+          
+          if ($count != $x) {
+            echo '<hr>';
+            $x ++;
+          }
+      }
+    }
+    break;
 
-      case 'registrations':
-        $ticketRepo = new TicketRepository();
-        $venues = get_field('venues', $post_id);
-        if ($venues > 0) {
-          $x = 1;
-          $count = count($venues);
-          foreach ($venues as $venue) {
-            $capacity = $venue['capacity'];
+    case 'event_date':
+      $ticketRepo = new TicketRepository();
+      $venues = get_field('venues', $post_id);
+      if ($venues > 0) {
+        $x = 1;
+        $count = count($venues);
+        foreach ($venues as $venue) {
+          $capacity = $venue['capacity'];
+
+          if ($venue['event_dates']) {
             $eventTickets = $ticketRepo->getEventTickets($post_id)->get();
+            $location_id = intval($venue['location'][0]->ID);
 
-            if ($venue['event_dates']) {
+            foreach ($venue['event_dates'] as $event_date) {
+              $sold = 0;
+
+              foreach ($eventTickets as $ticket) {
+                if (
+                  $event_date['date'] == $ticket->event_date
+                  && $location_id == $ticket->location[0] 
+                  && $venue['type'] == $ticket->type
+                ) {
+                  $sold ++;
+                }
+              }
+
+              $day = ($sold > $capacity) ? '<b style="color: #ff4400">' . date("M d Y g:i a, D", strtotime($event_date['date'])) . '</b><br>' : 
+                (($sold > 0) ? '<b style="color: #2288ff">' . date("M d Y g:i a, D", strtotime($event_date['date'])) . '</b><br>' : 
+                (date("M d Y g:i a, D", strtotime($event_date['date'])) . '<br>'));
+              echo $day;
+            }
+          } else {
+            if ($venue['end_date']) {
+              $begin = new DateTime($venue['start_date']);
+              $end = new DateTime($venue['end_date']);
+              $end = $end->modify('+1 day');
+              $interval = DateInterval::createFromDateString('1 day');
+              $period = new DatePeriod($begin, $interval, $end);
+
+              $eventTickets = $ticketRepo->getEventTickets($post_id)->get();
               $location_id = intval($venue['location'][0]->ID);
-
-              foreach ($venue['event_dates'] as $event_date) {
+              
+              foreach ($period as $date) {
                 $sold = 0;
 
                 foreach ($eventTickets as $ticket) {
                   if (
-                    $event_date['date'] == $ticket->event_date
+                    $date->format('Y-m-d H:i:s') == $ticket->event_date
                     && $location_id == $ticket->location[0] 
                     && $venue['type'] == $ticket->type
                   ) {
@@ -284,45 +225,88 @@ function set_custom_event_columns($columns) {
                   }
                 }
 
-                $total = ($sold > $capacity) ? '<b style="color: #ff4400">' . $sold . ' out of ' . $capacity . '</b><br>' : 
-                  (($sold > 0) ? ' <b style="color: #2288ff">' . $sold . ' out of ' . $capacity . '</b><br>' : 
-                  ($sold . ' out of ' . $capacity . '<br>'));
-                echo $total;
+                $day = ($sold > $capacity) ? '<b style="color: #ff4400">' . $date->format("M d Y g:i a, D") . '</b><br>' :
+                  (($sold > 0) ? '<b style="color: #2288ff">' . $date->format("M d Y g:i a, D") . '</b><br>' :
+                  ($date->format("M d Y g:i a, D") . '<br>'));
+                echo $day;
               }
             } else {
-              if ($venue['end_date']) {
-                $begin = new DateTime($venue['start_date']);
-                $end = new DateTime($venue['end_date']);
-                $interval = DateInterval::createFromDateString('1 day');
-                $period = new DatePeriod($begin, $interval, $end);
+              $eventTickets = $ticketRepo->getEventTickets($post_id)->get();
+              $location_id = intval($venue['location'][0]->ID);
+              $sold = 0;
 
-                $location_id = intval($venue['location'][0]->ID);
-
-                foreach ($period as $date) {
-                  $sold = 0;
-
-                  foreach ($eventTickets as $ticket) {
-                    if (
-                      $date->format('Y-m-d H:i:s') == $ticket->event_date
-                      && $location_id == $ticket->location[0] 
-                      && $venue['type'] == $ticket->type
-                    ) {
-                      $sold ++;
-                    }
-                  }
-
-                  $total = ($sold > $capacity) ? '<b style="color: #ff4400">' . $sold . ' out of ' . $capacity . '</b><br>' :
-                    (($sold > 0) ? ' <b style="color: #2288ff">' . $sold . ' out of ' . $capacity . '</b><br>' :
-                    ($sold . ' out of ' . $capacity . '<br>'));
-                  echo $total;
+              foreach ($eventTickets as $ticket) {
+                if (
+                  $venue['start_date'] == $ticket->event_date
+                  && $location_id == $ticket->location[0] 
+                  && $venue['type'] == $ticket->type
+                ) {
+                  $sold ++;
                 }
-              } else {
-                $location_id = intval($venue['location'][0]->ID);
+              }
+
+              $day = ($sold > $capacity) ? '<b style="color: #ff4400">' . date("M d Y g:i a, D", strtotime($venue['start_date'])) . '</b><br>' :
+                (($sold > 0) ? '<b style="color: #2288ff">' . date("M d Y g:i a, D", strtotime($venue['start_date'])) . '</b><br>' :
+                (date("M d Y g:i a, D", strtotime($venue['start_date'])) . '<br>'));
+              echo $day;
+            }              
+          }
+
+          if ($count != $x) {
+            echo '<hr>';
+            $x ++;
+          }
+        }
+      }
+      break;
+
+    case 'registrations':
+      $ticketRepo = new TicketRepository();
+      $venues = get_field('venues', $post_id);
+      if ($venues > 0) {
+        $x = 1;
+        $count = count($venues);
+        foreach ($venues as $venue) {
+          $capacity = $venue['capacity'];
+          $eventTickets = $ticketRepo->getEventTickets($post_id)->get();
+
+          if ($venue['event_dates']) {
+            $location_id = intval($venue['location'][0]->ID);
+
+            foreach ($venue['event_dates'] as $event_date) {
+              $sold = 0;
+
+              foreach ($eventTickets as $ticket) {
+                if (
+                  $event_date['date'] == $ticket->event_date
+                  && $location_id == $ticket->location[0] 
+                  && $venue['type'] == $ticket->type
+                ) {
+                  $sold ++;
+                }
+              }
+
+              $total = ($sold > $capacity) ? '<b style="color: #ff4400">' . $sold . ' out of ' . $capacity . '</b><br>' : 
+                (($sold > 0) ? ' <b style="color: #2288ff">' . $sold . ' out of ' . $capacity . '</b><br>' : 
+                ($sold . ' out of ' . $capacity . '<br>'));
+              echo $total;
+            }
+          } else {
+            if ($venue['end_date']) {
+              $begin = new DateTime($venue['start_date']);
+              $end = new DateTime($venue['end_date']);
+              $end = $end->modify('+1 day');
+              $interval = DateInterval::createFromDateString('1 day');
+              $period = new DatePeriod($begin, $interval, $end);
+
+              $location_id = intval($venue['location'][0]->ID);
+
+              foreach ($period as $date) {
                 $sold = 0;
 
                 foreach ($eventTickets as $ticket) {
                   if (
-                    $venue['start_date'] == $ticket->event_date
+                    $date->format('Y-m-d H:i:s') == $ticket->event_date
                     && $location_id == $ticket->location[0] 
                     && $venue['type'] == $ticket->type
                   ) {
@@ -335,16 +319,34 @@ function set_custom_event_columns($columns) {
                   ($sold . ' out of ' . $capacity . '<br>'));
                 echo $total;
               }
-            }
+            } else {
+              $location_id = intval($venue['location'][0]->ID);
+              $sold = 0;
 
-            if ($count != $x) {
-              echo '<hr>';
-              $x ++;
-            };
+              foreach ($eventTickets as $ticket) {
+                if (
+                  $venue['start_date'] == $ticket->event_date
+                  && $location_id == $ticket->location[0] 
+                  && $venue['type'] == $ticket->type
+                ) {
+                  $sold ++;
+                }
+              }
+
+              $total = ($sold > $capacity) ? '<b style="color: #ff4400">' . $sold . ' out of ' . $capacity . '</b><br>' :
+                (($sold > 0) ? ' <b style="color: #2288ff">' . $sold . ' out of ' . $capacity . '</b><br>' :
+                ($sold . ' out of ' . $capacity . '<br>'));
+              echo $total;
+            }
           }
+
+          if ($count != $x) {
+            echo '<hr>';
+            $x ++;
+          };
         }
-        break;
-    }
+      }
+      break;
   }
 }
 add_action('manage_event_posts_custom_column', 'custom_event_column', 10, 2);
