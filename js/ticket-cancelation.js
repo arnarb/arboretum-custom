@@ -4,7 +4,8 @@ jQuery(document).ready(function() {
   jQuery('.my-account-event__cancel__button').on('click', function(el) {
     el.preventDefault();
 
-    const button = document.querySelector('.my-account-event__cancel__button');
+    console.log(el);
+    const button = el.currentTarget;// document.querySelector('.my-account-event__cancel__button');
     const ticket_id = button.dataset.ticket;
     const nonce = button.dataset.nonce;
     const data  = {
@@ -21,8 +22,6 @@ jQuery(document).ready(function() {
       data: data,
       success: function(response) {
         if (response.type == 'success') {
-          alert('success');
-          console.log("WTF");
 
           const ticket = jQuery(`.my-account-event[data-ticket=${ticket_id}]`);
           if (ticket) {

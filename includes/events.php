@@ -479,7 +479,7 @@ add_action('wp_enqueue_scripts', 'event_scripts_enqueuer');
  * @return void
  */
 function arboretum_event_registration_callback() {
-  date_default_timezone_set('America/New_York');
+  //date_default_timezone_set('America/New_York');
   $date = date("Y-m-d H:i:s");
 
   $headers = "Content-Type: text/html; charset=UTF-8\r\n";
@@ -510,8 +510,8 @@ function arboretum_event_registration_callback() {
   $event = new Event($event_id);
 
   // Get tickets for this Event
-  $ticketRepo = new TicketRepository();
-  $eventTickets = $ticketRepo->getEventTickets($event_id)->get();
+  $ticket_repo = new TicketRepository();
+  $tickets = $ticket_repo->getEventTickets($event_id)->get();
 
   // Get the Venue
   // $location_id = $_POST['location'];
@@ -534,68 +534,94 @@ function arboretum_event_registration_callback() {
 
   wp_mail($to, $subject, $body, $headers);
 
+  $extras = '';
   // Get the map, directions, and tickets sold per date
+  $sold = array();
   $venues = get_field('venues', $event_id);
   foreach($venues as $venue) {
     $capacity = $venue['capacity'];
     $location_id = intval($venue['location'][0]->ID);
     $location = new Location($location_id); 
 
-    if ($venue['location'] = $location) {
+    if ($venue['location'] = $location) { // Only calculate for the proper location
       $directions = !empty($venue['directions']) ? $venue['directions'] : $location->directions;
       $map = $venue['map'] ? $venue['map'] : ($location->map ? $location->map : null);
-    }
+    
 
-    if ($venue['event_dates']) {
-      foreach ($venue['event_dates'] as $event_date) {
-        $sold[$event_date] = 0;
-
-        foreach ($eventTickets as $ticket) {
-          if (
-            $event_date['date'] == $ticket->event_date
-            && $location_id == $ticket->location[0] 
-            && $venue['type'] == $ticket->type
-          ) {
-            $sold[$event_date] ++;
-          }
-        }
-      }
-    } else {
-      if ($venue['end_date']) {
-        $begin = new DateTime($venue['start_date']);
-        $end = new DateTime($venue['end_date']);
-        $interval = DateInterval::createFromDateString('1 day');
-        $period = new DatePeriod($begin, $interval, $end);
-
-        foreach ($period as $date) {
+      if ($venue['event_dates']) {
+        foreach ($venue['event_dates'] as $event_date) {
+          $date = new DateTime($event_date);
+          $date = $date->format('Y-m-d H:i:s');
           $sold[$date] = 0;
 
-          foreach ($eventTickets as $ticket) {
+          foreach ($tickets as $ticket) {
+            $ticket_date = new DateTime($ticket->event_date);
+            $ticket_date = $ticket_date->format('Y-m-d H:i:s');
+
             if (
-              $date->format('Y-m-d H:i:s') == $ticket->event_date
-              && $location_id == $ticket->location[0] 
-              && $venue['type'] == $ticket->type
+              $date === $ticket_date
+              && $location_id === $ticket->location[0]
             ) {
               $sold[$date] ++;
+            } else {
+              $extras .= "Event Dates: something isn't adding up<br>";
             }
+
+            $extras .= 'Event Date: ' . $date . ' Ticket Date: ' . $ticket_date . ' Location ID: ' . $location_id . ' Ticket Id: ' . $ticket->location[0] . '<br><br>';
           }
         }
       } else {
-        $sold[$venue['start_date']] = 0;
+        if ($venue['end_date']) {
+          $begin = new DateTime($venue['start_date']);
+          $end = new DateTime($venue['end_date']);
+          $interval = DateInterval::createFromDateString('1 day');
+          $period = new DatePeriod($begin, $interval, $end);
 
-        foreach ($eventTickets as $ticket) {
-          if (
-            $venue['start_date'] == $ticket->event_date
-            && $location_id == $ticket->location[0] 
-            && $venue['type'] == $ticket->type
-          ) {
-            $sold[$event_date] ++;
+          foreach ($period as $date) {
+            $date = $date->format('Y-m-d H:i:s');
+            $sold[$date] = 0;
+
+            foreach ($tickets as $ticket) {
+              $ticket_date = new DateTime($ticket->event_date);
+              $ticket_date = $ticket_date->format('Y-m-d H:i:s');
+
+              if (
+                $date === $ticket_date
+                && $location_id === $ticket->location[0]
+              ) {
+                $sold[$date] ++;
+              } else {
+                $extras .= "End Date: something isn't adding up<br>";
+              }
+
+              $extras .= 'Date: ' . $date . ' Ticket Date: ' . $ticket_date . 'Location ID: ' . $location_id . ' Ticket Id: ' . $ticket->location[0] . '<br><br>';
+            }
+          }
+        } else {
+          $start_date = new DateTime($venue['start_date']);
+          $start_date = $start_date->format('Y-m-d H:i:s');
+          $sold[$start_date] = 0;
+
+          foreach ($tickets as $ticket) {
+            $ticket_date = new DateTime($ticket->event_date);
+            $ticket_date = $ticket_date->format('Y-m-d H:i:s');
+
+            if (
+              $start_date === $ticket_date
+              && $location_id === $ticket->location[0]
+            ) {
+              $sold[$start_date] ++;
+            } else {
+              $extras .= "Start Date: something isn't adding up<br>";
+            }
+
+            $extras .= 'Start Date: ' . $start_date . ' Ticket Date: ' . $ticket_date . ' Location ID: ' . $location_id . ' Ticket Id: ' . $ticket->location[0] . '<br><br>';
           }
         }
       }
     }
   }
-  $total = $sold[$ticket->event_date];
+  $total = $sold[$event_date];
   $location = new Location($location_id);
   $map_link = $map ? '<a href="https://www.google.com/maps/search/' . $map['lat'] . '+' . $map['lng'] . '">You can view a map here</a>' : 'no map'; // 42.299662200000007+-71.123806099999996
 
@@ -681,7 +707,7 @@ function arboretum_event_registration_callback() {
 
     // Send confirmation email  
     $to                 = $recipient;
-    $subject            = 'Confirmation to ' . $event->title;
+    $subject            = $waitlist === 1 ? 'Confirmation to waitlist for '. $event->title : 'Confirmation to ' . $event->title;
 
 
     /**
@@ -702,7 +728,13 @@ function arboretum_event_registration_callback() {
     $values             = array($event->title, $date, $location->post_title, $cancel_link, $directions, $map_link); // array($event->title, $date, $time, $location->post_title, $cancel_link, $directions, $map_link);
     $body               = str_replace($tags, $values, $body);
 
-    $body .= 'Capacity: ' . $capacity . ', Requested: ' . $requested . ', Sold: ' . $ticketsSold;
+    
+    // $extras .= 'Event Date: ' . $event_date . ' Capacity: ' . $capacity . ', Requested: ' . $requested . ', Total: ' . $total . ', Sold Tickets: <br>';
+
+    // foreach($sold as $x => $y) {
+    //   $extras .= 'Key: ' . $x . ' Value: ' . $y . '<br>';
+    // }
+    // $body .= $extras;
     
     wp_mail($to, $subject, $body, $headers);
   }
@@ -776,7 +808,7 @@ function arboretum_event_registration_callback() {
     echo var_dump($result);
   }
 
-  date_default_timezone_set('UTC');
+  //date_default_timezone_set('UTC');
   die;
 }
 add_action('wp_ajax_arboretum_event_registration', 'arboretum_event_registration_callback');

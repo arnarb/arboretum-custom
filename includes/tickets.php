@@ -578,12 +578,14 @@ function ticket_scripts_enqueuer() {
 add_action('wp_enqueue_scripts', 'ticket_scripts_enqueuer');
 
 /**
- * 
+ * Cancel this ticket and if necessary take tickets off the waitlist
  */
 function arboretum_ticket_cancelation() {
   // if(!wp_verify_nonce($_POST['nonce'], "cancel_ticket_nonce_" . $_POST['ticket_id'])) {
   //   exit ("No naughty business" . $_POST['nonce'] . ' ticket id: ' . $_POST['ticket_id']);
   // }
+
+  $canceled = 1; // hardcoded for now, but will be all tickets per group
 
   $headers .= "Content-Type: text/html; charset=UTF-8\r\n";
   $time_canceled = get_post_meta($_POST["ticket_id"], "time_canceled", true);
@@ -591,14 +593,22 @@ function arboretum_ticket_cancelation() {
   date_default_timezone_set('America/New_York');
   $date = date("Y-m-d H:i:s");
 
-  $response = update_post_meta($_POST['ticket_id'], 'time_canceled', $date);
+  $ticket_id = $_POST['ticket_id'];
+  $response = update_post_meta($ticket_id, 'time_canceled', $date);
+
+
+  $ticket = new Ticket($ticket_id);
+  $location = $ticket->location[0];
+  $ticket_date = new DateTime($ticket->event_date);
 
   if($response === false) {
     $result['type'] = "error";
+    $result['ticket_id'] = $ticket_id;
     $result['time_canceled'] = $time_canceled;
   }
   else {
     $result['type'] = "success";
+    $result['ticket_id'] = $ticket_id;
     $result['time_canceled'] = $date;
   }
 
@@ -617,7 +627,84 @@ function arboretum_ticket_cancelation() {
   $body               = $response . '    ' . $result;
   wp_mail($to, $subject, $body, $headers);
 
-  // Send a notice to waitlist that they are off waitlist
+    // Send a notice to waitlist that they are off waitlist
+  // Get tickets for this Event
+  $ticket_repo = new TicketRepository();
+  // $tickets = $ticket_repo->getEventTickets($event_id)->get();
+  $tickets = $ticket_repo->getTicketsByVenueAndDate($event_id, $location, $ticket_date)->get();
+
+
+  $to                 = get_option('matthew_caulkins@harvard.edu');
+  $subject            = 'Ticket cancelation stuffs';
+  $body               = 'You are off the waitlist';
+  foreach($tickets as $ticket) {
+    $body .= 'Ticket : ' . $ticket->post_title . '<br>';
+    // foreach($venues as $venue) {
+    //   $capacity = $venue['capacity'];
+    //   $location_id = intval($venue['location'][0]->ID);
+    //   // $location = new Location($location_id); 
+
+    //   if ($location_id = $location) {
+    //     if ($venue['event_dates']) {
+    //       foreach ($venue['event_dates'] as $event_date) {
+    //         $date = new DateTime($event_date);
+    //         $date = $date->format('Y-m-d H:i:s');
+    //       //   $sold[$date] = 0;
+
+    //       //   foreach ($event_tickets as $ticket) {
+    //       //     $ticket_date = new DateTime($ticket->event_date);
+    //       //     $ticket_date = $ticket_date->format('Y-m-d H:i:s');
+
+    //       //     if (
+    //       //       $date === $ticket_date
+    //       //       && $location_id === $ticket->location[0]
+    //       //     ) {
+    //       //       $sold[$date] ++;
+    //       //     } else {
+    //       //       $extras .= "Event Dates: something isn't adding up<br>";
+    //       //     }
+
+    //       //     $extras .= 'Event Date: ' . $date . ' Ticket Date: ' . $ticket_date . ' Location ID: ' . $location_id . ' Ticket Id: ' . $ticket->location[0] . '<br><br>';
+    //       //  }
+    //       }
+    //     } else {
+    //       if ($venue['end_date']) {
+    //         $begin = new DateTime($venue['start_date']);
+    //         $end = new DateTime($venue['end_date']);
+    //         $interval = DateInterval::createFromDateString('1 day');
+    //         $period = new DatePeriod($begin, $interval, $end);
+
+    //         foreach ($period as $date) {
+    //           $date = $date->format('Y-m-d H:i:s');
+    //         //   $sold[$date] = 0;
+
+    //         //   foreach ($event_tickets as $ticket) {
+    //         //     $ticket_date = new DateTime($ticket->event_date);
+    //         //     $ticket_date = $ticket_date->format('Y-m-d H:i:s');
+
+    //         //     if (
+    //         //       $date === $ticket_date
+    //         //       && $location_id === $ticket->location[0]
+    //         //     ) {
+    //         //       $sold[$date] ++;
+    //         //     } else {
+    //         //       $extras .= "End Date: something isn't adding up<br>";
+    //         //     }
+
+    //         //     $extras .= 'Date: ' . $date . ' Ticket Date: ' . $ticket_date . 'Location ID: ' . $location_id . ' Ticket Id: ' . $ticket->location[0] . '<br><br>';
+    //         //  }
+    //         }
+    //       } else {
+    //         $start_date = new DateTime($venue['start_date']);
+    //         $start_date = $start_date->format('Y-m-d H:i:s');
+    //         // $sold[$start_date] = 0;
+    //       }
+    //     }
+    //   }
+    // }
+  }
+
+  wp_mail($to, $subject, $body, $headers);
 
 
   date_default_timezone_set('UTC');
