@@ -660,7 +660,7 @@ function arboretum_ticket_cancelation() {
     $event = new Event($event_id);
 
     $body .= 'Ticket : ' . $ticket->post_title . ': ' . $event->capacity . ' Event number: ' . $n . '<br>';
-    if (($n >= $event->capactiy) && ($n <= $canceled + $event->capacity) && ($ticket->on_waitlist)) {
+    if (($n >= $event->capactiy) && ($n <= $canceled + $event->capacity) && ($ticket->on_waitlist == 1)) {
       $body .= '!! This ticket is off the waitlist !!<br><br> '. $ticket->user_email;
 
       update_post_meta($ticket->ID, 'off_waitlist_confirmation_sent', $date);

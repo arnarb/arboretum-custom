@@ -27,8 +27,20 @@ jQuery(document).ready(function() {
           if (ticket) {
             ticket.remove();
           }
+
+          updateView();
         }
       }
     });
   });
 });
+
+function updateView() {
+  location.reload();
+  // const containers = document.querySelectorAll('.my-account-event');
+
+  // containers.forEach(container => {
+
+  // });
+  console.log("Reload the page - UPDATE VIEW");
+}
