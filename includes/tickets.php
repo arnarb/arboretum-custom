@@ -23,7 +23,6 @@ function set_custom_ticket_columns($columns) {
   $columns['user'] = __('User', 'arboretum');
   $columns['registrant'] = __('Registrant', 'arboretum');
   $columns['event'] = __('Event', 'arboretum');
-  $columns['venue'] = __('Venue', 'arboretum');
   $columns['type'] = __('Type', 'arboretum');
   $columns['event_date'] = __('Event Date', 'arboretum');
   $columns['time_registered'] = __('Time Registered', 'arboretum');
@@ -89,25 +88,6 @@ function custom_ticket_column($column, $post_id) {
       echo date("M d Y g:i a, D", $event_date);
       break;
 
-    case 'venue':
-      $locations = '';
-
-      $location_ids = get_field('location', $post_id);
-      $num = count($location_ids);
-      $i = 0;
-
-      foreach($location_ids as $location_id) {
-        $location = new Location($location_id);
-        $locations .= $location->title;
-
-        if(++$i != $num) {
-          $locations .= ', ';
-        }
-      }
-
-      echo $locations;
-      break;
-
     case 'type':
       $type = get_field('type', $post_id);
       echo $type['label'];
@@ -166,7 +146,7 @@ add_action('manage_ticket_posts_custom_column', 'custom_ticket_column', 10, 2);
  */
 function set_custom_ticket_sortable_columns( $columns ) {
   $columns['user'] = 'user';
-  $columns['venue'] = 'venue';
+  $columns['type'] = 'type';
   $columns['event'] = 'event';
   $columns['time_registered'] = 'time_registered';
   $columns['time_attended'] = 'time_attended';
@@ -190,11 +170,11 @@ function ticket_orderby($query) {
   if('user' == $orderby) {
     $query->set('meta_key', 'user');
     $query->set('orderby', 'meta_value');
+  } else if('type' == $orderby) {
+    $query->set('meta_key', 'type');
+    $query->set('orderby', 'meta_value');
   } else if('event' == $orderby) {
     $query->set('meta_key', 'event');
-    $query->set('orderby', 'meta_value');
-  } else if('venue' == $orderby) {
-    $query->set('meta_key', 'location');
     $query->set('orderby', 'meta_value');
   } else if('time_registered' == $orderby) {
     $query->set('meta_key', 'time_registered');
@@ -273,6 +253,34 @@ function ticket_filters_restrict_manage_posts($post_type){
   ?>
     </select>
   <?php
+  // Type column
+  $values = array();
+  foreach ($tickets as $ticket) {
+    setup_postdata($ticket);
+    $types = get_field('type', $ticket->ID);
+    foreach ($types as $type) {
+    //  $location = new Location($location_id);
+      $values[$type] = $type;
+    }
+    wp_reset_postdata();
+  }
+  ?>
+    <select name="ticket_type_filter">
+    <option value=""><?php _e('All types', 'ticket'); ?></option>
+  <?php
+  $current_v = isset($_GET['ticket_type_filter'])? $_GET['ticket_type_filter']:'';
+  foreach ($values as $label => $value) {
+    printf
+      (
+        '<option value="%s"%s>%s</option>',
+        $label,
+        $label == $current_v? ' selected="selected"':'',
+        $value
+      );
+  }
+  ?>
+    </select>
+  <?php
     // Event column
     $values = array();
     foreach ($tickets as $ticket) {
@@ -300,34 +308,6 @@ function ticket_filters_restrict_manage_posts($post_type){
     }
   ?>
     </select>
-  <?php
-  // Location column
-  $values = array();
-  foreach ($tickets as $ticket) {
-    setup_postdata($ticket);
-    $location_ids = get_field('location', $ticket->ID);
-    foreach ($location_ids as $location_id) {
-      $location = new Location($location_id);
-      $values[$location_id] = $location->title;
-    }
-    wp_reset_postdata();
-  }
-?>
-  <select name="ticket_location_filter">
-  <option value=""><?php _e('All locations', 'ticket'); ?></option>
-<?php
-  $current_v = isset($_GET['ticket_location_filter'])? $_GET['ticket_location_filter']:'';
-  foreach ($values as $label => $value) {
-    printf
-      (
-        '<option value="%s"%s>%s</option>',
-        $label,
-        $label == $current_v? ' selected="selected"':'',
-        $value
-      );
-  }
-?>
-  </select>
 <?php
     wp_reset_postdata();
 }
@@ -367,6 +347,20 @@ function ticket_filters($query){
       'value' => $_GET['ticket_user_filter'],
       'compare' => '='
     );
+
+    // Type filter
+  if (is_admin() &&
+      $pagenow=='edit.php' &&
+      isset($_GET['ticket_type_filter']) &&
+      $_GET['ticket_type_filter'] != ''
+      && $query->is_main_query()
+    ) {
+      $query->query_vars['meta_query'][] = array(
+        'key' => 'type',
+        'value' => '"'.$_GET['ticket_type_filter'].'"',
+        'compare' => 'LIKE'
+      );
+    }
   }
 
   // Event filter
@@ -379,20 +373,6 @@ function ticket_filters($query){
     $query->query_vars['meta_query'][] = array(
       'key' => 'event',
       'value' => '"'.$_GET['ticket_event_filter'].'"',
-      'compare' => 'LIKE'
-    );
-  }
-
-  // Location filter
-  if (is_admin() &&
-    $pagenow=='edit.php' &&
-    isset($_GET['ticket_location_filter']) &&
-    $_GET['ticket_location_filter'] != ''
-    && $query->is_main_query()
-  ) {
-    $query->query_vars['meta_query'][] = array(
-      'key' => 'location',
-      'value' => '"'.$_GET['ticket_location_filter'].'"',
       'compare' => 'LIKE'
     );
   }
