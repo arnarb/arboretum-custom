@@ -32,6 +32,7 @@ function set_custom_ticket_columns($columns) {
   $columns['in_advance'] = __('In Advance', 'arboretum');
   $columns['reminder_sent'] = __('Reminder Sent', 'arboretum');
   $columns['on_waitlist'] = __('Waitlist', 'arboretum');
+  $columns['off_waitlist_confirmation_sent'] = __('off_waitlist_confirmation_sent', 'arboretum');
   $columns['date'] = __('Date', $date);
 
   return $columns;
@@ -146,6 +147,14 @@ function custom_ticket_column($column, $post_id) {
     case 'on_waitlist':
       echo (($custom_fields['on_waitlist'][0] === '1') || ($custom_fields['on_waitlist'][0] === 1))? '<span style="color: #00c037; font-weight: 600;">✓</span>' : '<span style="color: #ff4400; font-weight: 600;">☓</span>';
       // echo $custom_fields['on_waitlist'][0];
+      break;
+
+    case 'off_waitlist_confirmation_sent':
+      if (isset($custom_fields['off_waitlist_confirmation_sent'][0]) && $custom_fields['off_waitlist_confirmation_sent'][0] != '') {
+        $off_waitlist = $custom_fields['off_waitlist_confirmation_sent'][0];
+        $off_waitlist = strtotime($off_waitlist);
+        echo 'Off waitlist confirmation sent on: ' . date("M d Y g:i a, D", $off_waitlist);
+      }
       break;
   }
 }
@@ -587,29 +596,37 @@ function arboretum_ticket_cancelation() {
 
   $canceled = 1; // hardcoded for now, but will be all tickets per group
 
-  $headers .= "Content-Type: text/html; charset=UTF-8\r\n";
+  $headers = "Content-Type: text/html; charset=UTF-8\r\n";
   $time_canceled = get_post_meta($_POST["ticket_id"], "time_canceled", true);
 
   date_default_timezone_set('America/New_York');
   $date = date("Y-m-d H:i:s");
 
   $ticket_id = $_POST['ticket_id'];
-  $response = update_post_meta($ticket_id, 'time_canceled', $date);
-
 
   $ticket = new Ticket($ticket_id);
-  $location = $ticket->location[0];
-  $ticket_date = new DateTime($ticket->event_date);
+  $location_id = $ticket->location[0];
+  $ticket_date = $ticket->event_date;
+  $event_id = $ticket->event[0];
+  $event = new Event($event_id);
 
+
+  $ticket_ids = array();
+  array_push($ticket_ids, $ticket_id);
+
+  $response = update_post_meta($ticket_id, 'time_canceled', $date);
+
+  $result['event_id'] = $event_id;
+  $result['ticket_id'] = $ticket_id;
+  $result['time_canceled'] = $date;
+  $result['location_id'] = $location_id;
+  $result['event_id'] = $event_id;
+  $result['ticket_date'] = $ticket_date;
   if($response === false) {
     $result['type'] = "error";
-    $result['ticket_id'] = $ticket_id;
-    $result['time_canceled'] = $time_canceled;
   }
   else {
     $result['type'] = "success";
-    $result['ticket_id'] = $ticket_id;
-    $result['time_canceled'] = $date;
   }
 
   if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
@@ -629,16 +646,26 @@ function arboretum_ticket_cancelation() {
 
     // Send a notice to waitlist that they are off waitlist
   // Get tickets for this Event
+
+
+  $to                 = get_option('admin_email');
+  $subject            = 'Ticket cancelation stuffs';
+  $body               = 'You are off the waitlist<br><br>';
   $ticket_repo = new TicketRepository();
   // $tickets = $ticket_repo->getEventTickets($event_id)->get();
-  $tickets = $ticket_repo->getTicketsByVenueAndDate($event_id, $location, $ticket_date)->get();
+  $tickets = $ticket_repo->getTicketsByVenueAndDate($event_id, $location_id, $ticket_date)->get();
 
+  foreach($tickets as $n => $ticket) {
+    $event_id = $ticket->event[0];
+    $event = new Event($event_id);
 
-  $to                 = get_option('matthew_caulkins@harvard.edu');
-  $subject            = 'Ticket cancelation stuffs';
-  $body               = 'You are off the waitlist';
-  foreach($tickets as $ticket) {
-    $body .= 'Ticket : ' . $ticket->post_title . '<br>';
+    $body .= 'Ticket : ' . $ticket->post_title . ': ' . $event->capacity . ' Event number: ' . $n . '<br>';
+    if (($n >= $event->capactiy) && ($n <= $canceled + $event->capacity) && ($ticket->on_waitlist)) {
+      $body .= '!! This ticket is off the waitlist !!<br><br> '. $ticket->user_email;
+
+      update_post_meta($ticket->ID, 'off_waitlist_confirmation_sent', $date);
+      update_post_meta($ticket->ID, 'on_waitlist', 0);
+    }
     // foreach($venues as $venue) {
     //   $capacity = $venue['capacity'];
     //   $location_id = intval($venue['location'][0]->ID);
@@ -705,7 +732,6 @@ function arboretum_ticket_cancelation() {
   }
 
   wp_mail($to, $subject, $body, $headers);
-
 
   date_default_timezone_set('UTC');
   die();
