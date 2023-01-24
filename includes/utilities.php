@@ -517,17 +517,17 @@ function redirect_login_page() {
         exit;
     }
 }
-add_action('init','redirect_login_page');
+// add_action('init','redirect_login_page');
 
 /**
  * Failed login error handling
  */
 function error_handler() {
-    $login_page  = home_url( '/login' );
+    $login_url  = home_url( '/login' );
     global $errors;
     $err_codes = $errors->get_error_codes(); // get WordPress built-in error codes
     $_SESSION["err_codes"] =  $err_codes;
-    wp_redirect( $login_page ); // keep users on the same page
+    wp_redirect( $login_url ); // keep users on the same page
     exit;
 }
 // add_filter( 'login_errors', 'error_handler');
