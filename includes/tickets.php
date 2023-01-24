@@ -31,8 +31,8 @@ function set_custom_ticket_columns($columns) {
   $columns['in_advance'] = __('In Advance', 'arboretum');
   $columns['reminder_sent'] = __('Reminder Sent', 'arboretum');
   $columns['on_waitlist'] = __('Waitlist', 'arboretum');
-  $columns['off_waitlist_confirmation_sent'] = __('off_waitlist_confirmation_sent', 'arboretum');
-  $columns['date'] = __('Date', $date);
+  $columns['off_waitlist_confirmation_sent'] = __('Off Waitlist Confirmation Sent', 'arboretum');
+  // $columns['date'] = __('Date', $date);
 
   return $columns;
 }
@@ -205,37 +205,37 @@ add_action('pre_get_posts', 'ticket_orderby');
  * @return void
  */
 function ticket_filters_restrict_manage_posts($post_type){
-    global $wpdb, $table_prefix;
+  global $wpdb, $table_prefix;
 
-    $type = 'ticket';
-    if (isset($_GET['post_type'])) {
-        $type = $_GET['post_type'];
+  $type = 'ticket';
+  if (isset($_GET['post_type'])) {
+      $type = $_GET['post_type'];
+  }
+  if('ticket' !== $type) {
+    return;
+  }
+
+  $tickets = get_posts(array('numberposts' => -1, 'post_type' => 'ticket', 'posts_per_page' => -1));
+
+  // User column
+  $values = array();
+  foreach ($tickets as $ticket) {
+    setup_postdata($ticket);
+    $user = get_field('user', $ticket->ID);
+    //$user = new User($user_id);
+
+    if (gettype($user) === 'string') {
+      $user = new User($user);
     }
-    if('ticket' !== $type) {
-      return;
+
+    if ($user->ID != GUEST_ID) {
+      $name = $user->first_name . ' ' . $user->last_name;
+    } else {
+        $name = 'Guest'; // : first name, last name they entered
     }
-
-    $tickets = get_posts(array('numberposts' => -1, 'post_type' => 'ticket', 'posts_per_page' => -1));
-
-    // User column
-    $values = array();
-    foreach ($tickets as $ticket) {
-      setup_postdata($ticket);
-      $user = get_field('user', $ticket->ID);
-      //$user = new User($user_id);
-
-      if (gettype($user) === 'string') {
-        $user = new User($user);
-      }
-
-      if ($user->ID != GUEST_ID) {
-        $name = $user->first_name . ' ' . $user->last_name;
-      } else {
-         $name = 'Guest'; // : first name, last name they entered
-      }
-      $values[$user->ID] = $name;
-      wp_reset_postdata();
-    }
+    $values[$user->ID] = $name;
+    wp_reset_postdata();
+  }
   ?>
     <select name="ticket_user_filter">
     <option value=""><?php _e('All users', 'ticket'); ?></option>
@@ -253,15 +253,17 @@ function ticket_filters_restrict_manage_posts($post_type){
   ?>
     </select>
   <?php
+
   // Type column
   $values = array();
   foreach ($tickets as $ticket) {
     setup_postdata($ticket);
-    $types = get_field('type', $ticket->ID);
-    foreach ($types as $type) {
+    $type = get_field('type', $ticket->ID);
+    $values[$type['value']] = $type['label'];
+    //foreach ($types as $type) {
     //  $location = new Location($location_id);
-      $values[$type] = $type;
-    }
+    //  $values[$type] = $type;
+    //}
     wp_reset_postdata();
   }
   ?>
@@ -281,6 +283,7 @@ function ticket_filters_restrict_manage_posts($post_type){
   ?>
     </select>
   <?php
+
     // Event column
     $values = array();
     foreach ($tickets as $ticket) {
@@ -308,7 +311,30 @@ function ticket_filters_restrict_manage_posts($post_type){
     }
   ?>
     </select>
-<?php
+  <?php
+
+  // Waitlist column
+  $values = array();
+  $values['1'] = 'On Waitlist';
+  $values['0'] = 'Not on Waitlist';
+  ?>
+    <select name="ticket_waitlist_filter">
+    <option value=""><?php _e('All', 'ticket'); ?></option>
+  <?php
+    $current_v = isset($_GET['ticket_waitlist_filter'])? $_GET['ticket_waitlist_filter']:'';
+    foreach ($values as $label => $value) {
+      printf
+        (
+          '<option value="%s"%s>%s</option>',
+          $label,
+          $label == $current_v? ' selected="selected"':'',
+          $value
+        );
+    }
+  ?>
+    </select>
+  <?php
+
     wp_reset_postdata();
 }
 add_action('restrict_manage_posts', 'ticket_filters_restrict_manage_posts');
@@ -374,6 +400,20 @@ function ticket_filters($query){
       'key' => 'event',
       'value' => '"'.$_GET['ticket_event_filter'].'"',
       'compare' => 'LIKE'
+    );
+  }
+
+  // Waitlist filter
+  if (is_admin() &&
+    $pagenow=='edit.php' &&
+    isset($_GET['ticket_waitlist_filter']) &&
+    $_GET['ticket_waitlist_filter'] != ''
+    && $query->is_main_query()
+  ) {
+    $query->query_vars['meta_query'][] = array(
+      'key' => 'on_waitlist',
+      'value' => $_GET['ticket_waitlist_filter'],
+      'compare' => '=='
     );
   }
 }
