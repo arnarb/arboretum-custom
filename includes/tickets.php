@@ -25,6 +25,7 @@ function set_custom_ticket_columns($columns) {
   $columns['event'] = __('Event', 'arboretum');
   $columns['type'] = __('Type', 'arboretum');
   $columns['event_date'] = __('Event Date', 'arboretum');
+  $columns['source'] = __('Source', 'arboretum');
   $columns['time_registered'] = __('Time Registered', 'arboretum');
   $columns['time_attended'] = __('Time Attended', 'arboretum');
   $columns['canceled'] = __('Canceled', 'arboretum');
@@ -88,9 +89,14 @@ function custom_ticket_column($column, $post_id) {
       echo date("M d Y g:i a, D", $event_date);
       break;
 
+    case 'source':
+      echo $custom_fields['source'][0];
+      break;
+
     case 'type':
       $type = get_field('type', $post_id);
-      echo $type['label'];
+      echo $type;
+      //echo $type['label'];
       break;
 
     case 'time_registered':
@@ -133,7 +139,7 @@ function custom_ticket_column($column, $post_id) {
       if (isset($custom_fields['off_waitlist_confirmation_sent'][0]) && $custom_fields['off_waitlist_confirmation_sent'][0] != '') {
         $off_waitlist = $custom_fields['off_waitlist_confirmation_sent'][0];
         $off_waitlist = strtotime($off_waitlist);
-        echo 'Off waitlist confirmation sent on: ' . date("M d Y g:i a, D", $off_waitlist);
+        echo 'Confirmation sent on: ' . date("M d Y g:i a, D", $off_waitlist);
       }
       break;
   }
@@ -259,7 +265,8 @@ function ticket_filters_restrict_manage_posts($post_type){
   foreach ($tickets as $ticket) {
     setup_postdata($ticket);
     $type = get_field('type', $ticket->ID);
-    $values[$type['value']] = $type['label'];
+    $values[$type] = $type;
+    // $values[$type['value']] = $type['label'];
     //foreach ($types as $type) {
     //  $location = new Location($location_id);
     //  $values[$type] = $type;
@@ -373,28 +380,28 @@ function ticket_filters($query){
       'value' => $_GET['ticket_user_filter'],
       'compare' => '='
     );
+  }
 
     // Type filter
   if (is_admin() &&
-      $pagenow=='edit.php' &&
-      isset($_GET['ticket_type_filter']) &&
-      $_GET['ticket_type_filter'] != ''
-      && $query->is_main_query()
-    ) {
-      $query->query_vars['meta_query'][] = array(
-        'key' => 'type',
-        'value' => '"'.$_GET['ticket_type_filter'].'"',
-        'compare' => 'LIKE'
-      );
-    }
+    $pagenow=='edit.php' &&
+    isset($_GET['ticket_type_filter']) &&
+    $_GET['ticket_type_filter'] != '' && 
+    $query->is_main_query()
+  ) {
+    $query->query_vars['meta_query'][] = array(
+      'key' => 'type',
+      'value' => $_GET['ticket_type_filter'],
+      'compare' => '='
+    );
   }
 
   // Event filter
   if (is_admin() &&
     $pagenow=='edit.php' &&
     isset($_GET['ticket_event_filter']) &&
-    $_GET['ticket_event_filter'] != ''
-    && $query->is_main_query()
+    $_GET['ticket_event_filter'] != '' && 
+    $query->is_main_query()
   ) {
     $query->query_vars['meta_query'][] = array(
       'key' => 'event',
@@ -459,17 +466,25 @@ function generate_spreadsheet_bulk_action($redirect_url, $action, $post_ids) {
     $sheet->setCellValue("D1", "User");
     $sheet->setCellValue("E1", "Participant Name");
     $sheet->setCellValue("F1", "User Email");
-    $sheet->setCellValue("G1", "City");
-    $sheet->setCellValue("H1", "State");
-    $sheet->setCellValue("I1", "Country");
-    $sheet->setCellValue("J1", "Zip Code");
-    $sheet->setCellValue("K1", "Event Title");
-    $sheet->setCellValue("L1", "Start Date");
-    $sheet->setCellValue("M1", "Selected Venue Location");
+    // $sheet->setCellValue("G1", "City");
+    // $sheet->setCellValue("H1", "State");
+    // $sheet->setCellValue("I1", "Country");
+    // $sheet->setCellValue("J1", "Zip Code");
+    // $sheet->setCellValue("K1", "Event Title");
+    // $sheet->setCellValue("L1", "Start Date");
+    // $sheet->setCellValue("M1", "Selected Venue Location");
+    $sheet->setCellValue("G1", "Event Date");
+    $sheet->setCellValue("H1", "Event Title");
+    $sheet->setCellValue("I1", "Type");
+    $sheet->setCellValue("J1", "Location");
+    $sheet->setCellValue("K1", "Time Registered");
+    $sheet->setCellValue("L1", "Time Attended");
+    $sheet->setCellValue("M1", "Time Canceled");
+    $sheet->setCellValue("N1", "Source of Interest");
 
     // Add custom questions
     $custom_question_positions = array();
-    $column_number = 12;  // Capital A (65) + 11 other predetermined columns for chr()
+    $column_number = 15;  // Capital A (65) + 14 other predetermined columns for chr()
     foreach($tickets as $ticket) {      
 
       $get_post_custom = get_post_custom($ticket->ID); 
@@ -492,24 +507,34 @@ function generate_spreadsheet_bulk_action($redirect_url, $action, $post_ids) {
     }
 
     // Combine custom questions onto the column array
-    $columns = array_merge(array('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M'), array_values($custom_question_positions));
+    $columns = array_merge(array('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N'), array_values($custom_question_positions));
 
     $num = 1;
     // Populate rows with submissions
     foreach($tickets as $ticket) {
-      $user = get_user_by('ID', $ticket->user);
+      $user = new User($ticket->user);//get_user_by('ID', $ticket->user);
       $num ++;
+
+      if ($ticket->user != GUEST_ID) {
+        $name = $ticket->first_name . ' ' . $ticket->last_name;
+        $user_name = $user->name;
+      } else {
+        $name = $user->first_name . ' ' . $user->last_name;
+        $user_name = 'Guest';
+      }
 
       $sheet->setCellValue("A$num", $ticket->post_title);
       $sheet->setCellValue("B$num", $ticket->ID);
       $sheet->setCellValue("C$num", $ticket->time_registered);    
-      $sheet->setCellValue("D$num", "$user->first_name $user->last_name");
-      $sheet->setCellValue("E$num", $custom_fields['first_name'][0] . " " . $custom_fields['last_name'][0]);
-      $sheet->setCellValue("F$num", $custom_fields['email'][0]);
-      $sheet->setCellValue("G$num", $user->city);
-      $sheet->setCellValue("H$num", $user->state);
-      $sheet->setCellValue("I$num", $user->country);
-      $sheet->setCellValue("J$num", $user->zip);
+      $sheet->setCellValue("D$num", "$user_name");
+      $sheet->setCellValue("E$num", $name);
+      $sheet->setCellValue("F$num", $ticket->email);
+      $sheet->setCellValue("G$num", $ticket->event_date);
+      // $sheet->setCellValue("G$num", $user->city);
+      // $sheet->setCellValue("H$num", $user->state);
+      // $sheet->setCellValue("I$num", $user->country);
+      // $sheet->setCellValue("J$num", $user->zip);
+      // $sheet->setCellValue("H$num", $ticket->type);
 
       // Consolidate event data into one string for entry into spreadsheet
       $n = 0;
@@ -543,10 +568,14 @@ function generate_spreadsheet_bulk_action($redirect_url, $action, $post_ids) {
         }
       }
 
-      $sheet->setCellValue("K$num", $titles);
-      $sheet->setCellValue("L$num", $dates);
-      $sheet->setCellValue("M$num", $locations);
+      $sheet->setCellValue("H$num", $titles);
+      $sheet->setCellValue("I$num", $event->type);
+      $sheet->setCellValue("J$num", $locations);
 
+      $sheet->setCellValue("K$num", $event->time_registered);
+      $sheet->setCellValue("L$num", $event->time_attended);
+      $sheet->setCellValue("M$num", $event->time_canceled);
+      $sheet->setCellValue("N$num", $event->source);
       
       $get_post_custom = get_post_custom($ticket->ID); 
       foreach($get_post_custom as $name=>$value) {
@@ -617,6 +646,9 @@ function arboretum_ticket_cancelation() {
   $canceled = 1; // hardcoded for now, but will be all tickets per group
 
   $headers = "Content-Type: text/html; charset=UTF-8\r\n";
+  // Get Site Settings values
+  $settings = get_fields('options');
+
   $time_canceled = get_post_meta($_POST["ticket_id"], "time_canceled", true);
 
   date_default_timezone_set('America/New_York');
@@ -660,17 +692,15 @@ function arboretum_ticket_cancelation() {
   }
 
   $to                 = get_option('admin_email');
-  $subject            = 'Cancel Fired BY NONCE AJAX APPROACH';
+  $subject            = 'Cancel ticket ' . $ticket_id;// Fired BY NONCE AJAX APPROACH';
   $body               = $response . '    ' . $result;
   wp_mail($to, $subject, $body, $headers);
 
     // Send a notice to waitlist that they are off waitlist
   // Get tickets for this Event
 
-
-  $to                 = get_option('admin_email');
-  $subject            = 'Ticket cancelation stuffs';
-  $body               = 'You are off the waitlist<br><br>';
+// FOR TESTING
+  
   $ticket_repo = new TicketRepository();
   // $tickets = $ticket_repo->getEventTickets($event_id)->get();
   $tickets = $ticket_repo->getTicketsByVenueAndDate($event_id, $location_id, $ticket_date)->get();
@@ -679,12 +709,22 @@ function arboretum_ticket_cancelation() {
     $event_id = $ticket->event[0];
     $event = new Event($event_id);
 
-    $body .= 'Ticket : ' . $ticket->post_title . ': ' . $event->capacity . ' Event number: ' . $n . '<br>';
+    $test_body = 'Ticket : ' . $ticket->post_title . ': ' . $event->capacity . ' Event number: ' . $n . '<br>';
     if (($n >= $event->capactiy) && ($n <= $canceled + $event->capacity) && ($ticket->on_waitlist == 1)) {
-      $body .= '!! This ticket is off the waitlist !!<br><br> '. $ticket->user_email;
+      $test_body .= '!! This ticket is off the waitlist !!<br><br> '. $ticket->user_email;
 
       update_post_meta($ticket->ID, 'off_waitlist_confirmation_sent', $date);
       update_post_meta($ticket->ID, 'on_waitlist', 0);
+
+      // Send an email to that person
+      $to                 = $ticket->email;
+      $subject            = 'Ticket cancelation stuffs';
+      $body               = $event['getting_off_waitlist_email']['body'] ? $event['getting_off_waitlist_email']['body'] : $settings['getting_off_waitlist_email']['body'];
+      $tags               = array('[event]', '[date]');
+      $date               = date("F jS", strtotime($ticket_date));
+      $values             = array($event->title, $date);
+      $body               = str_replace($tags, $values, $body);
+      wp_mail($to, $subject, $body, $headers);
     }
     // foreach($venues as $venue) {
     //   $capacity = $venue['capacity'];
@@ -750,9 +790,11 @@ function arboretum_ticket_cancelation() {
     //   }
     // }
   }
-
-  wp_mail($to, $subject, $body, $headers);
-
+  // Testing email
+  $to                 = get_option('admin_email');
+  $subject            = 'Ticket cancelation stuffs';
+  $test_body          = 'You are off the waitlist<br><br>';
+  wp_mail($to, $subject, $test_body, $headers);
   date_default_timezone_set('UTC');
   die();
 }

@@ -256,7 +256,7 @@ function submitForm() {
       }
     });
     data.requested = document.querySelector('#requested').value;
-    data.questions = returned.dataset.customQuestions + 1;
+    data.questions = returned.dataset.customQuestions;// + 1;
 
     // Source question
     const sourceQuestion = document.querySelector('#source_question');
@@ -276,10 +276,11 @@ function submitForm() {
     
     answer = answer.join(', ');
 
-    data[`question${n}`] = question;
-    data[`answer${n}`] = answer;
-    n++;
-
+    // data[`question${n}`] = question;
+    // data[`answer${n}`] = answer;
+    // n++;
+    data['source'] = answer;
+    
     // Store custom question/answer pairs
     customQuestions.forEach(customQuestion => {
       question = customQuestion.dataset.question;
@@ -308,7 +309,7 @@ function submitForm() {
     data.lastName = document.querySelector('#last-name').value;
     data.location = venue.querySelector('.arb-form__venue:not(.arb-form__hidden)').dataset.venue;
     data.type = venue.querySelector('.arb-form__venue:not(.arb-form__hidden) .arb-form__venue__type').dataset.type;
-    data.key = venue.querySelector('.arb-form__venue:not(.arb-form__hidden) .arb-form__venue__type').dataset.key;
+    // data.key = venue.querySelector('.arb-form__venue:not(.arb-form__hidden) .arb-form__venue__type').dataset.key;
     data.date = venue.querySelector('.arb-form__venue:not(.arb-form__hidden) .arb-form__venue__date-time').dataset.date;
     data.endTime = venue.querySelector('.arb-form__venue:not(.arb-form__hidden) .arb-form__venue__date-time').dataset.endTime;
     data.action = 'arboretum_event_registration';
@@ -377,6 +378,8 @@ function submitForm() {
     // $body               = str_replace($tags, $values, $body);
     // $successMessage.replace('[title]', `${event->}`)
 
+    alert(JSON.stringify(data));
+
     successMessage = successMessage.replace('[requested]', data.requested);
     successMessage = successMessage.replace('[title]', title);
     successMessage = successMessage.replace('[date]', date);
@@ -397,6 +400,7 @@ function submitForm() {
       success: function(response) {
         if (response.type == 'success') {
           console.log(JSON.stringify(response));
+          alert(JSON.stringify(response));
 
         } else {
           console.log(JSON.stringify(response));

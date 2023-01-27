@@ -33,7 +33,7 @@ function sort_event_dates($post_id) {
   $venues = get_field('venues', $post_id);
   $i = 0;
   foreach ($venues as $venue) {
-    if ($venue['event_days']) {
+    if ($venue['event_dates']) {
       $dates = array();
 
       foreach ($venue['event_dates'] as $event_date) {
@@ -479,8 +479,9 @@ add_action('wp_enqueue_scripts', 'event_scripts_enqueuer');
  * @return void
  */
 function arboretum_event_registration_callback() {
-  //date_default_timezone_set('America/New_York');
-  $date = date("Y-m-d H:i:s");
+  date_default_timezone_set('America/New_York');
+  $current_date = date("Y-m-d H:i:s");
+  date_default_timezone_set('UTC');
 
   $headers = "Content-Type: text/html; charset=UTF-8\r\n";
 
@@ -517,10 +518,6 @@ function arboretum_event_registration_callback() {
   // $location_id = $_POST['location'];
   // $location = new Location($location_id);
 
-  $event_date = $_POST['date'];
-  $end_time = $_POST['endTime'];
-  $type = $_POST['type'];
-  $key = $_POST['key'];
 
   $email_data = 'Event registration to ' . $event->title . ' for recipient: ' . $recipient . '. ';
   $email_data .= 'Number of tickets requested: ' . $requested;
@@ -550,7 +547,7 @@ function arboretum_event_registration_callback() {
 
       if ($venue['event_dates']) {
         foreach ($venue['event_dates'] as $event_date) {
-          $date = new DateTime($event_date);
+          $date = new DateTime($event_date['date']);
           $date = $date->format('Y-m-d H:i:s');
           $sold[$date] = 0;
 
@@ -621,6 +618,13 @@ function arboretum_event_registration_callback() {
       }
     }
   }
+
+  
+  $event_date = $_POST['date'];
+  $end_time = $_POST['endTime'];
+  $type = $_POST['type'];
+  // $key = $_POST['key'];
+
   $total = $sold[$event_date];
   $location = new Location($location_id);
   $map_link = $map ? '<a href="https://www.google.com/maps/search/' . $map['lat'] . '+' . $map['lng'] . '">You can view a map here</a>' : 'no map'; // 42.299662200000007+-71.123806099999996
@@ -664,12 +668,15 @@ function arboretum_event_registration_callback() {
             $event_id
           ),
           'event_date' => $event_date,
-          'type' => array( 'value' => $key, 'label' => $type ),
+          'type' => $type, //array( 'value' => $key, 'label' => $type ),
           'location' => array(
             $location_id
           ),
-          'time_registered' => $date,
-          'on_waitlist' => $waitlist
+          'time_registered' => $current_date,
+          'on_waitlist' => $waitlist,
+          'added_to_advance' => 0,
+          'reminder_email_sent' => 0,
+          'source' => $_POST['source']
         )
       )
     );
@@ -707,7 +714,7 @@ function arboretum_event_registration_callback() {
 
     // Send confirmation email  
     $to                 = $recipient;
-    $subject            = $waitlist === 1 ? 'Confirmation to waitlist for '. $event->title : 'Confirmation to ' . $event->title;
+    $subject            = $waitlist === 1 ? 'Thank you for registering for the waitlist for '. $event->title : 'Confirmation to ' . $event->title;
 
 
     /**
@@ -721,7 +728,7 @@ function arboretum_event_registration_callback() {
      * Italics
      */
     $cancel_link        = 'https://staging-arnoldarboretumwebsite.kinsta.cloud/events/cancel-event-registration/?id=' . $ticket_id . '&q=' . $hash;
-    $body               = $waitlist === 1 ? $settings['waitlist_confirmation_email']['body'] : $settings['confirmation_email']['body'];
+    $body               = $waitlist === 1 ? ($event['waitlist_confirmation_email']['body'] ? $event['waitlist_confirmation_email']['body'] : $settings['waitlist_confirmation_email']['body']) : $settings['confirmation_email']['body'];
     $tags               = array('[event]', '[date]', '[venue]', '[cancelation_link]', '[directions]', '[map]'); // array('[event]', '[date]', '[time]', '[venue]', '[cancelation_link]', '[directions]', '[map]');
     $date               = date("F jS", strtotime($event_date));
     // $time               = date("g:ma",strtotime($event_date)) . ' - ' . $end_time;
