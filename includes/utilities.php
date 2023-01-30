@@ -407,7 +407,36 @@ function check_for_translations() {
     }
 }
   
+
+/** 
+ * Set up the Ajax Logout 
+ */
+function utilities_scripts_enqueuer() {
+    if (is_admin()) {
+        // We only need to setup ajax action in admin.
+        add_action('wp_ajax_ajaxlogout', 'custom_ajax_logout_func');
+    } else {
+        wp_register_script('logout-js', ARBORETUM_CUSTOM_URL . 'js/logout.js', array('jquery'));
+        wp_localize_script('logout-js', 'arbAjax',
+            array(
+                'ajax_url' => admin_url('admin-ajax.php'),
+                'home_url' => get_home_url(),
+                'logout_nonce' => wp_create_nonce('ajax-logout-nonce'),
+            )
+        );
+        wp_enqueue_script('logout-js');
+    }
+}
+add_action('wp_enqueue_scripts', 'utilities_scripts_enqueuer');
+
+function custom_ajax_logout_func(){
+    check_ajax_referer( 'ajax-logout-nonce', 'ajaxsecurity' );
+    wp_logout();
+    ob_clean(); // probably overkill for this, but good habit
+    wp_send_json_success();
+}
   
+
 /**
  * Extend AFC DatePicker field range
  */
@@ -416,11 +445,12 @@ function extend_afc_date_picker_range() {
   wp_localize_script('date-picker-js', 'arbAjax', array('ajaxurl' => admin_url('admin-ajax.php')));
 
   wp_enqueue_script('date-picker-js', '', array(), false, true);
-  wp_enqueue_script('event-registration');
 }
 add_action('admin_enqueue_scripts', 'extend_afc_date_picker_range');
+
+
   
-  
+
 /**
  * Create the tokens to hold the widget information that will get populated by JS when it reads 'js-solar-widget' class
  */
