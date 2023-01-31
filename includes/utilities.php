@@ -1,40 +1,5 @@
 <?php
 /**
- * Edit login page
- */
-function arb_login_logo_url() {
-    return home_url();
-}
-add_filter('login_headerurl', 'arb_login_logo_url');
-  
-
-/**
- * 
- */
-function arb_login_logo_url_title() {
-    return 'Arnold Arboretum';
-}
-add_filter('login_headertext', 'arb_login_logo_url_title');
-  
-
-/**
- * Add login form shortcode
- */
-function arb_login_shortcode() {
-    $args = array(
-        'echo'            => true,
-        'label_username' => __( 'Email Address' ),
-        // 'redirect'        => get_permalink( get_the_ID() ),
-        'remember'        => true,
-        'value_remember'  => true,
-    );
-  
-    return '<div class="arb-form">' . wp_login_form( $args ) . '</div>';
-}
-add_shortcode( 'arb_login', 'arb_login_shortcode' );
-
-
-/**
  * Filter for where posts using sub-fields of repeaters
  */
 function repeater_nested_where( $where ) {
@@ -412,10 +377,9 @@ function check_for_translations() {
  * Set up the Ajax Logout 
  */
 function utilities_scripts_enqueuer() {
-    if (is_admin()) {
+    //if (is_admin()) {
         // We only need to setup ajax action in admin.
-        add_action('wp_ajax_ajaxlogout', 'custom_ajax_logout_func');
-    } else {
+    //} else {
         wp_register_script('logout-js', ARBORETUM_CUSTOM_URL . 'js/logout.js', array('jquery'));
         wp_localize_script('logout-js', 'arbAjax',
             array(
@@ -425,15 +389,16 @@ function utilities_scripts_enqueuer() {
             )
         );
         wp_enqueue_script('logout-js');
-    }
+    //}
 }
 add_action('wp_enqueue_scripts', 'utilities_scripts_enqueuer');
+add_action('wp_ajax_ajaxlogout', 'custom_ajax_logout_func');
 
 function custom_ajax_logout_func(){
-    check_ajax_referer( 'ajax-logout-nonce', 'ajaxsecurity' );
+    //check_ajax_referer( 'ajax-logout-nonce', 'ajaxsecurity' );
     wp_logout();
-    ob_clean(); // probably overkill for this, but good habit
-    wp_send_json_success();
+    //ob_clean(); // probably overkill for this, but good habit
+    //wp_send_json_success();
 }
   
 
@@ -547,7 +512,7 @@ function redirect_login_page() {
         exit;
     }
 }
-// add_action('init','redirect_login_page');
+add_action('init','redirect_login_page');
 
 /**
  * Failed login error handling
@@ -560,4 +525,4 @@ function error_handler() {
     wp_redirect( $login_url ); // keep users on the same page
     exit;
 }
-// add_filter( 'login_errors', 'error_handler');
+add_filter( 'login_errors', 'error_handler');

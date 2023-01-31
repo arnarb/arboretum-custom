@@ -719,7 +719,7 @@ function arboretum_ticket_cancelation() {
       // Send an email to that person
       $to                 = $ticket->email;
       $subject            = 'Ticket cancelation stuffs';
-      $body               = $event['getting_off_waitlist_email']['body'] ? $event['getting_off_waitlist_email']['body'] : $settings['getting_off_waitlist_email']['body'];
+      $body               = $event->getting_off_waitlist_email->body ? $event->getting_off_waitlist_email->body : $settings['getting_off_waitlist_email']['body'];
       $tags               = array('[event]', '[date]');
       $date               = date("F jS", strtotime($ticket_date));
       $values             = array($event->title, $date);

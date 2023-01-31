@@ -39,12 +39,20 @@ jQuery(document).ready(function() {
     // Validate the form and submit it
     document.querySelector('.arb-form__register').addEventListener('click', submitForm);
 
+    document.querySelector('.arb-form__waitlist-confirm input').addEventListener('change', toggleWaitlistCheckbox);
     // const requestedSelect = document.querySelector('.arb-form__requested');
     // if (requestedSelect) {
     //   requestedSelect.addEventListener('change', changeRequestedNumber);
     // }
   }
 });
+
+// This will handle when the checkbox for accepting the waitlist is selected
+function toggleWaitlistCheckbox(event) {
+  console.log(`Toggle the form view ${event}`);
+
+  console.log(`Is checked : ${event.checked}`);
+}
 
 // Clear validation text on focus
 function resetValidationCheck(event) {
@@ -123,6 +131,7 @@ function toggleLimit() {
   const limit = venueDiv.dataset.limit;
   const requested = document.querySelector('#requested');
   const remainingCapacity = parseInt(venueDiv.dataset.remainingCapacity);
+  const hasWaitlist = venueDiv.dataset.hasWaitlist;
   const capacity = venueDiv.querySelector('.arb-form__venue__capacity');
 
    for (let i = requested.options.length - 1; i >= 0; i--) {
@@ -142,10 +151,21 @@ function toggleLimit() {
 
     // Limit the maximum values
     if (n === 1 && remainingCapacity <= 0) {
-      header.innerHTML = 'Waitlist Registration';
-      capacity.innerHTML = '<strong>Waitlist</strong>';
-      notice.innerHTML = `These reservations will be added to the waitlist and you will be notified if a spot opens up.`;
-      canBeOut = false;
+      if (hasWaitlist) {
+        // if (waitlist checkbox checked) {
+          header.innerHTML = 'Waitlist Registration';
+          capacity.innerHTML = '<strong>Waitlist</strong>';
+          notice.innerHTML = `These reservations will be added to the waitlist and you will be notified if a spot opens up.`;
+          canBeOut = false;
+          document.querySelector('.arb-form__rest-of-form').classList.remove('hidden');
+        //  
+        // } else {
+        //  document.querySelector('.arb-form__rest-of-form').classList.add('hidden');
+        //}
+      } else {
+        capacity.innerHTML = 'Sorry, this event is sold out and has no waitlist.';
+        document.querySelector('.arb-form__rest-of-form').classList.remove('hidden');
+      }
     } else if(canBeOut) {
       header.innerHTML = 'Event Registration';
       capacity.innerHTML = `Spots remaining: ${remainingCapacity} / ${venueDiv.dataset.capacity}`;

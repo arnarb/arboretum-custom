@@ -7,58 +7,78 @@ use Arboretum\Models\Location as Location;
 use Timber\User as User;
 
 /**
- * Sort the event dates into chronological order
+ * Add the unique ID to the event after saving or updating
  */
-function sort_event_dates($post_id) {
+function event_save_post()
+{
   $type = 'event';
   if (isset($_GET['post_type'])) {
-      $type = $_GET['post_type'];
+    $type = $_GET['post_type'];
   }
   if('event' !== $type) {
     return;
   }
 
-  $post_status = get_post_status( $post_id );
+  $uniqueID = 0;
+  // Loop through each location- time pair and add a unique ID
 
-  switch ( $post_status ) {
-    case 'draft':
-    case 'auto-draft':
-    case 'pending':
-    case 'inherit':
-    case 'trash':
-      return;
-  }
-
-  // $event = new Event($post_id);
-  $venues = get_field('venues', $post_id);
-  $i = 0;
-  foreach ($venues as $venue) {
-    if ($venue['event_dates']) {
-      $dates = array();
-
-      foreach ($venue['event_dates'] as $event_date) {
-        array_push($dates, $event_date['date']);
-      }
-      usort($dates, function($time1, $time2) {
-        if (strtotime($time1) > strtotime($time2))
-          return 1;
-        else if (strtotime($time1) < strtotime($time2)) 
-          return -1;
-        
-        return 0;
-      });
-
-      var_dump($dates);
-      for ($n = 0; count($dates); $n++) {
-        $field_name = 'venues_' . $i . '_event_dates_' . $n . '_date';
-        update_post_meta($post_id, $field_name, $dates[$n]);
-        // update_sub_field(array('venues', $i, 'event_dates', $n, 'date'), $dates[$n], $post_id);
-      }
-    }
-    $i ++;
-  }
+  $uniqueID++;
 }
-add_action('post_updated','sort_event_dates');
+add_action( 'edit_post', 'event_save_post' );
+
+/**
+ * Sort the event dates into chronological order - THIS IS NOT YET WORKING
+ */
+// function sort_event_dates($post_id) {
+//   $type = 'event';
+//   if (isset($_GET['post_type'])) {
+//     $type = $_GET['post_type'];
+//   }
+//   if('event' !== $type) {
+//     return;
+//   }
+
+//   $post_status = get_post_status( $post_id );
+
+//   switch ( $post_status ) {
+//     case 'draft':
+//     case 'auto-draft':
+//     case 'pending':
+//     case 'inherit':
+//     case 'trash':
+//       return;
+//   }
+
+//   // $event = new Event($post_id);
+//   $venues = get_field('venues', $post_id);
+//   $i = 0;
+//   foreach ($venues as $venue) {
+//     if ($venue['event_dates']) {
+//       $dates = array();
+
+//       foreach ($venue['event_dates'] as $event_date) {
+//         array_push($dates, $event_date['date']);
+//       }
+//       usort($dates, function($time1, $time2) {
+//         if (strtotime($time1) > strtotime($time2))
+//           return 1;
+//         else if (strtotime($time1) < strtotime($time2)) 
+//           return -1;
+        
+//         return 0;
+//       });
+
+//       var_dump($dates);
+//       for ($n = 0; count($dates); $n++) {
+//         $field_name = 'venues_' . $i . '_event_dates_' . $n . '_date';
+//         update_post_meta($post_id, $field_name, $dates[$n]);
+//         // update_sub_field(array('venues', $i, 'event_dates', $n, 'date'), $dates[$n], $post_id);
+//       }
+//     }
+//     $i ++;
+//   }
+// }
+// add_action('post_updated','sort_event_dates');
 
 // user-defined comparison function 
 // based on timestamp
@@ -368,7 +388,7 @@ function event_filters_restrict_manage_posts($post_type){
 
   $type = 'event';
   if (isset($_GET['post_type'])) {
-      $type = $_GET['post_type'];
+    $type = $_GET['post_type'];
   }
   if('event' !== $type) {
     return;
@@ -727,8 +747,10 @@ function arboretum_event_registration_callback() {
      * Bold
      * Italics
      */
+
+    $group              = $event->waitlist_confirmation_email;
     $cancel_link        = 'https://staging-arnoldarboretumwebsite.kinsta.cloud/events/cancel-event-registration/?id=' . $ticket_id . '&q=' . $hash;
-    $body               = $waitlist === 1 ? ($event['waitlist_confirmation_email']['body'] ? $event['waitlist_confirmation_email']['body'] : $settings['waitlist_confirmation_email']['body']) : $settings['confirmation_email']['body'];
+    $body               = $waitlist === 1 ? ($group ? $group : $settings['waitlist_confirmation_email']['body']) : $settings['confirmation_email']['body'];
     $tags               = array('[event]', '[date]', '[venue]', '[cancelation_link]', '[directions]', '[map]'); // array('[event]', '[date]', '[time]', '[venue]', '[cancelation_link]', '[directions]', '[map]');
     $date               = date("F jS", strtotime($event_date));
     // $time               = date("g:ma",strtotime($event_date)) . ' - ' . $end_time;
@@ -759,8 +781,9 @@ function arboretum_event_registration_callback() {
   //   $guardian_date = $_POST['guardianDate'];
   // }
 
-  // $participant_text = $event->get_field('participant_text') ? $event->get_field('participant_text') : $settings['participant_text'];
-  // $guardian_text = $event->get_field('guardian_text') ? $event->get_field('guardian_text') : $settings['guardian_text'];
+  $participant_text = $event->get_field('participant_text') ? $event->get_field('participant_text') : $settings['participant_text'];
+  $guardian_text = $event->get_field('guardian_text') ? $event->get_field('guardian_text') : $settings['guardian_text'];
+
 
   $consent_form_id = wp_insert_post(
     array (

@@ -1,6 +1,3 @@
-
-    console.log('LOGOUT JS');
-
 jQuery(document).ready(function() {
     if(document.querySelector('.js-logout-button')) {
         document.querySelector('.js-logout-button').addEventListener('click', (e) => {
@@ -8,15 +5,19 @@ jQuery(document).ready(function() {
             console.log(e);
             e.preventDefault();
             jQuery.ajax({
-                type: 'POST',
+                type: 'post',
                 url: arbAjax.ajax_url,
                 data: {
-                    'action': 'custom_ajax_logout', //calls wp_ajax_nopriv_ajaxlogout
+                    'action': 'ajaxlogout', //calls wp_ajax_nopriv_ajaxlogout
                     'ajaxsecurity': arbAjax.logout_nonce
                 },
-                success: function(r){
+                success: function(response){
                     // When the response comes back
+                    console.log(response);
                     window.location = arbAjax.home_url;
+                },
+                error: function(response){
+                    console.log(response);
                 }
             });
         });
