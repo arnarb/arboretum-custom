@@ -377,6 +377,7 @@ function check_for_translations() {
  * Set up the Ajax Logout 
  */
 function utilities_scripts_enqueuer() {
+    global $wp;
     //if (is_admin()) {
         // We only need to setup ajax action in admin.
     //} else {
@@ -384,10 +385,11 @@ function utilities_scripts_enqueuer() {
         wp_localize_script('logout-js', 'arbAjax',
             array(
                 'ajax_url' => admin_url('admin-ajax.php'),
-                'home_url' => get_home_url(),
+                'home_url' => home_url( $wp->request ),
                 'logout_nonce' => wp_create_nonce('ajax-logout-nonce'),
             )
         );
+        wp_enqueue_script('jquery');
         wp_enqueue_script('logout-js');
     //}
 }

@@ -684,17 +684,19 @@ function arboretum_ticket_cancelation() {
   if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
     $result['if-else'] = 'HTTP_X_REQUESTED_WITH NOT EMPTY AND = xmlhttprequest';
     $result = json_encode($result);
-      echo $result;
+    echo $result;
   }
   else {
-      header("Location: ".$_SERVER["HTTP_REFERER"]);
-      echo $result;
+    header("Location: ".$_SERVER["HTTP_REFERER"]);
+    $result = json_encode($result);
+    echo $result;
   }
 
-  $to                 = get_option('admin_email');
-  $subject            = 'Cancel ticket ' . $ticket_id;// Fired BY NONCE AJAX APPROACH';
-  $body               = $response . '    ' . $result;
-  wp_mail($to, $subject, $body, $headers);
+  // Switch this with an admin email?
+  // $to                 = get_option('admin_email');
+  // $subject            = 'Cancel ticket ' . $ticket_id;// Fired BY NONCE AJAX APPROACH';
+  // $body               = $response . '    ' . $result;
+  // wp_mail($to, $subject, $body, $headers);
 
     // Send a notice to waitlist that they are off waitlist
   // Get tickets for this Event
@@ -719,7 +721,7 @@ function arboretum_ticket_cancelation() {
       // Send an email to that person
       $to                 = $ticket->email;
       $subject            = 'Ticket cancelation stuffs';
-      $body               = $event->getting_off_waitlist_email->body ? $event->getting_off_waitlist_email->body : $settings['getting_off_waitlist_email']['body'];
+      $body               = is_set($event['getting_off_waitlist_email']) && is_set($event['getting_off_waitlist_email']['body']) ? $event['getting_off_waitlist_email']['body'] : $settings['getting_off_waitlist_email']['body'];
       $tags               = array('[event]', '[date]');
       $date               = date("F jS", strtotime($ticket_date));
       $values             = array($event->title, $date);
@@ -791,10 +793,10 @@ function arboretum_ticket_cancelation() {
     // }
   }
   // Testing email
-  $to                 = get_option('admin_email');
-  $subject            = 'Ticket cancelation stuffs';
-  $test_body          = 'You are off the waitlist<br><br>';
-  wp_mail($to, $subject, $test_body, $headers);
+  // $to                 = get_option('admin_email');
+  // $subject            = 'Ticket cancelation stuffs';
+  // $test_body          = 'You are off the waitlist<br><br>';
+  // wp_mail($to, $subject, $test_body, $headers);
   date_default_timezone_set('UTC');
   die();
 }

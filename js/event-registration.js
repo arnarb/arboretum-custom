@@ -39,7 +39,10 @@ jQuery(document).ready(function() {
     // Validate the form and submit it
     document.querySelector('.arb-form__register').addEventListener('click', submitForm);
 
-    document.querySelector('.arb-form__waitlist-confirm input').addEventListener('change', toggleWaitlistCheckbox);
+    const waitlistCheckbox = document.querySelector('.arb-form__waitlist-confirm input');
+    if (waitlistCheckbox) {
+      waitlistCheckbox.addEventListener('change', toggleWaitlistCheckbox);
+    }
     // const requestedSelect = document.querySelector('.arb-form__requested');
     // if (requestedSelect) {
     //   requestedSelect.addEventListener('change', changeRequestedNumber);
