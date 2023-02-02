@@ -626,14 +626,14 @@ add_filter('handle_bulk_actions-edit-ticket', 'generate_spreadsheet_bulk_action'
 /**
  * Register event scripts
  */
-function ticket_scripts_enqueuer() {
+// function ticket_scripts_enqueuer() {
   
-  wp_register_script('ticket-cancelation', ARBORETUM_CUSTOM_URL . 'js/ticket-cancelation.js', array('jquery'));
-  wp_localize_script('ticket-cancelation', 'arbAjax', array('ajaxurl' => admin_url('admin-ajax.php')));
-  wp_enqueue_script('jquery');
-  wp_enqueue_script('ticket-cancelation');
-}
-add_action('wp_enqueue_scripts', 'ticket_scripts_enqueuer');
+//   wp_register_script('ticket-cancelation', ARBORETUM_CUSTOM_URL . 'js/ticket-cancelation.js', array('jquery'));
+//   wp_localize_script('ticket-cancelation', 'arbAjax', array('ajaxurl' => admin_url('admin-ajax.php')));
+//   wp_enqueue_script('jquery');
+//   wp_enqueue_script('ticket-cancelation');
+// }
+// add_action('wp_enqueue_scripts', 'ticket_scripts_enqueuer');
 
 /**
  * Cancel this ticket and if necessary take tickets off the waitlist

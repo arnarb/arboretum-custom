@@ -372,26 +372,44 @@ function check_for_translations() {
     }
 }
   
-
 /** 
  * Set up the Ajax Logout 
  */
 function utilities_scripts_enqueuer() {
     global $wp;
-    //if (is_admin()) {
-        // We only need to setup ajax action in admin.
-    //} else {
-        wp_register_script('logout-js', ARBORETUM_CUSTOM_URL . 'js/logout.js', array('jquery'));
-        wp_localize_script('logout-js', 'arbAjax',
-            array(
-                'ajax_url' => admin_url('admin-ajax.php'),
-                'home_url' => home_url( $wp->request ),
-                'logout_nonce' => wp_create_nonce('ajax-logout-nonce'),
-            )
-        );
-        wp_enqueue_script('jquery');
-        wp_enqueue_script('logout-js');
-    //}
+    wp_enqueue_script('jquery');
+    
+    // Ticket Cancelation
+    wp_register_script('ticket-cancelation', ARBORETUM_CUSTOM_URL . 'js/ticket-cancelation.js', array('jquery'));
+    wp_localize_script('ticket-cancelation', 'arbAjax', array('ajaxurl' => admin_url('admin-ajax.php')));
+    wp_enqueue_script('ticket-cancelation');
+
+    // Event Registration
+    wp_register_script('event-registration', ARBORETUM_CUSTOM_URL . 'js/event-registration.js', array('jquery'));
+    wp_localize_script('event-registration', 'arbAjax', array('ajaxurl' => admin_url('admin-ajax.php')));
+    wp_enqueue_script('event-registration');
+
+    // Event Map
+    wp_register_script('event-map', ARBORETUM_CUSTOM_URL . 'js/event-map.js', array('jquery'));
+    wp_localize_script('event-map', 'arbAjax', array('ajaxurl' => admin_url('admin-ajax.php')));
+    wp_enqueue_script('event-map');
+
+    // Logout
+    wp_register_script('logout-js', ARBORETUM_CUSTOM_URL . 'js/logout.js', array('jquery'));
+    $current_url = add_query_arg($_SERVER['QUERY_STRING'], '', home_url($wp->request));//home_url( $wp->request );
+    
+    if(!isset($_COOKIE['current_url'])) {
+        setcookie('current_url', $current_url, time() + 360000);
+    }
+
+    wp_localize_script('logout-js', 'arbAjaxLogout',
+        array(
+            'ajax_url' => admin_url('admin-ajax.php'),
+            'home_url' => $current_url,
+            'logout_nonce' => wp_create_nonce('ajax-logout-nonce'),
+        )
+    );
+    wp_enqueue_script('logout-js');
 }
 add_action('wp_enqueue_scripts', 'utilities_scripts_enqueuer');
 add_action('wp_ajax_ajaxlogout', 'custom_ajax_logout_func');

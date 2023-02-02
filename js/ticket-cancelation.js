@@ -24,7 +24,7 @@ jQuery(document).ready(function() {
         alert('success');
         console.log('success');
         console.log(response);
-        if (response.type == 'success') {
+        // if (response.type == 'success') {
 
           const ticket = jQuery(`.my-account-event[data-ticket=${ticket_id}]`);
           if (ticket) {
@@ -32,10 +32,10 @@ jQuery(document).ready(function() {
           }
 
           updateView();
-        }
+        // }
       }, error: function(response) {
         alert('error');
-        console.log('error');
+        console.log('error - ticket cancelation');
         console.log(response);
       }
     });

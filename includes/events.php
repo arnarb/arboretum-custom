@@ -300,7 +300,7 @@ function custom_event_column($column, $post_id) {
                 if (
                   $event_date['date'] == $ticket->event_date
                   && $location_id == $ticket->location[0] 
-                  && $venue['type'] == $ticket->type
+                  && $venue['type']['label'] == $ticket->type
                 ) {
                   $sold ++;
                 }
@@ -328,7 +328,7 @@ function custom_event_column($column, $post_id) {
                   if (
                     $date->format('Y-m-d H:i:s') == $ticket->event_date
                     && $location_id == $ticket->location[0] 
-                    && $venue['type'] == $ticket->type
+                    && $venue['type']['label'] == $ticket->type
                   ) {
                     $sold ++;
                   }
@@ -347,7 +347,7 @@ function custom_event_column($column, $post_id) {
                 if (
                   $venue['start_date'] == $ticket->event_date
                   && $location_id == $ticket->location[0] 
-                  && $venue['type'] == $ticket->type
+                  && $venue['type']['label'] == $ticket->type
                 ) {
                   $sold ++;
                 }
@@ -472,18 +472,18 @@ add_filter('parse_query', 'event_filters');
 /**
  * Register event scripts
  */
-function event_scripts_enqueuer() {
-  wp_register_script('event-registration', ARBORETUM_CUSTOM_URL . 'js/event-registration.js', array('jquery'));
-  wp_localize_script('event-registration', 'arbAjax', array('ajaxurl' => admin_url('admin-ajax.php')));
+// function event_scripts_enqueuer() {
+//   wp_register_script('event-registration', ARBORETUM_CUSTOM_URL . 'js/event-registration.js', array('jquery'));
+//   wp_localize_script('event-registration', 'arbAjax', array('ajaxurl' => admin_url('admin-ajax.php')));
 
-  wp_register_script('event-map', ARBORETUM_CUSTOM_URL . 'js/event-map.js', array('jquery'));
-  wp_localize_script('event-map', 'arbAjax', array('ajaxurl' => admin_url('admin-ajax.php')));
+//   wp_register_script('event-map', ARBORETUM_CUSTOM_URL . 'js/event-map.js', array('jquery'));
+//   wp_localize_script('event-map', 'arbAjax', array('ajaxurl' => admin_url('admin-ajax.php')));
 
-  wp_enqueue_script('jquery');
-  wp_enqueue_script('event-registration');
-  wp_enqueue_script('event-map');
-}
-add_action('wp_enqueue_scripts', 'event_scripts_enqueuer');
+//   wp_enqueue_script('jquery');
+//   wp_enqueue_script('event-registration');
+//   wp_enqueue_script('event-map');
+// }
+// add_action('wp_enqueue_scripts', 'event_scripts_enqueuer');
 
 
 /**

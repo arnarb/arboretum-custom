@@ -430,9 +430,13 @@ function submitForm() {
         }
       },
       error: function(response) {
+        alert('error - event registration');
+        console.log(response);
       }
     })
     .done(function(data) {
+      alert('done');
+      console.log('done');
     });
   }
 }
