@@ -24,44 +24,34 @@ jQuery(document).ready(function() {
       }
     });
 
-    // Add the venue select
-    const venueSelect = document.querySelector('.arb-form__venue-select');
-    if (venueSelect) {
-      if (venueSelect.value != '') {
-        toggleVenue(venueSelect.value);
+
+    // ALL OF THIS CAN GO TO THE OTHER JS FILE
+      // Add the venue select
+      const venueSelect = document.querySelector('.arb-form__venue-select');
+      if (venueSelect) {
+        if (venueSelect.value != '') {
+          toggleVenue(venueSelect.value);
+        }
+        venueSelect.addEventListener('change', toggleVenue);
       }
-      venueSelect.addEventListener('change', toggleVenue);
-    }
-    
-    // Set the venue limit
-    toggleLimit();
+      
+      // Set the venue limit
+      toggleLimit();
 
-    // Validate the form and submit it
-    document.querySelector('.arb-form__register').addEventListener('click', submitForm);
+      // Validate the form and submit it
+      document.querySelector('.arb-form__register').addEventListener('click', submitForm);
 
-    const waitlistCheckbox = document.querySelector('.arb-form__waitlist-confirm input');
-    if (waitlistCheckbox) {
-      waitlistCheckbox.addEventListener('change', toggleWaitlistCheckbox);
+      const waitlistCheckbox = document.querySelector('.arb-form__waitlist-confirm input');
+      if (waitlistCheckbox) {
+        waitlistCheckbox.addEventListener('change', toggleWaitlistCheckbox);
+      }
+      // const requestedSelect = document.querySelector('.arb-form__requested');
+      // if (requestedSelect) {
+      //   requestedSelect.addEventListener('change', changeRequestedNumber);
+      // }
     }
-    // const requestedSelect = document.querySelector('.arb-form__requested');
-    // if (requestedSelect) {
-    //   requestedSelect.addEventListener('change', changeRequestedNumber);
-    // }
-  }
+  //
 });
-
-// This will handle when the checkbox for accepting the waitlist is selected
-function toggleWaitlistCheckbox(event) {
-  console.log(`Toggle the form view`);
-  console.log(`Is checked: ${event.target.checked}`);
-
-  const form = document.querySelector('.arb-form__rest-of-form');
-  if (event.target.checked) {
-    form.classList.remove('hidden');
-  } else {
-    form.classList.add('hidden');
-  }
-}
 
 // Clear validation text on focus
 function resetValidationCheck(event) {
@@ -94,6 +84,20 @@ function validationCheck(element, topElement) {
   }
   
   return topElement;
+}
+
+
+// This will handle when the checkbox for accepting the waitlist is selected
+function toggleWaitlistCheckbox(event) {
+  console.log(`Toggle the form view`);
+  console.log(`Is checked: ${event.target.checked}`);
+
+  const form = document.querySelector('.arb-form__rest-of-form');
+  if (event.target.checked) {
+    form.classList.remove('hidden');
+  } else {
+    form.classList.add('hidden');
+  }
 }
 
 // Show the venue description
@@ -140,8 +144,8 @@ function toggleLimit() {
   const limit = venueDiv.dataset.limit;
   const requested = document.querySelector('#requested');
   const remainingCapacity = parseInt(venueDiv.dataset.remainingCapacity);
-  const hasWaitlist = venueDiv.dataset.hasWaitlist;
-  const waitlistCheckbox = venueDiv.querySelector('.arb-form__waitlist-confirm input');
+  const hasWaitlist = parseInt(venueDiv.dataset.hasWaitlist);
+  const waitlistCheckbox = document.querySelector('.arb-form__waitlist-confirm input');
   const capacity = venueDiv.querySelector('.arb-form__venue__capacity-number');
 
   console.log(waitlistCheckbox);
@@ -161,15 +165,22 @@ function toggleLimit() {
   requested.appendChild(option);
   for (let n = 1; n <= limit; n++) {
 
+    console.log('Has Waitlist');
+    console.log(hasWaitlist);
+    console.log(`N is ${n}`);
+    console.log(`Remaining Capacity :${remainingCapacity}`);
+
     // Limit the maximum values
     if (n === 1 && remainingCapacity <= 0) {
-      if (hasWaitlist) {
+      if (hasWaitlist === 1) {
         // if (waitlist checkbox checked) {
-          if (waitlistCheckbox.checked) {
-            header.innerHTML = 'Waitlist Registration';
-            capacity.innerHTML = '<strong>Waitlist</strong>';
+        header.innerHTML = 'Waitlist Registration';
+        capacity.innerHTML = '<strong>Waitlist</strong>';
+        canBeOut = false;
+
+        if (waitlistCheckbox.checked) {
             notice.innerHTML = `These reservations will be added to the waitlist and you will be notified if a spot opens up.`;
-            canBeOut = false;
+            
             document.querySelector('.arb-form__rest-of-form').classList.remove('hidden');
           } else {
             document.querySelector('.arb-form__rest-of-form').classList.add('hidden');
@@ -187,16 +198,20 @@ function toggleLimit() {
       capacity.innerHTML = `Spots remaining: ${remainingCapacity} / ${venueDiv.dataset.capacity}`;
     }
 
+    console.log(`Out: ${out}`);
+    
+    console.log(`Can Be Out: ${canBeOut}`);
+    
+    console.log(`Remaining: ${remainingCapacity - parseInt(n) + 1}`);
     if (out) {
       return;
-    }
-    else if (!canBeOut || remainingCapacity - parseInt(n) + 1 >= 0) {
+    } else if (!canBeOut || remainingCapacity - parseInt(n) + 1 > 0) {
       option = document.createElement('option');
       option.value = n;
       option.innerHTML = n;
 
       requested.appendChild(option);
-    } else {
+    } else if (remainingCapacity - parseInt(n) + 1 === 0) {
       const number = n === 2 ? `is only 1 spot` : `are only ${remainingCapacity} spots`;
       const number2 = n === 2 ? `spot` : `${remainingCapacity} spots`
       notice.innerHTML = `There ${number} left.  If you would like to register for more spots, please register for the remaining ${number2} and refresh the page to add participants to the waitlist.`;
