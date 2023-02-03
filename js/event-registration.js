@@ -52,9 +52,15 @@ jQuery(document).ready(function() {
 
 // This will handle when the checkbox for accepting the waitlist is selected
 function toggleWaitlistCheckbox(event) {
-  console.log(`Toggle the form view ${event}`);
+  console.log(`Toggle the form view`);
+  console.log(`Is checked: ${event.target.checked}`);
 
-  console.log(`Is checked : ${event.checked}`);
+  const form = document.querySelector('.arb-form__rest-of-form');
+  if (event.target.checked) {
+    form.classList.remove('hidden');
+  } else {
+    form.classList.add('hidden');
+  }
 }
 
 // Clear validation text on focus
@@ -135,7 +141,10 @@ function toggleLimit() {
   const requested = document.querySelector('#requested');
   const remainingCapacity = parseInt(venueDiv.dataset.remainingCapacity);
   const hasWaitlist = venueDiv.dataset.hasWaitlist;
-  const capacity = venueDiv.querySelector('.arb-form__venue__capacity');
+  const waitlistCheckbox = venueDiv.querySelector('.arb-form__waitlist-confirm input');
+  const capacity = venueDiv.querySelector('.arb-form__venue__capacity-number');
+
+  console.log(waitlistCheckbox);
 
    for (let i = requested.options.length - 1; i >= 0; i--) {
     requested.remove(i);
@@ -156,11 +165,15 @@ function toggleLimit() {
     if (n === 1 && remainingCapacity <= 0) {
       if (hasWaitlist) {
         // if (waitlist checkbox checked) {
-          header.innerHTML = 'Waitlist Registration';
-          capacity.innerHTML = '<strong>Waitlist</strong>';
-          notice.innerHTML = `These reservations will be added to the waitlist and you will be notified if a spot opens up.`;
-          canBeOut = false;
-          document.querySelector('.arb-form__rest-of-form').classList.remove('hidden');
+          if (waitlistCheckbox.checked) {
+            header.innerHTML = 'Waitlist Registration';
+            capacity.innerHTML = '<strong>Waitlist</strong>';
+            notice.innerHTML = `These reservations will be added to the waitlist and you will be notified if a spot opens up.`;
+            canBeOut = false;
+            document.querySelector('.arb-form__rest-of-form').classList.remove('hidden');
+          } else {
+            document.querySelector('.arb-form__rest-of-form').classList.add('hidden');
+          }
         //  
         // } else {
         //  document.querySelector('.arb-form__rest-of-form').classList.add('hidden');
@@ -177,7 +190,7 @@ function toggleLimit() {
     if (out) {
       return;
     }
-    else if (!canBeOut || remainingCapacity - parseInt(n) + 1 > 0) {
+    else if (!canBeOut || remainingCapacity - parseInt(n) + 1 >= 0) {
       option = document.createElement('option');
       option.value = n;
       option.innerHTML = n;
