@@ -670,6 +670,7 @@ function arboretum_event_registration_callback() {
 
   $response = '';
   $tickets = [];
+  $hashs = [];
 
   // Create ticket(s)
   for ($i = 0; $i < $requested; $i++) {
@@ -731,42 +732,49 @@ function arboretum_event_registration_callback() {
     };
 
     array_push($tickets, $ticket_id); 
-
-    // Send confirmation email  
-    $to                 = $recipient;
-    $subject            = $waitlist === 1 ? 'Thank you for registering for the waitlist for '. $event->title : 'Confirmation to ' . $event->title;
-
-
-    /**
-     * [event] - event title
-     * [date] - event date
-     * [venue] - venue location and time
-     * [cancelation_link] - link to cancel the ticket
-     * [directions] - location directions
-     * New Lines
-     * Bold
-     * Italics
-     */
-
-    $group              = $event->waitlist_confirmation_email;
-    $cancel_link        = 'https://staging-arnoldarboretumwebsite.kinsta.cloud/events/cancel-event-registration/?id=' . $ticket_id . '&q=' . $hash;
-    $body               = $waitlist === 1 ? ($group ? $group : $settings['waitlist_confirmation_email']['body']) : $settings['confirmation_email']['body'];
-    $tags               = array('[event]', '[date]', '[venue]', '[cancelation_link]', '[directions]', '[map]'); // array('[event]', '[date]', '[time]', '[venue]', '[cancelation_link]', '[directions]', '[map]');
-    $date               = date("F jS", strtotime($event_date));
-    // $time               = date("g:ma",strtotime($event_date)) . ' - ' . $end_time;
-    $values             = array($event->title, $date, $location->post_title, $cancel_link, $directions, $map_link); // array($event->title, $date, $time, $location->post_title, $cancel_link, $directions, $map_link);
-    $body               = str_replace($tags, $values, $body);
-
-    
-    // $extras .= 'Event Date: ' . $event_date . ' Capacity: ' . $capacity . ', Requested: ' . $requested . ', Total: ' . $total . ', Sold Tickets: <br>';
-
-    // foreach($sold as $x => $y) {
-    //   $extras .= 'Key: ' . $x . ' Value: ' . $y . '<br>';
-    // }
-    // $body .= $extras;
-    
-    wp_mail($to, $subject, $body, $headers);
+    array_push($hashs, $hash);
   }
+    
+  // Send confirmation email  
+  $to                 = $recipient;
+  $subject            = $waitlist === 1 ? 'Thank you for registering for the waitlist for '. $event->title : 'Confirmation to ' . $event->title;
+
+
+  /**
+   * [event] - event title
+   * [date] - event date
+   * [venue] - venue location and time
+   * [cancelation_link] - link to cancel the ticket
+   * [directions] - location directions
+   * New Lines
+   * Bold
+   * Italics
+   */
+  $query = '?tickets=' . count($tickets);
+  for ($n = 0; $n < count($tickets); $n++) {
+    $query .= '&id_' . $n . '=' . $tickets[$n] . '&q_' . $n . '=' . $hashs[$n];
+  }
+
+  $number = count($tickets) === 1 ? '1 participant' : count($tickets) . ' participants';
+
+  $group              = $event->waitlist_confirmation_email;
+  $cancel_link        = 'https://staging-arnoldarboretumwebsite.kinsta.cloud/events/cancel-event-registration/' . $query; //?id=' . $ticket_id . '&q=' . $hash;
+  $body               = $waitlist === 1 ? ($group ? $group : $settings['waitlist_confirmation_email']['body']) : $settings['confirmation_email']['body'];
+  $tags               = array('[ticket-number]', '[event]', '[date]', '[venue]', '[cancelation_link]', '[directions]', '[map]'); // array('[event]', '[date]', '[time]', '[venue]', '[cancelation_link]', '[directions]', '[map]');
+  $date               = date("F jS", strtotime($event_date));
+  // $time               = date("g:ma",strtotime($event_date)) . ' - ' . $end_time;
+  $values             = array($number, $event->title, $date, $location->post_title, $cancel_link, $directions, $map_link); // array($event->title, $date, $time, $location->post_title, $cancel_link, $directions, $map_link);
+  $body               = str_replace($tags, $values, $body);
+
+  
+  // $extras .= 'Event Date: ' . $event_date . ' Capacity: ' . $capacity . ', Requested: ' . $requested . ', Total: ' . $total . ', Sold Tickets: <br>';
+
+  // foreach($sold as $x => $y) {
+  //   $extras .= 'Key: ' . $x . ' Value: ' . $y . '<br>';
+  // }
+  // $body .= $extras;
+  
+  wp_mail($to, $subject, $body, $headers);
 
   // Create consent form(s)
   
