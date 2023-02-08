@@ -622,189 +622,6 @@ function generate_spreadsheet_bulk_action($redirect_url, $action, $post_ids) {
 add_filter('handle_bulk_actions-edit-ticket', 'generate_spreadsheet_bulk_action', 10, 3);
 
 
-
-/**
- * Register event scripts
- */
-// function ticket_scripts_enqueuer() {
-  
-//   wp_register_script('ticket-cancelation', ARBORETUM_CUSTOM_URL . 'js/ticket-cancelation.js', array('jquery'));
-//   wp_localize_script('ticket-cancelation', 'arbAjax', array('ajaxurl' => admin_url('admin-ajax.php')));
-//   wp_enqueue_script('jquery');
-//   wp_enqueue_script('ticket-cancelation');
-// }
-// add_action('wp_enqueue_scripts', 'ticket_scripts_enqueuer');
-
-/**
- * Cancel this ticket and if necessary take tickets off the waitlist
- */
-function arboretum_ticket_cancelation() {
-  // if(!wp_verify_nonce($_POST['nonce'], "cancel_ticket_nonce_" . $_POST['ticket_id'])) {
-  //   exit ("No naughty business" . $_POST['nonce'] . ' ticket id: ' . $_POST['ticket_id']);
-  // }
-
-  $canceled = 1; // hardcoded for now, but will be all tickets per group
-
-  $headers = "Content-Type: text/html; charset=UTF-8\r\n";
-  // Get Site Settings values
-  $settings = get_fields('options');
-
-  $time_canceled = get_post_meta($_POST["ticket_id"], "time_canceled", true);
-
-  date_default_timezone_set('America/New_York');
-  $date = date("Y-m-d H:i:s");
-
-  $ticket_id = $_POST['ticket_id'];
-
-  $ticket = new Ticket($ticket_id);
-  $location_id = $ticket->location[0];
-  $ticket_date = $ticket->event_date;
-  $event_id = $ticket->event[0];
-  $event = new Event($event_id);
-
-
-  $ticket_ids = array();
-  array_push($ticket_ids, $ticket_id);
-
-  $response = update_post_meta($ticket_id, 'time_canceled', $date);
-
-  $result['event_id'] = $event_id;
-  $result['ticket_id'] = $ticket_id;
-  $result['time_canceled'] = $date;
-  $result['location_id'] = $location_id;
-  $result['event_id'] = $event_id;
-  $result['ticket_date'] = $ticket_date;
-  if($response === false) {
-    $result['type'] = "error";
-  }
-  else {
-    $result['type'] = "success";
-  }
-
-  if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
-    $result['if-else'] = 'HTTP_X_REQUESTED_WITH NOT EMPTY AND = xmlhttprequest';
-    $result = json_encode($result);
-    echo $result;
-  }
-  else {
-    header("Location: ".$_SERVER["HTTP_REFERER"]);
-    $result = json_encode($result);
-    echo $result;
-  }
-
-  // Switch this with an admin email?
-  // $to                 = get_option('admin_email');
-  // $subject            = 'Cancel ticket ' . $ticket_id;// Fired BY NONCE AJAX APPROACH';
-  // $body               = $response . '    ' . $result;
-  // wp_mail($to, $subject, $body, $headers);
-
-    // Send a notice to waitlist that they are off waitlist
-  // Get tickets for this Event
-
-// FOR TESTING
-  
-  $ticket_repo = new TicketRepository();
-  // $tickets = $ticket_repo->getEventTickets($event_id)->get();
-  $tickets = $ticket_repo->getTicketsByVenueAndDate($event_id, $location_id, $ticket_date)->get();
-
-  foreach($tickets as $n => $ticket) {
-    $event_id = $ticket->event[0];
-    $event = new Event($event_id);
-
-    $test_body = 'Ticket : ' . $ticket->post_title . ': ' . $event->capacity . ' Event number: ' . $n . '<br>';
-    if (($n >= $event->capactiy) && ($n <= $canceled + $event->capacity) && ($ticket->on_waitlist == 1)) {
-      $test_body .= '!! This ticket is off the waitlist !!<br><br> '. $ticket->user_email;
-
-      update_post_meta($ticket->ID, 'off_waitlist_confirmation_sent', $date);
-      update_post_meta($ticket->ID, 'on_waitlist', 0);
-
-      // Send an email to that person
-      $to                 = $ticket->email;
-      $subject            = 'Ticket cancelation stuffs';
-      $body               = is_set($event['getting_off_waitlist_email']) && is_set($event['getting_off_waitlist_email']['body']) ? $event['getting_off_waitlist_email']['body'] : $settings['getting_off_waitlist_email']['body'];
-      $tags               = array('[event]', '[date]');
-      $date               = date("F jS", strtotime($ticket_date));
-      $values             = array($event->title, $date);
-      $body               = str_replace($tags, $values, $body);
-      wp_mail($to, $subject, $body, $headers);
-    }
-    // foreach($venues as $venue) {
-    //   $capacity = $venue['capacity'];
-    //   $location_id = intval($venue['location'][0]->ID);
-    //   // $location = new Location($location_id); 
-
-    //   if ($location_id = $location) {
-    //     if ($venue['event_dates']) {
-    //       foreach ($venue['event_dates'] as $event_date) {
-    //         $date = new DateTime($event_date);
-    //         $date = $date->format('Y-m-d H:i:s');
-    //       //   $sold[$date] = 0;
-
-    //       //   foreach ($event_tickets as $ticket) {
-    //       //     $ticket_date = new DateTime($ticket->event_date);
-    //       //     $ticket_date = $ticket_date->format('Y-m-d H:i:s');
-
-    //       //     if (
-    //       //       $date === $ticket_date
-    //       //       && $location_id === $ticket->location[0]
-    //       //     ) {
-    //       //       $sold[$date] ++;
-    //       //     } else {
-    //       //       $extras .= "Event Dates: something isn't adding up<br>";
-    //       //     }
-
-    //       //     $extras .= 'Event Date: ' . $date . ' Ticket Date: ' . $ticket_date . ' Location ID: ' . $location_id . ' Ticket Id: ' . $ticket->location[0] . '<br><br>';
-    //       //  }
-    //       }
-    //     } else {
-    //       if ($venue['end_date']) {
-    //         $begin = new DateTime($venue['start_date']);
-    //         $end = new DateTime($venue['end_date']);
-    //         $interval = DateInterval::createFromDateString('1 day');
-    //         $period = new DatePeriod($begin, $interval, $end);
-
-    //         foreach ($period as $date) {
-    //           $date = $date->format('Y-m-d H:i:s');
-    //         //   $sold[$date] = 0;
-
-    //         //   foreach ($event_tickets as $ticket) {
-    //         //     $ticket_date = new DateTime($ticket->event_date);
-    //         //     $ticket_date = $ticket_date->format('Y-m-d H:i:s');
-
-    //         //     if (
-    //         //       $date === $ticket_date
-    //         //       && $location_id === $ticket->location[0]
-    //         //     ) {
-    //         //       $sold[$date] ++;
-    //         //     } else {
-    //         //       $extras .= "End Date: something isn't adding up<br>";
-    //         //     }
-
-    //         //     $extras .= 'Date: ' . $date . ' Ticket Date: ' . $ticket_date . 'Location ID: ' . $location_id . ' Ticket Id: ' . $ticket->location[0] . '<br><br>';
-    //         //  }
-    //         }
-    //       } else {
-    //         $start_date = new DateTime($venue['start_date']);
-    //         $start_date = $start_date->format('Y-m-d H:i:s');
-    //         // $sold[$start_date] = 0;
-    //       }
-    //     }
-    //   }
-    // }
-  }
-  // Testing email
-  // $to                 = get_option('admin_email');
-  // $subject            = 'Ticket cancelation stuffs';
-  // $test_body          = 'You are off the waitlist<br><br>';
-  // wp_mail($to, $subject, $test_body, $headers);
-  date_default_timezone_set('UTC');
-  die();
-}
-add_action("wp_ajax_arboretum_ticket_cancelation", "arboretum_ticket_cancelation");
-add_action("wp_ajax_nopriv_arboretum_ticket_cancelation", "arboretum_ticket_cancelation");
-
-
-
 /**
  * Create custom WP cron job for sending out email reminders
  */
@@ -940,4 +757,149 @@ add_action('arboretum_ticket_reminder_email', 'arboretum_ticket_send_reminder_em
 
 if (!wp_next_scheduled('arboretum_ticket_reminder_email')) {
   wp_schedule_event(time(), 'every_minute', 'arboretum_ticket_reminder_email');
+}
+
+
+
+/**
+ * Register event scripts
+ */
+// function ticket_scripts_enqueuer() {
+  
+//   wp_register_script('ticket-cancelation', ARBORETUM_CUSTOM_URL . 'js/ticket-cancelation.js', array('jquery'));
+//   wp_localize_script('ticket-cancelation', 'arbAjax', array('ajaxurl' => admin_url('admin-ajax.php')));
+//   wp_enqueue_script('jquery');
+//   wp_enqueue_script('ticket-cancelation');
+// }
+// add_action('wp_enqueue_scripts', 'ticket_scripts_enqueuer');
+
+/**
+ * Cancel this ticket and if necessary take tickets off the waitlist
+ */
+function arboretum_ticket_cancelation() {
+  // if(!wp_verify_nonce($_POST['nonce'], "cancel_ticket_nonce_" . $_POST['ticket_id'])) {
+  //   exit ("No naughty business" . $_POST['nonce'] . ' ticket id: ' . $_POST['ticket_id']);
+  // }
+
+  $canceled = 1; // hardcoded for now, but will be all tickets per group
+
+  $ticket_id = $_POST['ticket_id'];
+  $ticket = new Ticket($ticket_id);
+  $location_id = $ticket->location[0];
+  $ticket_date = $ticket->event_date;
+  $event_id = $ticket->event[0];
+
+  $time_canceled = get_post_meta($ticket_id, "time_canceled", true);
+
+
+  // $event = new Event($event_id);
+
+
+  // $ticket_ids = array();
+  // array_push($ticket_ids, $ticket_id);
+
+  date_default_timezone_set('America/New_York');
+  $date = date("Y-m-d H:i:s");
+  $response = update_post_meta($ticket_id, 'time_canceled', $date);
+  date_default_timezone_set('UTC');
+
+  // $result['event_id'] = $event_id;
+  // $result['ticket_id'] = $ticket_id;
+  // $result['time_canceled'] = $date;
+  // $result['location_id'] = $location_id;
+  // $result['event_id'] = $event_id;
+  // $result['ticket_date'] = $ticket_date;
+  // if($response === false) {
+  //   $result['type'] = "error";
+  // }
+  // else {
+  //   $result['type'] = "success";
+  // }
+
+  // if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
+  //   $result['if-else'] = 'HTTP_X_REQUESTED_WITH NOT EMPTY AND = xmlhttprequest';
+  //   // $result = json_encode($result);
+  //   // echo $result;
+  // }
+  // else {
+  //   header("Location: ".$_SERVER["HTTP_REFERER"]);
+  //   $result = json_encode($result);
+  //   echo $result;
+  // }
+
+  // Switch this with an admin email?
+  // $to                 = get_option('admin_email');
+  // $subject            = 'Cancel ticket ' . $ticket_id;// Fired BY NONCE AJAX APPROACH';
+  // $body               = $response . '    ' . $result;
+  // wp_mail($to, $subject, $body, $headers);
+
+    // Send a notice to waitlist that they are off waitlist
+  // Get tickets for this Event
+
+// FOR TESTING
+  
+  $ticket_repo = new TicketRepository();
+  // $tickets = $ticket_repo->getEventTickets($event_id)->get();
+  $tickets = $ticket_repo->getTicketsByVenueAndDate($event_id, $location_id, $ticket_date)->get();
+
+  foreach($tickets as $ticket) {
+    // $event_id = $ticket->event[0];
+    // $event = new Event($event_id);
+
+    // $test_body = 'Ticket : ' . $ticket->post_title . ': ' . $event->capacity . ' Event number: ' . $n . '<br>';
+    // if (($n >= $event->capactiy) && ($n <= $canceled + $event->capacity) && ($ticket->on_waitlist == 1)) {
+    //   $test_body .= '!! This ticket is off the waitlist !!<br><br> '. $ticket->user_email;
+    if ($canceled > 0 && $ticket->on_waitlist == 1 && !isset($ticket->off_waitlist_confirmation_sent)) {
+      arboretum_ticket_removed_from_waitlist($ticket);
+      $canceled --;
+    }
+      // // update_post_meta($ticket->ID, 'off_waitlist_confirmation_sent', $date);
+      // // update_post_meta($ticket->ID, 'on_waitlist', 0);
+
+      // // Send an email to that person
+      // $to                 = $ticket->email;
+      // $subject            = 'Ticket cancelation stuffs';
+      // $body               = is_set($event['getting_off_waitlist_email']) && is_set($event['getting_off_waitlist_email']['body']) ? $event['getting_off_waitlist_email']['body'] : $settings['getting_off_waitlist_email']['body'];
+      // $tags               = array('[event]', '[date]');
+      // $date               = date("F jS", strtotime($ticket_date));
+      // $values             = array($event->title, $date);
+      // $body               = str_replace($tags, $values, $body);
+      // wp_mail($to, $subject, $body, $headers);
+    //}
+  }
+  die();
+}
+add_action("wp_ajax_arboretum_ticket_cancelation", "arboretum_ticket_cancelation");
+add_action("wp_ajax_nopriv_arboretum_ticket_cancelation", "arboretum_ticket_cancelation");
+
+/**
+ * Send a notification that they have been removed from the waitlist
+ */
+function arboretum_ticket_removed_from_waitlist($ticket) {
+  // Get Site Settings values
+  $settings = get_fields('options');
+
+  $ticket_id = $ticket->ID;
+  // $location_id = $ticket->location[0];
+  $ticket_date = $ticket->event_date;
+  $event = new Event($ticket->event[0]);
+
+  date_default_timezone_set('America/New_York');
+  $date = date("Y-m-d H:i:s");
+
+  update_post_meta($ticket_id, 'on_waitlist', 0);
+  update_post_meta($ticket_id, 'off_waitlist_confirmation_sent', $date);
+
+  $ticket = new Ticket($ticket_id);
+
+  $to                 = $ticket->email;
+  $subject            = 'You have been moved from the waitlist to registered for ' . $event->title;
+  $body               = isset($event->getting_off_waitlist_email) && isset($event->getting_off_waitlist_email['body']) ? $event->getting_off_waitlist_email['body'] : $settings['getting_off_waitlist_email']['body'];
+  $tags               = array('[event]', '[date]');
+  $date               = date("F jS", strtotime($ticket_date));
+  $values             = array($event->title, $date);
+  $body               = str_replace($tags, $values, $body);
+  wp_mail($to, $subject, $body, $headers);
+
+  date_default_timezone_set('UTC');
 }

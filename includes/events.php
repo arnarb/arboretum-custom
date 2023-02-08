@@ -751,8 +751,8 @@ function arboretum_event_registration_callback() {
    * Italics
    */
   $query = '?tickets=' . count($tickets);
-  for ($n = 0; $n < count($tickets); $n++) {
-    $query .= '&id_' . $n . '=' . $tickets[$n] . '&q_' . $n . '=' . $hashs[$n];
+  for ($n = 1; $n <= count($tickets); $n++) {
+    $query .= '&id_' . $n . '=' . $tickets[$n-1] . '&q_' . $n . '=' . $hashs[$n-1];
   }
 
   $number = count($tickets) === 1 ? '1 participant' : count($tickets) . ' participants';

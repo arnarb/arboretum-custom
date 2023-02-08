@@ -440,6 +440,16 @@ function submitForm() {
     result.innerHTML = successMessage;
     result.classList.remove('arb-form__hidden');
 
+    const header = document.querySelector('.arb-form__login-header');
+    if (header) {
+      header.remove();
+    }
+    const login = document.querySelector('.login-form');
+    if (login) {
+      login.remove();
+    }
+
+
     document.querySelector('#event-registration-form').remove();
 
     //      
