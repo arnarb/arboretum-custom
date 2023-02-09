@@ -441,7 +441,7 @@ function submitForm() {
     successMessage = successMessage.replace('[venue]', data.locationTitle);
 
     // Show success message
-    if (register.dataset.waitlist === true) {
+    if (register.dataset.waitlist === 'true') {
       waitlistResult.innerHTML = successMessage;
       waitlistResult.classList.remove('arb-form__hidden');
     } else {
