@@ -154,6 +154,7 @@ function set_custom_ticket_sortable_columns( $columns ) {
   $columns['user'] = 'user';
   $columns['type'] = 'type';
   $columns['event'] = 'event';
+  $columns['event_date'] = 'event_date';
   $columns['time_registered'] = 'time_registered';
   $columns['time_attended'] = 'time_attended';
   $columns['canceled'] = 'time_canceled';

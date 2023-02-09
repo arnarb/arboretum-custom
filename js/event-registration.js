@@ -299,7 +299,7 @@ function submitForm() {
     let n = 0;
     let data = {};
     const form = document.querySelector('#event-registration-form');
-    const returned = document.querySelector('.arb-form__register');
+    const register = document.querySelector('.arb-form__register');
     const customQuestions = document.querySelectorAll('.custom-question');
     form.elements.forEach(element => {
       if (element.dataset.formRequired === 'true') {
@@ -307,7 +307,7 @@ function submitForm() {
       }
     });
     data.requested = document.querySelector('#requested').value;
-    data.questions = returned.dataset.customQuestions;// + 1;
+    data.questions = register.dataset.customQuestions;// + 1;
 
     // Source question
     const sourceQuestion = document.querySelector('#source_question');
@@ -365,10 +365,11 @@ function submitForm() {
     data.endTime = venue.querySelector('.arb-form__venue:not(.arb-form__hidden) .arb-form__venue__date-time').dataset.endTime;
     data.action = 'arboretum_event_registration';
 
-    data.eventTitle = returned.dataset.eventTitle;
+    data.eventTitle = register.dataset.eventTitle;
     data.locationTitle = venue.querySelector('.arb-form__venue:not(.arb-form__hidden)').dataset.venueTitle;
 
     const result = document.querySelector('#result');
+    const waitlistResult = document.querySelector('#result_waitlist');
     // Consent form data ///////////////////////////////////////////
     // data.consentName = returned.dataset.consentName;
     // data.consentDate = returned.dataset.consentDate;
@@ -392,17 +393,19 @@ function submitForm() {
 
 
     // data.availability = returned.dataset.availability;
-    data.event = returned.dataset.event;
-    if (returned.dataset.user) {
-      data.user = returned.dataset.user;
+    data.event = register.dataset.event;
+    if (register.dataset.user) {
+      data.user = register.dataset.user;
     } else {
       data.user = 68; /// hardcoded of the Guest user
     }
-    data.nonce = returned.dataset.nonce;
+    data.nonce = register.dataset.nonce;
 
-    console.log(data);
+    // console.log(data);
 
-    let successMessage = result.innerHTML;
+    // IS THIS WAITLIST?
+
+    let successMessage = register.dataset.waitlist ? waitlistResult.innerHTML : result.innerHTML;
     const dateOptions = { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' };
     const timeOptions = { timeStyle: 'short', timeZone: 'America/New_York' };
 
@@ -429,17 +432,27 @@ function submitForm() {
     // $body               = str_replace($tags, $values, $body);
     // $successMessage.replace('[title]', `${event->}`)
 
-    alert(JSON.stringify(data));
+    // alert(JSON.stringify(data));
 
     successMessage = successMessage.replace('[requested]', data.requested);
-    successMessage = successMessage.replace('[title]', title);
+    successMessage = successMessage.replace('[event]', title);
     successMessage = successMessage.replace('[date]', date);
     successMessage = successMessage.replace('[time]', time);
-    successMessage = successMessage.replace('[location]', data.locationTitle);
+    successMessage = successMessage.replace('[venue]', data.locationTitle);
 
-    result.innerHTML = successMessage;
-    result.classList.remove('arb-form__hidden');
+    // Show success message
+    if (register.dataset.waitlist === true) {
+      waitlistResult.innerHTML = successMessage;
+      waitlistResult.classList.remove('arb-form__hidden');
+    } else {
+      result.innerHTML = successMessage;
+      result.classList.remove('arb-form__hidden');
+    }
 
+    // Move to top of screen
+    window.scrollTo(0, 0);
+
+    // Hide event registration fields
     const header = document.querySelector('.arb-form__login-header');
     if (header) {
       header.remove();
@@ -448,8 +461,6 @@ function submitForm() {
     if (login) {
       login.remove();
     }
-
-
     document.querySelector('#event-registration-form').remove();
 
     //      
@@ -460,21 +471,21 @@ function submitForm() {
       data: data,
       success: function(response) {
         if (response.type == 'success') {
-          console.log(JSON.stringify(response));
-          alert(JSON.stringify(response));
+          // console.log(JSON.stringify(response));
+          // alert(JSON.stringify(response));
 
         } else {
-          console.log(JSON.stringify(response));
+          // console.log(JSON.stringify(response));
         }
       },
       error: function(response) {
-        alert('error - event registration');
-        console.log(response);
+        // alert('error - event registration');
+        // console.log(response);
       }
     })
     .done(function(data) {
-      alert('done');
-      console.log('done');
+      // alert('done');
+      // console.log('done');
     });
   }
 }
