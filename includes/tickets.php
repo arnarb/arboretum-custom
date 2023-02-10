@@ -634,7 +634,7 @@ function arboretum_ticket_send_reminder_email() {
   $testingBody = 'STAGING Woohoo!  In Tickets:<hr><br>';
   $headers = array(
     "Content-Type: text/html; charset=UTF-8\r\n",
-    'From: The Arnold Arboretum <'.get_option('admin_email').'>'
+    //'From: The Arnold Arboretum <admin@arnarb.harvard.edu>' //'.get_option('admin_email').'>'
   );
 
   $eventRepo = new EventRepository();
@@ -882,7 +882,7 @@ add_action("wp_ajax_nopriv_arboretum_ticket_cancelation", "arboretum_ticket_canc
 function arboretum_ticket_removed_from_waitlist($ticket) {
   $headers = array(
     "Content-Type: text/html; charset=UTF-8\r\n",
-    'From: The Arnold Arboretum <'.get_option('admin_email').'>'
+    //'From: The Arnold Arboretum <admin@arnarb.harvard.edu>' //'.get_option('admin_email').'>'
   );
   // Get Site Settings values
   $settings = get_fields('options');

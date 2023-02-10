@@ -391,7 +391,7 @@ function waitlist_registration_callback($form_data) {
   $body               = $values['firstname'] . ' ' . $values['lastname'] . ' has joined the waitlist for ' . $title . '.';
   $headers = array(
     "Content-Type: text/html; charset=UTF-8\r\n",
-    'From: The Arnold Arboretum <'.get_option('admin_email').'>'
+    'From: The Arnold Arboretum <admin@arnarb.harvard.edu>' //'.get_option('admin_email').'>'
   );
 
   wp_mail($to, $subject, $body, $headers);

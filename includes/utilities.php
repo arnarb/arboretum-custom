@@ -546,3 +546,8 @@ function error_handler() {
     exit;
 }
 add_filter( 'login_errors', 'error_handler');
+
+function correct_admin_email($email) {
+    return "admin@arnarb.harvard.edu";
+}
+add_filter('wp_mail_from', 'correct_admin_email');

@@ -505,7 +505,7 @@ function arboretum_event_registration_callback() {
 
   $headers = array(
     "Content-Type: text/html; charset=UTF-8\r\n",
-    'From: The Arnold Arboretum <'.get_option('admin_email').'>'
+    //'From: The Arnold Arboretum <admin@arnarb.harvard.edu>' //'.get_option('admin_email').'>'
   );
 
   // Get Site Settings values

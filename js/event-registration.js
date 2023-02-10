@@ -409,7 +409,7 @@ function submitForm() {
     const dateOptions = { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' };
     const timeOptions = { timeStyle: 'short', timeZone: 'America/New_York' };
 
-    const requested = data.requested === 1 ? '1 ticket' : data.requested + ' tickets';
+    const requested = data.requested === '1' ? '1 ticket' : data.requested + ' tickets';
     // const eventTitle = data.eventTitle;
     const dateRaw = new Date(data.date);
     const date = dateRaw.toLocaleString(this.US, dateOptions);
