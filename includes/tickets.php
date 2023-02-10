@@ -632,7 +632,10 @@ function arboretum_ticket_send_reminder_email() {
   $body = $settings['reminder_email']['body'];
 
   $testingBody = 'STAGING Woohoo!  In Tickets:<hr><br>';
-  $headers = "Content-Type: text/html; charset=UTF-8\r\n";
+  $headers = array(
+    "Content-Type: text/html; charset=UTF-8\r\n",
+    'From: The Arnold Arboretum <'.get_option('admin_email').'>'
+  );
 
   $eventRepo = new EventRepository();
   $events = $eventRepo->getEvents(-1)->get();
@@ -877,6 +880,10 @@ add_action("wp_ajax_nopriv_arboretum_ticket_cancelation", "arboretum_ticket_canc
  * Send a notification that they have been removed from the waitlist
  */
 function arboretum_ticket_removed_from_waitlist($ticket) {
+  $headers = array(
+    "Content-Type: text/html; charset=UTF-8\r\n",
+    'From: The Arnold Arboretum <'.get_option('admin_email').'>'
+  );
   // Get Site Settings values
   $settings = get_fields('options');
 
@@ -892,6 +899,8 @@ function arboretum_ticket_removed_from_waitlist($ticket) {
   update_post_meta($ticket_id, 'off_waitlist_confirmation_sent', $date);
 
   $ticket = new Ticket($ticket_id);
+
+  // For Each emails_and_messages -> type == waitlist_confirmation_email
 
   $to                 = $ticket->email;
   $subject            = 'You have been moved from the waitlist to registered for ' . $event->title;

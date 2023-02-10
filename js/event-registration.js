@@ -409,7 +409,7 @@ function submitForm() {
     const dateOptions = { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' };
     const timeOptions = { timeStyle: 'short', timeZone: 'America/New_York' };
 
-    // const requested = data.requested;
+    const requested = data.requested === 1 ? '1 ticket' : data.requested + ' tickets';
     // const eventTitle = data.eventTitle;
     const dateRaw = new Date(data.date);
     const date = dateRaw.toLocaleString(this.US, dateOptions);
@@ -434,7 +434,7 @@ function submitForm() {
 
     // alert(JSON.stringify(data));
 
-    successMessage = successMessage.replace('[requested]', data.requested);
+    successMessage = successMessage.replace('[requested]', requested);
     successMessage = successMessage.replace('[event]', title);
     successMessage = successMessage.replace('[date]', date);
     successMessage = successMessage.replace('[time]', time);

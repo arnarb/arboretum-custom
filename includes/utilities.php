@@ -490,35 +490,35 @@ add_filter('acf/fields/google_map/api', 'acf_google_map_api');
 /**
  *  Redefine user new user registration email
  */
-if ( !function_exists('wp_new_user_notification') ) {
-    function wp_new_user_notification( $user_id, $plaintext_pass = '' ) {
-        $user = new WP_User($user_id);
+// if ( !function_exists('wp_new_user_notification') ) {
+//     function wp_new_user_notification( $user_id, $plaintext_pass = '' ) {
+//         $user = new WP_User($user_id);
 
-        $user_login = stripslashes($user->user_login);
-        $user_email = stripslashes($user->user_email);
+//         $user_login = stripslashes($user->user_login);
+//         $user_email = stripslashes($user->user_email);
 
-        $message  = "New user registration for the Arnold Arboretum website\r\n\r\n";
-        $message .= sprintf(__('Username: %s'), $user_login) . "\r\n\r\n";
-        $message .= sprintf(__('E-mail: %s'), $user_email) . "\r\n";
+//         $message  = "New user registration for the Arnold Arboretum website\r\n\r\n";
+//         $message .= sprintf(__('Username: %s'), $user_login) . "\r\n\r\n";
+//         $message .= sprintf(__('E-mail: %s'), $user_email) . "\r\n";
 
-        wp_mail(get_option('admin_email'), 'New User Registration', $message);
+//         wp_mail(get_option('admin_email'), 'New User Registration', $message);
 
-        if ( empty($plaintext_pass) )
-            return;
+//         if ( empty($plaintext_pass) )
+//             return;
 
-        $message  = __('Hi there,') . "\r\n\r\n";
-        $message .= "Welcome to the Arnold Arboretum. Here is how to log in:\r\n\r\n";
-        $message .= wp_login_url() . "\r\n";
-        $message .= sprintf(__('Username: %s'), $user_login) . "\r\n";
-        $message .= sprintf(__('Password: %s'), $plaintext_pass) . "\r\n\r\n";
-        $message .= sprintf(__('If you have any problems, please contact me at %s.'), get_option('admin_email')) . "\r\n\r\n";
-        $message .= __('Adios!');
+//         $message  = __('Hi there,') . "\r\n\r\n";
+//         $message .= "Welcome to the Arnold Arboretum. Here is how to log in:\r\n\r\n";
+//         $message .= wp_login_url() . "\r\n";
+//         $message .= sprintf(__('Username: %s'), $user_login) . "\r\n";
+//         $message .= sprintf(__('Password: %s'), $plaintext_pass) . "\r\n\r\n";
+//         $message .= sprintf(__('If you have any problems, please contact me at %s.'), get_option('admin_email')) . "\r\n\r\n";
+//         $message .= __('Adios!');
 
-        wp_mail($user_email, 'Arnold Arboretum.  Your username and password', $message);
-        wp_mail(get_option('admin_email'), 'Arnold Arboretum.  Your username and password', $message);
-        wp_mail('matt.caulkins@gmail.com', 'Arnold Arboretum.  Your username and password', $message);
-    }
-}
+//         wp_mail($user_email, 'Arnold Arboretum.  Your username and password', $message);
+//         wp_mail(get_option('admin_email'), 'Arnold Arboretum.  Your username and password', $message);
+//         wp_mail('matt.caulkins@gmail.com', 'Arnold Arboretum.  Your username and password', $message);
+//     }
+// }
 
 /**
  * Redirect to a new login page

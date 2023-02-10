@@ -503,7 +503,10 @@ function arboretum_event_registration_callback() {
   $current_date = date("Y-m-d H:i:s");
   date_default_timezone_set('UTC');
 
-  $headers = "Content-Type: text/html; charset=UTF-8\r\n";
+  $headers = array(
+    "Content-Type: text/html; charset=UTF-8\r\n",
+    'From: The Arnold Arboretum <'.get_option('admin_email').'>'
+  );
 
   // Get Site Settings values
   $settings = get_fields('options');
@@ -757,10 +760,12 @@ function arboretum_event_registration_callback() {
 
   $number = count($tickets) === 1 ? '1 participant' : count($tickets) . ' participants';
 
-  $group              = $event->waitlist_confirmation_email;
+  // For Each emails_and_messages -> type == waitlist_confirmation_email
+
+  $group              = $event->emails_and_messages;
   $cancel_link        = 'https://staging-arnoldarboretumwebsite.kinsta.cloud/events/cancel-event-registration/' . $query; //?id=' . $ticket_id . '&q=' . $hash;
   $body               = $waitlist === 1 ? ($group ? $group : $settings['waitlist_confirmation_email']['body']) : $settings['confirmation_email']['body'];
-  $tags               = array('[ticket-number]', '[event]', '[date]', '[venue]', '[cancelation_link]', '[directions]', '[map]'); // array('[event]', '[date]', '[time]', '[venue]', '[cancelation_link]', '[directions]', '[map]');
+  $tags               = array('[requested]', '[event]', '[date]', '[venue]', '[cancelation_link]', '[directions]', '[map]'); // array('[event]', '[date]', '[time]', '[venue]', '[cancelation_link]', '[directions]', '[map]');
   $date               = date("F jS", strtotime($event_date));
   // $time               = date("g:ma",strtotime($event_date)) . ' - ' . $end_time;
   $values             = array($number, $event->title, $date, $location->post_title, $cancel_link, $directions, $map_link); // array($event->title, $date, $time, $location->post_title, $cancel_link, $directions, $map_link);
