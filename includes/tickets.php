@@ -28,11 +28,14 @@ function set_custom_ticket_columns($columns) {
   $columns['source'] = __('Source', 'arboretum');
   $columns['time_registered'] = __('Time Registered', 'arboretum');
   $columns['time_attended'] = __('Time Attended', 'arboretum');
-  $columns['canceled'] = __('Canceled', 'arboretum');
+  $columns['canceled'] = __('Time Canceled', 'arboretum');
   $columns['in_advance'] = __('In Advance', 'arboretum');
-  $columns['reminder_sent'] = __('Reminder Sent', 'arboretum');
-  $columns['on_waitlist'] = __('Waitlist', 'arboretum');
+  $columns['on_waitlist'] = __('On Waitlist', 'arboretum');
   $columns['off_waitlist_confirmation_sent'] = __('Off Waitlist Confirmation Sent', 'arboretum');
+  $columns['reminder_sent'] = __('Reminder Sent', 'arboretum');
+  $columns['follow-up_survey_sent'] = __('Follow-up Survey Sent', 'arboretum');
+
+  
   // $columns['date'] = __('Date', $date);
 
   return $columns;
@@ -125,11 +128,6 @@ function custom_ticket_column($column, $post_id) {
       // echo $custom_fields['added_to_advance'][0];
       break;
 
-    case 'reminder_sent':
-      echo (($custom_fields['reminder_email_sent'][0] === '1') || ($custom_fields['reminder_email_sent'][0] === 1))? '<span style="color: #00c037; font-weight: 600;">✓</span>' : '<span style="color: #ff4400; font-weight: 600;">☓</span>';
-      // echo $custom_fields['reminder_email_sent'][0];
-      break;
-
     case 'on_waitlist':
       echo (($custom_fields['on_waitlist'][0] === '1') || ($custom_fields['on_waitlist'][0] === 1))? '<span style="color: #00c037; font-weight: 600;">✓</span>' : '<span style="color: #ff4400; font-weight: 600;">☓</span>';
       // echo $custom_fields['on_waitlist'][0];
@@ -141,6 +139,26 @@ function custom_ticket_column($column, $post_id) {
         $off_waitlist = strtotime($off_waitlist);
         echo 'Confirmation sent on: ' . date("M d Y g:i a, D", $off_waitlist);
       }
+      break;
+
+    case 'reminder_sent':
+      if (isset($custom_fields['reminder_email_sent'][0]) && $custom_fields['reminder_email_sent'][0] != '') {
+        $reminder_email_sent = $custom_fields['reminder_email_sent'][0];
+        $reminder_email_sent = strtotime($reminder_email_sent);
+        echo 'Confirmation sent on: ' . date("M d Y g:i a, D", $reminder_email_sent);
+      }
+      // echo (($custom_fields['reminder_email_sent'][0] === '1') || ($custom_fields['reminder_email_sent'][0] === 1))? '<span style="color: #00c037; font-weight: 600;">✓</span>' : '<span style="color: #ff4400; font-weight: 600;">☓</span>';
+      // echo $custom_fields['reminder_email_sent'][0];
+      break;
+    
+    case 'follow-up_survey_sent':
+      if (isset($custom_fields['follow-up_survey_sent'][0]) && $custom_fields['follow-up_survey_sent'][0] != '') {
+        $followup_sent = $custom_fields['follow-up_survey_sent'][0];
+        $followup_sent = strtotime($followup_sent);
+        echo 'Confirmation sent on: ' . date("M d Y g:i a, D", $followup_sent);
+      }
+      // echo (($custom_fields['reminder_email_sent'][0] === '1') || ($custom_fields['reminder_email_sent'][0] === 1))? '<span style="color: #00c037; font-weight: 600;">✓</span>' : '<span style="color: #ff4400; font-weight: 600;">☓</span>';
+      // echo $custom_fields['reminder_email_sent'][0];
       break;
   }
 }
@@ -623,145 +641,145 @@ function generate_spreadsheet_bulk_action($redirect_url, $action, $post_ids) {
 add_filter('handle_bulk_actions-edit-ticket', 'generate_spreadsheet_bulk_action', 10, 3);
 
 
-/**
- * Create custom WP cron job for sending out email reminders
- */
-function arboretum_ticket_send_reminder_email() {
-  // Get Site Settings values
-  $settings = get_fields('options');
-  $body = $settings['reminder_email']['body'];
+// /**
+//  * Create custom WP cron job for sending out email reminders
+//  */
+// function arboretum_ticket_send_reminder_email() {
+//   // Get Site Settings values
+//   $settings = get_fields('options');
+//   $body = $settings['reminder_email']['body'];
 
-  $testingBody = 'STAGING Woohoo!  In Tickets:<hr><br>';
-  $headers = array(
-    "Content-Type: text/html; charset=UTF-8\r\n",
-    'From: The Arnold Arboretum <admin@arnarb.harvard.edu>' //'.get_option('admin_email').'>'
-  );
+//   $testingBody = 'STAGING Woohoo!  In Tickets:<hr><br>';
+//   $headers = array(
+//     "Content-Type: text/html; charset=UTF-8\r\n",
+//     'From: The Arnold Arboretum <admin@arnarb.harvard.edu>' //'.get_option('admin_email').'>'
+//   );
 
-  $eventRepo = new EventRepository();
-  $events = $eventRepo->getEvents(-1)->get();
+//   $eventRepo = new EventRepository();
+//   $events = $eventRepo->getEvents(-1)->get();
   
-  $date_format = 'Y-m-d H:i';
-  $current_date = date($date_format);
+//   $date_format = 'Y-m-d H:i';
+//   $current_date = date($date_format);
 
-  $event_ids = array();
+//   $event_ids = array();
 
-  // Find events with an instance tomorrow
-  foreach($events as $event) {
-    $reminder_buffer = $event->get_field('reminder_buffer');
-    if (!$reminder_buffer || $reminder_buffer === 0) {
-      $reminder_buffer = $settings['reminder_email']['hours_prior'];
-    }
-    $venues = $event->get_field('venues');
+//   // Find events with an instance tomorrow
+//   foreach($events as $event) {
+//     $reminder_buffer = $event->get_field('reminder_buffer');
+//     if (!$reminder_buffer || $reminder_buffer === 0) {
+//       $reminder_buffer = $settings['reminder_email']['hours_prior'];
+//     }
+//     $venues = $event->get_field('venues');
 
-    $testingBody .= '<strong>' . $event->title . ':</strong><br>';
-    if ($venues > 0) {
-      foreach ($venues as $venue) {
-        $testingBody .= 'Venue: ' . $venue['location'][0]->post_title . '<br>';
-        if ($venue['event_dates']) { // Has an assortment of dates
-          $testingBody .= 'Array of dates:<br>';
+//     $testingBody .= '<strong>' . $event->title . ':</strong><br>';
+//     if ($venues > 0) {
+//       foreach ($venues as $venue) {
+//         $testingBody .= 'Venue: ' . $venue['location'][0]->post_title . '<br>';
+//         if ($venue['event_dates']) { // Has an assortment of dates
+//           $testingBody .= 'Array of dates:<br>';
 
-          foreach ($venue['event_dates'] as $event_date) {
-            $date = date($date_format, strtotime($event_date['date']));
-            $testingBody .= 'CurrentDate: ' . $current_date . '<br>Date: ' . $date . '<br>';
-            $difference = abs(round((strtotime($date) - strtotime($current_date)) / 3600, 1));
-            $botestingBodydy .= 'Difference: ' . $difference . '<br><br>';            
+//           foreach ($venue['event_dates'] as $event_date) {
+//             $date = date($date_format, strtotime($event_date['date']));
+//             $testingBody .= 'CurrentDate: ' . $current_date . '<br>Date: ' . $date . '<br>';
+//             $difference = abs(round((strtotime($date) - strtotime($current_date)) / 3600, 1));
+//             $botestingBodydy .= 'Difference: ' . $difference . '<br><br>';            
 
-            if ($difference <= $reminder_buffer) {
-              $testingBody .= 'FOUND AN EVENT TO QUERY ' . $event->ID;
-              array_push($event_ids, $event->ID);
-            }
-          }
+//             if ($difference <= $reminder_buffer) {
+//               $testingBody .= 'FOUND AN EVENT TO QUERY ' . $event->ID;
+//               array_push($event_ids, $event->ID);
+//             }
+//           }
 
-        } elseif ($venue['end_date']) { // Has a date range from start_date to end_date
-          $begin = new DateTime($venue['start_date']);
-          $end = new DateTime($venue['end_date']);
+//         } elseif ($venue['end_date']) { // Has a date range from start_date to end_date
+//           $begin = new DateTime($venue['start_date']);
+//           $end = new DateTime($venue['end_date']);
 
-          $interval = DateInterval::createFromDateString('1 day');
-          $period = new DatePeriod($begin, $interval, $end);
+//           $interval = DateInterval::createFromDateString('1 day');
+//           $period = new DatePeriod($begin, $interval, $end);
 
-          foreach ($period as $date) {
-            $testingBody .= 'CurrentDate: ' . $current_date . '<br>Date: ' . $date->format($date_format) . '<br>';
-            $difference = abs(round((strtotime($date->format($date_format) ) - strtotime($current_date)) / 3600, 1));
-            $testingBody .= 'Difference: ' . $difference . '<br><br>';
+//           foreach ($period as $date) {
+//             $testingBody .= 'CurrentDate: ' . $current_date . '<br>Date: ' . $date->format($date_format) . '<br>';
+//             $difference = abs(round((strtotime($date->format($date_format) ) - strtotime($current_date)) / 3600, 1));
+//             $testingBody .= 'Difference: ' . $difference . '<br><br>';
 
-            if ($difference <= $reminder_buffer) {
-              $testingBody .= 'FOUND AN EVENT TO QUERY ' . $event->ID;
-              array_push($event_ids, $event->ID);
-            }
-          }
-        } else { // Just has a start_date
-          if ($venue['start_date']) {
-            $date = date($date_format, strtotime($venue['start_date']));
+//             if ($difference <= $reminder_buffer) {
+//               $testingBody .= 'FOUND AN EVENT TO QUERY ' . $event->ID;
+//               array_push($event_ids, $event->ID);
+//             }
+//           }
+//         } else { // Just has a start_date
+//           if ($venue['start_date']) {
+//             $date = date($date_format, strtotime($venue['start_date']));
 
-            $testingBody .= 'CurrentDate: ' . $current_date . '<br>Date: ' . $date . '<br>';
-            $difference = abs(round((strtotime($date) - strtotime($current_date)) / 3600, 1));
-            $testingBody .= 'Difference: ' . $difference . '<br><br>';
+//             $testingBody .= 'CurrentDate: ' . $current_date . '<br>Date: ' . $date . '<br>';
+//             $difference = abs(round((strtotime($date) - strtotime($current_date)) / 3600, 1));
+//             $testingBody .= 'Difference: ' . $difference . '<br><br>';
 
-            if ($difference <= $reminder_buffer) {
-              $testingBody .= 'FOUND AN EVENT TO QUERY ' . $event->ID;
-              array_push($event_ids, $event->ID);
-            }
-          }
-        }
-        $testingBody .= '<br>';
-      }
-    }
-    $testingBody .= '<hr><br>';
-  }
+//             if ($difference <= $reminder_buffer) {
+//               $testingBody .= 'FOUND AN EVENT TO QUERY ' . $event->ID;
+//               array_push($event_ids, $event->ID);
+//             }
+//           }
+//         }
+//         $testingBody .= '<br>';
+//       }
+//     }
+//     $testingBody .= '<hr><br>';
+//   }
 
-  $testingBody .= 'Events to check for tickets: ' . implode(',  ', $event_ids) . '<br>';
-  $testingBody .= 'Ticket IDs: ' . '<br>';
+//   $testingBody .= 'Events to check for tickets: ' . implode(',  ', $event_ids) . '<br>';
+//   $testingBody .= 'Ticket IDs: ' . '<br>';
 
-  if (!empty($event_ids)) {
-    $ticketRepo = new TicketRepository();
+//   if (!empty($event_ids)) {
+//     $ticketRepo = new TicketRepository();
     
-    foreach ($event_ids as $event_id) {
-      $tickets = $ticketRepo->getEventTickets($event_id)->get();
-      foreach ($tickets as $ticket) {
-        $ticket_id = $ticket->ID;
-        $testingBody .= $ticket_id . '<br>';
+//     foreach ($event_ids as $event_id) {
+//       $tickets = $ticketRepo->getEventTickets($event_id)->get();
+//       foreach ($tickets as $ticket) {
+//         $ticket_id = $ticket->ID;
+//         $testingBody .= $ticket_id . '<br>';
   
-        $date = $ticket->get_field('event_date');
-        $testingBody .= 'Date: ' . $date . '<br>';
-        $reminder_sent = $ticket->get_field('reminder_email_sent');
-        $testingBody .= 'Reminder Sent: ' . $reminder_sent . '<br>';
+//         $date = $ticket->get_field('event_date');
+//         $testingBody .= 'Date: ' . $date . '<br>';
+//         $reminder_sent = $ticket->get_field('reminder_email_sent');
+//         $testingBody .= 'Reminder Sent: ' . $reminder_sent . '<br>';
       
-        $difference = abs(round((strtotime($date) - strtotime($current_date)) / 3600, 1));
-        if ($difference <= $reminder_buffer && $reminder_sent != 1){
-          $testingBody .= 'Send a reminder email to ' . $ticket_id . ' and mark it as sent<br><br>';
+//         $difference = abs(round((strtotime($date) - strtotime($current_date)) / 3600, 1));
+//         if ($difference <= $reminder_buffer && $reminder_sent != ''){
+//           $testingBody .= 'Send a reminder email to ' . $ticket_id . ' and mark it as sent<br><br>';
               
-          update_field('reminder_email_sent', 1, $ticket_id);
-        } else {
-          $testingBody .= "Don't send a reminder email to " . $ticket_id . " as it is already marked<br><br>";
-        }
-      }
-    }
-  }
+//           update_field('reminder_email_sent', 1, $ticket_id);
+//         } else {
+//           $testingBody .= "Don't send a reminder email to " . $ticket_id . " as it is already marked<br><br>";
+//         }
+//       }
+//     }
+//   }
 
-  $testingBody .= '<hr><br><br>' . $body;
+//   $testingBody .= '<hr><br><br>' . $body;
 
-  /**
-   * 
-   * You have an event coming up! This is a reminder that you have registered for {program title} scheduled for {date} at {time}. Please meet at {location}. For directions, see below. 
-   *
-   *If you have any questions, please email us at publicprograms@arnarb.harvard.edu or call us at (617) 384-5209. If you can no longer attend this program, click here to cancel your registration. 
-   *
-   *Thank you!  
-   *
-   *{directions} 
-   */
+//   /**
+//    * 
+//    * You have an event coming up! This is a reminder that you have registered for {program title} scheduled for {date} at {time}. Please meet at {location}. For directions, see below. 
+//    *
+//    *If you have any questions, please email us at publicprograms@arnarb.harvard.edu or call us at (617) 384-5209. If you can no longer attend this program, click here to cancel your registration. 
+//    *
+//    *Thank you!  
+//    *
+//    *{directions} 
+//    */
   
-  // Send these to the proper recipients and a list of everything that was sent to pubic programs?
-  $to                 = 'matt.caulkins@gmail.com';
-  $subject            = 'test WP Cron hook for every 1min';
+//   // Send these to the proper recipients and a list of everything that was sent to pubic programs?
+//   $to                 = 'matt.caulkins@gmail.com';
+//   $subject            = 'test WP Cron hook for every 1min';
   
-  wp_mail($to, $subject, $testingBody, $headers);
-}
-add_action('arboretum_ticket_reminder_email', 'arboretum_ticket_send_reminder_email');
+//   wp_mail($to, $subject, $testingBody, $headers);
+// }
+// add_action('arboretum_ticket_reminder_email', 'arboretum_ticket_send_reminder_email');
 
-if (!wp_next_scheduled('arboretum_ticket_reminder_email')) {
-  wp_schedule_event(time(), 'every_minute', 'arboretum_ticket_reminder_email');
-}
+// if (!wp_next_scheduled('arboretum_ticket_reminder_email')) {
+//   wp_schedule_event(time(), 'every_minute', 'arboretum_ticket_reminder_email');
+// }
 
 
 

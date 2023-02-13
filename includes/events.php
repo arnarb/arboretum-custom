@@ -699,7 +699,6 @@ function arboretum_event_registration_callback() {
           'time_registered' => $current_date,
           'on_waitlist' => $waitlist,
           'added_to_advance' => 0,
-          'reminder_email_sent' => 0,
           'source' => $_POST['source']
         )
       )
