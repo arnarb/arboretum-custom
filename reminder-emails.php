@@ -32,22 +32,7 @@ function send_event_reminders() {
             $body .= "wp-load.php is readable<br>";
             if( include("/www/arnoldarboretumwebsite_753/public/wp-load.php")){ 
                 $body .= "wp-load.php is included.<br>"; 
-
-
                 $body .= get_bloginfo('name');
-
-                // $body .= var_dump($eventRepo);
-
-                // $params = [
-                //     'post_type'      => 'event',
-                //     'orderby'        => 'meta_value',
-                //     'order'          => 'ASC',
-                //     'posts_per_page' => -1,
-                // ];
-
-                // $posts = new WP_Query($params);
-
-                // $body .= $posts;
 
                 $tickets = $ticketRepo->getTickets(-1)->get();
                 $body .= "<br><br>Tickets needing reminder emails sent:<br><br>";
@@ -91,23 +76,8 @@ function send_event_surveys() {
             $body .= "wp-load.php is readable<br>";
             if( include("/www/arnoldarboretumwebsite_753/public/wp-load.php")){ 
                 $body .= "wp-load.php is included.<br>"; 
-
-
                 $body .= get_bloginfo('name');
-
-                // $body .= var_dump($eventRepo);
-
-                // $params = [
-                //     'post_type'      => 'event',
-                //     'orderby'        => 'meta_value',
-                //     'order'          => 'ASC',
-                //     'posts_per_page' => -1,
-                // ];
-
-                // $posts = new WP_Query($params);
-
-                // $body .= $posts;
-
+                
                 $eventsToday = $eventRepo->getEvents(-1)->get();
                 $body .= "<br><br>Events needing follow-up emails sent:<br><br>";
 
