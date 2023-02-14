@@ -13,12 +13,12 @@ jQuery(document).ready(function() {
                 },
                 success: function(response){
                     // When the response comes back
-                    alert('error - logout');
-                    console.log(response);
+                    // alert('error - logout');
+                    // console.log(response);
                     window.location = arbAjaxLogout.home_url;
                 },
                 error: function(response){
-                    console.log(response);
+                    // console.log(response);
                 }
             });
         });

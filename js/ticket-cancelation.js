@@ -14,16 +14,16 @@ jQuery(document).ready(function() {
       ticket_id: ticket_id,
       nonce: nonce
     };
-    alert(`${ticket_id} and ${nonce}`);
+    // alert(`${ticket_id} and ${nonce}`);
 
     jQuery.ajax({
       type: 'post',
       url: arbAjax.ajaxurl,
       data: data,
       success: function(response) {
-        alert('success');
-        console.log('success');
-        console.log(response);
+        // alert('success');
+        // console.log('success');
+        // console.log(response);
         // if (response.type == 'success') {
 
           const ticket = jQuery(`.my-account-event[data-ticket=${ticket_id}]`);
@@ -34,9 +34,9 @@ jQuery(document).ready(function() {
           updateView();
         // }
       }, error: function(response) {
-        alert('error');
-        console.log('error - ticket cancelation');
-        console.log(response);
+        // alert('error');
+        // console.log('error - ticket cancelation');
+        // console.log(response);
       }
     });
   });
