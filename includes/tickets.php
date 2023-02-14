@@ -152,8 +152,8 @@ function custom_ticket_column($column, $post_id) {
       break;
     
     case 'follow-up_survey_sent':
-      if (isset($custom_fields['follow-up_survey_sent'][0]) && $custom_fields['follow-up_survey_sent'][0] != '') {
-        $followup_sent = $custom_fields['follow-up_survey_sent'][0];
+      if (isset($custom_fields['follow_up_survey_sent'][0]) && $custom_fields['follow_up_survey_sent'][0] != '') {
+        $followup_sent = $custom_fields['follow_up_survey_sent'][0];
         $followup_sent = strtotime($followup_sent);
         echo 'Survey sent on ' . date("M d Y g:i a, D", $followup_sent);
       }
