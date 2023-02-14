@@ -763,7 +763,7 @@ function arboretum_event_registration_callback() {
 
   $group              = $event->emails_and_messages;
   $cancel_link        = 'https://staging-arnoldarboretumwebsite.kinsta.cloud/events/cancel-event-registration/' . $query; //?id=' . $ticket_id . '&q=' . $hash;
-  $body               = $waitlist === 1 ? ($group ? $group : $settings['waitlist_confirmation_email']['body']) : $settings['confirmation_email']['body'];
+  $body               = $waitlist === 1 ? ($group ? $group['body'] : $settings['waitlist_confirmation_email']['body']) : $settings['confirmation_email']['body'];
   $tags               = array('[requested]', '[event]', '[date]', '[venue]', '[cancelation_link]', '[directions]', '[map]'); // array('[event]', '[date]', '[time]', '[venue]', '[cancelation_link]', '[directions]', '[map]');
   $date               = date("F jS", strtotime($event_date));
   // $time               = date("g:ma",strtotime($event_date)) . ' - ' . $end_time;

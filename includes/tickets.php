@@ -137,7 +137,7 @@ function custom_ticket_column($column, $post_id) {
       if (isset($custom_fields['off_waitlist_confirmation_sent'][0]) && $custom_fields['off_waitlist_confirmation_sent'][0] != '') {
         $off_waitlist = $custom_fields['off_waitlist_confirmation_sent'][0];
         $off_waitlist = strtotime($off_waitlist);
-        echo 'Confirmation sent on: ' . date("M d Y g:i a, D", $off_waitlist);
+        echo 'Confirmation sent on ' . date("M d Y g:i a, D", $off_waitlist);
       }
       break;
 
@@ -145,7 +145,7 @@ function custom_ticket_column($column, $post_id) {
       if (isset($custom_fields['reminder_email_sent'][0]) && $custom_fields['reminder_email_sent'][0] != '') {
         $reminder_email_sent = $custom_fields['reminder_email_sent'][0];
         $reminder_email_sent = strtotime($reminder_email_sent);
-        echo 'Confirmation sent on: ' . date("M d Y g:i a, D", $reminder_email_sent);
+        echo 'Reminder sent on ' . date("M d Y g:i a, D", $reminder_email_sent);
       }
       // echo (($custom_fields['reminder_email_sent'][0] === '1') || ($custom_fields['reminder_email_sent'][0] === 1))? '<span style="color: #00c037; font-weight: 600;">✓</span>' : '<span style="color: #ff4400; font-weight: 600;">☓</span>';
       // echo $custom_fields['reminder_email_sent'][0];
@@ -155,7 +155,7 @@ function custom_ticket_column($column, $post_id) {
       if (isset($custom_fields['follow-up_survey_sent'][0]) && $custom_fields['follow-up_survey_sent'][0] != '') {
         $followup_sent = $custom_fields['follow-up_survey_sent'][0];
         $followup_sent = strtotime($followup_sent);
-        echo 'Confirmation sent on: ' . date("M d Y g:i a, D", $followup_sent);
+        echo 'Survey sent on ' . date("M d Y g:i a, D", $followup_sent);
       }
       // echo (($custom_fields['reminder_email_sent'][0] === '1') || ($custom_fields['reminder_email_sent'][0] === 1))? '<span style="color: #00c037; font-weight: 600;">✓</span>' : '<span style="color: #ff4400; font-weight: 600;">☓</span>';
       // echo $custom_fields['reminder_email_sent'][0];
