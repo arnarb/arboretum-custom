@@ -1,5 +1,5 @@
 jQuery(document).ready(function() {
-  if(document.querySelector('.arb-form__register')) {
+  if(document.querySelector('.js-event-registration')) {
     document.querySelectorAll('[data-required-field]').forEach(requiredElement => {
 
       // const parentElement = element.parentElement;
@@ -260,7 +260,7 @@ function submitForm() {
   // requiredElements.forEach(requiredElement => {
     const elements = requiredElement.querySelectorAll('input, option');
 
-    if(requiredElement.dataset.questionType != 'select' && elements != null && elements.length > 0) {
+    if (requiredElement.dataset.questionType != 'select' && elements != null && elements.length > 0) {
       let input = false;
       elements.forEach(element => {
         // console.log(element);
@@ -270,16 +270,16 @@ function submitForm() {
       });
 
       // For checkboxes check if there is at least one entry
-      if(!input) {
+      if (!input) {
         // console.log('no input');
         topElement = validationCheck(requiredElement, topElement);
       }
     } else if (requiredElement.dataset.date) {
       // console.log("************************ FOUND THE DATE!");
-    } else if(requiredElement.value == '' || requiredElement.value == 0 || requiredElement.value == null){
+    } else if (requiredElement.value == '' || requiredElement.value == 0 || requiredElement.value == null){
       // console.log('empty value');
       topElement = validationCheck(requiredElement, topElement);
-    } else if(requiredElement.id == 'e-mail') {
+    } else if (requiredElement.id == 'e-mail') {
       var mailformat = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
       if(!requiredElement.value.toLowerCase().match(mailformat)) {
         // console.log('invalid email');
@@ -288,7 +288,7 @@ function submitForm() {
     }
   });
   
-  if(topElement != null) {
+  if (topElement != null) {
     // If didn't pass validation, set the first faulty element as the scroll focus and return
     topElement.scrollIntoView();
 
@@ -432,7 +432,7 @@ function submitForm() {
     // $body               = str_replace($tags, $values, $body);
     // $successMessage.replace('[title]', `${event->}`)
 
-     alert(JSON.stringify(data));
+    //  alert(JSON.stringify(data));
 
     successMessage = successMessage.replace('[requested]', requested);
     successMessage = successMessage.replace('[event]', title);

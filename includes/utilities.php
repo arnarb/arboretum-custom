@@ -378,6 +378,11 @@ function check_for_translations() {
 function utilities_scripts_enqueuer() {
     global $wp;
     wp_enqueue_script('jquery');
+
+    // New User Registration  -- might be able to get rid of this
+    wp_register_script('new-user-registration', ARBORETUM_CUSTOM_URL . 'js/new-user-registration.js', array('jquery'));
+    wp_localize_script('new-user-registration', 'arbAjax', array('ajaxurl' => admin_url('admin-ajax.php')));
+    wp_enqueue_script('new-user-registration');
     
     // Ticket Cancelation
     wp_register_script('ticket-cancelation', ARBORETUM_CUSTOM_URL . 'js/ticket-cancelation.js', array('jquery'));
