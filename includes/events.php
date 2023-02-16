@@ -558,6 +558,10 @@ function arboretum_event_registration_callback() {
   // Get the map, directions, and tickets sold per date
   $sold = array();
   $venues = get_field('venues', $event_id);
+
+  // Get the batch number
+  $batch_numbers = array();
+
   foreach($venues as $venue) {
     $capacity = $venue['capacity'];
     $location_id = intval($venue['location'][0]->ID);
@@ -583,6 +587,10 @@ function arboretum_event_registration_callback() {
               && $location_id === $ticket->location[0]
             ) {
               $sold[$date] ++;
+
+              if (!in_array($ticket->registration_batch, $batch_numbers)) {
+                array_push($batch_numbers, intval($ticket->registration_batch));
+              }
             } else {
               $extras .= "Event Dates: something isn't adding up<br>";
             }
@@ -610,6 +618,10 @@ function arboretum_event_registration_callback() {
                 && $location_id === $ticket->location[0]
               ) {
                 $sold[$date] ++;
+
+                if (!in_array($ticket->registration_batch, $batch_numbers)) {
+                  array_push($batch_numbers, intval($ticket->registration_batch));
+                }
               } else {
                 $extras .= "End Date: something isn't adding up<br>";
               }
@@ -631,6 +643,10 @@ function arboretum_event_registration_callback() {
               && $location_id === $ticket->location[0]
             ) {
               $sold[$start_date] ++;
+
+              if (!in_array($ticket->registration_batch, $batch_numbers)) {
+                array_push($batch_numbers, intval($ticket->registration_batch));
+              }
             } else {
               $extras .= "Start Date: something isn't adding up<br>";
             }
@@ -699,7 +715,8 @@ function arboretum_event_registration_callback() {
           'time_registered' => $current_date,
           'on_waitlist' => $waitlist,
           'added_to_advance' => 0,
-          'source' => $_POST['source']
+          'source' => $_POST['source'],
+          'registration_batch' => max($batch_numbers) + 1
         )
       )
     );

@@ -401,7 +401,7 @@ function submitForm() {
     }
     data.nonce = register.dataset.nonce;
 
-    // console.log(data);
+     console.log(data);
 
     // IS THIS WAITLIST?
 
@@ -432,7 +432,7 @@ function submitForm() {
     // $body               = str_replace($tags, $values, $body);
     // $successMessage.replace('[title]', `${event->}`)
 
-    // alert(JSON.stringify(data));
+     alert(JSON.stringify(data));
 
     successMessage = successMessage.replace('[requested]', requested);
     successMessage = successMessage.replace('[event]', title);
@@ -441,6 +441,7 @@ function submitForm() {
     successMessage = successMessage.replace('[venue]', data.locationTitle);
 
     // Show success message
+    document.querySelector('.arb-form').remove();
     if (register.dataset.waitlist === 'true') {
       waitlistResult.innerHTML = successMessage;
       waitlistResult.classList.remove('arb-form__hidden');
@@ -461,31 +462,35 @@ function submitForm() {
     if (login) {
       login.remove();
     }
-    document.querySelector('#event-registration-form').remove();
-
+    if (form) {
+      form.remove();
+    }
     //      
     //  dataType: 'json',
     jQuery.ajax({
       type: 'post',
       url: arbAjax.ajaxurl,
       data: data,
-      success: function(response) {
-        if (response.type == 'success') {
-          // console.log(JSON.stringify(response));
-          // alert(JSON.stringify(response));
+      // success: function(response) {
+      //   if (response.type == 'success') {
+      //      console.log(JSON.stringify(response));
+      //      alert(JSON.stringify(response));
+      //      console.log(response);
+      //      alert(response);
 
-        } else {
-          // console.log(JSON.stringify(response));
-        }
-      },
-      error: function(response) {
-        // alert('error - event registration');
-        // console.log(response);
-      }
+      //   } else {
+      //     console.log(JSON.stringify(response));
+      //     console.log(response);
+      //   }
+      // },
+      // error: function(response) {
+      //    alert('error - event registration');
+      //    console.log(response);
+      // }
     })
-    .done(function(data) {
-      // alert('done');
-      // console.log('done');
-    });
+    // .done(function(data) {
+    //    alert('done');
+    //    console.log('done');
+    // });
   }
 }

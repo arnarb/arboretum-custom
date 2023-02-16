@@ -109,7 +109,7 @@ function send_event_surveys() {
                             $event_date = $ticket->event_date;
                             $reminder_time = $settings['follow_up_survey']['hours_after'];
 
-                            // if (strtotime($current_date) - ($reminder_time * 3600) > (strtotime($event_date))) {
+                            if (strtotime($current_date) - ($reminder_time * 3600) > (strtotime($event_date))) {
                                 $event_id = $ticket->event[0];
                                 $event = new Event($event_id);
                                 $survey = $event->survey_url;
@@ -140,7 +140,7 @@ function send_event_surveys() {
                                     
                                     update_post_meta($ticket->ID, 'follow_up_survey_sent', $current_date);
                                 }
-                            // }
+                            }
                         }
                     }
                 }

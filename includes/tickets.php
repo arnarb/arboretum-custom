@@ -20,6 +20,7 @@ function set_custom_ticket_columns($columns) {
   $date = $columns['date'];
   unset($columns['date']);
 
+  $columns['batch'] = __('Batch Number', 'arboretum');
   $columns['user'] = __('User', 'arboretum');
   $columns['registrant'] = __('Registrant', 'arboretum');
   $columns['event'] = __('Event', 'arboretum');
@@ -49,6 +50,10 @@ function custom_ticket_column($column, $post_id) {
   $custom_fields = get_post_custom($post_id);
 
   switch ($column) {
+    case 'batch': 
+      echo $custom_fields['registration_batch'][0];
+      break;
+
     case 'user':
       $user_id = $custom_fields['user'][0];// get_field('user', $post_id);
 
