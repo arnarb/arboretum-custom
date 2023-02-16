@@ -560,7 +560,7 @@ function arboretum_event_registration_callback() {
   $venues = get_field('venues', $event_id);
 
   // Get the batch number
-  $batch_numbers = array();
+  $batch_numbers = array(0);
 
   foreach($venues as $venue) {
     $capacity = $venue['capacity'];
