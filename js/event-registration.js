@@ -1,5 +1,6 @@
 jQuery(document).ready(function() {
   if(document.querySelector('.js-event-registration')) {
+    console.log('Event Registration');
     document.querySelectorAll('[data-required-field]').forEach(requiredElement => {
 
       // const parentElement = element.parentElement;
@@ -15,12 +16,12 @@ jQuery(document).ready(function() {
 
       if(requiredElement.dataset.questionType != 'select' && elements != null && elements.length > 0) {
         elements.forEach(element => {
-          element.addEventListener('click', resetValidationCheck);
-          element.addEventListener('focus', resetValidationCheck);
+          // element.addEventListener('click', resetEventRegistrationValidationCheck);
+          element.addEventListener('focus', resetEventRegistrationValidationCheck);
         });
       } else {
-        requiredElement.addEventListener('click', resetValidationCheck);
-        requiredElement.addEventListener('focus', resetValidationCheck);
+        // requiredElement.addEventListener('click', resetEventRegistrationValidationCheck);
+        requiredElement.addEventListener('focus', resetEventRegistrationValidationCheck);
       }
     });
 
@@ -39,7 +40,7 @@ jQuery(document).ready(function() {
       // toggleLimit();
 
       // // Validate the form and submit it
-      document.querySelector('.arb-form__register').addEventListener('click', submitForm);
+      document.querySelector('.arb-form__register').addEventListener('click', submitEventRegistrationForm);
 
       // const waitlistCheckbox = document.querySelector('.arb-form__waitlist-confirm input');
       // if (waitlistCheckbox) {
@@ -54,7 +55,7 @@ jQuery(document).ready(function() {
 });
 
 // Clear validation text on focus
-function resetValidationCheck(event) {
+function resetEventRegistrationValidationCheck(event) {
 
   if (event.target.classList.contains('event-calendar__set-date') || event.target.classList.contains('pager ')) {
     // console.log('Dont react to these elements');
@@ -76,7 +77,7 @@ function resetValidationCheck(event) {
 }
 
 // Check validation
-function validationCheck(element, topElement) {
+function eventRegistrationValidationCheck(element, topElement) {
   const validationElement = document.querySelector(`.${element.dataset.requiredField}`);
   validationElement.innerHTML = element.dataset.requiredText;
   if(topElement === null) {
@@ -242,9 +243,10 @@ function validationCheck(element, topElement) {
 //   // }
 // }
 
-function submitForm() {
+// Submit the form if validation passes
+function submitEventRegistrationForm() {
   // el.preventDefault();
-  // console.log('submit form');
+  // console.log('submit event registration form');
   // let requestedNum;
   let topElement = null;
 
@@ -272,18 +274,18 @@ function submitForm() {
       // For checkboxes check if there is at least one entry
       if (!input) {
         // console.log('no input');
-        topElement = validationCheck(requiredElement, topElement);
+        topElement = eventRegistrationValidationCheck(requiredElement, topElement);
       }
     } else if (requiredElement.dataset.date) {
       // console.log("************************ FOUND THE DATE!");
     } else if (requiredElement.value == '' || requiredElement.value == 0 || requiredElement.value == null){
       // console.log('empty value');
-      topElement = validationCheck(requiredElement, topElement);
+      topElement = eventRegistrationValidationCheck(requiredElement, topElement);
     } else if (requiredElement.id == 'e-mail') {
       var mailformat = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
       if(!requiredElement.value.toLowerCase().match(mailformat)) {
         // console.log('invalid email');
-        topElement = validationCheck(requiredElement, topElement);
+        topElement = eventRegistrationValidationCheck(requiredElement, topElement);
       }
     }
   });

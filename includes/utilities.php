@@ -556,3 +556,26 @@ function correct_admin_email($email) {
     return "admin@arnarb.harvard.edu";
 }
 add_filter('wp_mail_from', 'correct_admin_email');
+
+
+/**
+ * Register a new user
+ */
+
+function arboretum_new_user_registration_callback() {
+    $first_name = $_POST['firstName'];
+    $last_name = $_POST['lastName'];
+    $email = $_POST['email'];
+    $password = $_POST['password'];
+
+    $result = wp_create_user($email, $password, $email);
+
+    if (is_int($result)) {
+        // add the user details
+    } else {
+        echo json_encode($result);
+    }
+}
+
+add_action('wp_ajax_arboretum_new_user_registration', 'arboretum_new_user_registration_callback');
+add_action('wp_ajax_nopriv_arboretum_new_user_registration', 'arboretum_new_user_registration_callback');
