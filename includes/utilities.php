@@ -525,57 +525,110 @@ add_filter('acf/fields/google_map/api', 'acf_google_map_api');
 //     }
 // }
 
-        // /**
-        //  * Redirect to a new login page
-        //  */
-        // function redirect_login_page() {
-        //     $login_url  = home_url( '/login' );
-        //     $url = basename($_SERVER['REQUEST_URI']); // get requested URL
-        //     isset( $_REQUEST['redirect_to'] ) ? ( $url   = "wp-login.php" ): 0; // if users ssend request to wp-admin
-        //     if( $url  == "wp-login.php" && $_SERVER['REQUEST_METHOD'] == 'GET')  {
-        //         wp_redirect( $login_url );
-        //         exit;
-        //     }
-        // }
-        // add_action('init','redirect_login_page');
+/**
+ * Redirect to a new login page
+ */
+// function redirect_login_page() {
+//     $login_url  = home_url( '/login' );
+//     $url = basename($_SERVER['REQUEST_URI']); // get requested URL
+//     isset( $_REQUEST['redirect_to'] ) ? ( $url   = "wp-login.php" ): 0; // if users ssend request to wp-admin
+//     if( $url  == "wp-login.php" && $_SERVER['REQUEST_METHOD'] == 'GET')  {
+//         wp_redirect( $login_url );
+//         exit;
+//     }
+// }
+// add_action('init','redirect_login_page');
 
-        // /**
-        //  * Failed login error handling
-        //  */
-        // function error_handler() {
-        //     $login_url  = home_url( '/login' );
-        //     global $errors;
-        //     $err_codes = $errors->get_error_codes(); // get WordPress built-in error codes
-        //     $_SESSION["err_codes"] =  $err_codes;
-        //     wp_redirect( $login_url ); // keep users on the same page
-        //     exit;
-        // }
-        // add_filter( 'login_errors', 'error_handler');
+// /**
+//  * Failed login error handling
+//  */
+// function error_handler() {
+//     $login_url  = home_url( '/login' );
+//     global $errors;
+//     $err_codes = $errors->get_error_codes(); // get WordPress built-in error codes
+//     $_SESSION["err_codes"] =  $err_codes;
+//     wp_redirect( $login_url ); // keep users on the same page
+//     exit;
+// }
+// add_filter( 'login_errors', 'error_handler');
 
-        // function correct_admin_email($email) {
-        //     return "admin@arnarb.harvard.edu";
-        // }
-        // add_filter('wp_mail_from', 'correct_admin_email');
+function correct_admin_email($email) {
+    return "admin@arnarb.harvard.edu";
+}
+add_filter('wp_mail_from', 'correct_admin_email');
 
 
-        // /**
-        //  * Register a new user
-        //  */
+/**
+ * Register a new user
+ */
 
-        // function arboretum_new_user_registration_callback() {
-        //     $first_name = $_POST['firstName'];
-        //     $last_name = $_POST['lastName'];
-        //     $email = $_POST['email'];
-        //     $password = $_POST['password'];
+function arboretum_new_user_registration_callback() {
+    $first_name = $_POST['firstName'];
+    $last_name = $_POST['lastName'];
+    $email = $_POST['email'];
+    $password = $_POST['password'];
 
-        //     $result = wp_create_user($email, $password, $email);
+    $result = wp_create_user($email, $password, $email);
 
-        //     if (is_int($result)) {
-        //         // add the user details
-        //     } else {
-        //         echo json_encode($result);
-        //     }
-        // }
+    if (is_int($result)) {
+        // add the user details
+    } else {
+        echo json_encode($result);
+    }
+}
 
-        // add_action('wp_ajax_arboretum_new_user_registration', 'arboretum_new_user_registration_callback');
-        // add_action('wp_ajax_nopriv_arboretum_new_user_registration', 'arboretum_new_user_registration_callback');
+add_action('wp_ajax_arboretum_new_user_registration', 'arboretum_new_user_registration_callback');
+add_action('wp_ajax_nopriv_arboretum_new_user_registration', 'arboretum_new_user_registration_callback');
+
+
+/**
+ * Send an email to admin when a post is updated
+ */
+function post_saved_notification($post_ID) {
+    if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
+		return;
+	}
+
+    $headers = array(
+        "Content-Type: text/html; charset=UTF-8\r\n",
+        'From: The Arnold Arboretum <admin@arnarb.harvard.edu>'
+    );
+
+    $post_type = get_post_type($post_ID);
+    $title = get_the_title($post_ID);
+    $url = $_SERVER["HTTP_HOST"] . '/wp-admin/post.php?post=' . $post_ID . '&action=edit&lang=en';
+
+    $to                 = get_option('admin_email');
+    $subject            = 'New ' . $post_type . ' saved';
+    $body               = $post_type . '<br><br>' . $url . '<br><br><a href="'. $url . '">' . $title . '</a><br><br>';
+
+    wp_mail($to, $subject, $body, $headers);
+}
+
+add_action('save_post', 'post_saved_notification', 10, 3);
+
+/**
+ * Send an email to admin when a post is updated
+ */
+function post_update_notification($post_ID, $post_after, $post_before) {
+    if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
+		return;
+	}
+
+    $headers = array(
+        "Content-Type: text/html; charset=UTF-8\r\n",
+        'From: The Arnold Arboretum <admin@arnarb.harvard.edu>'
+    );
+
+    $post_type = get_post_type($post_ID);
+    $title = get_the_title($post_ID);
+    $url = $_SERVER["HTTP_HOST"] . '/wp-admin/post.php?post=' . $post_ID . '&action=edit&lang=en';
+
+    $to                 = get_option('admin_email');
+    $subject            = 'New ' . $post_type . ' update';
+    $body               = $post_type . '<br><br>' . $url . '<br><br><a href="'. $url . '">' . $title . '</a><br><br>';
+
+    wp_mail($to, $subject, $body, $headers);
+}
+
+add_action('post_updated', 'post_update_notification', 10, 3);
