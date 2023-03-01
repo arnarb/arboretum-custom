@@ -474,6 +474,23 @@ function get_algolia_data() {
     $file = file_get_contents($filename);
     $json = json_decode($file, true);
 
+    // foreach($json as $article)
+    // {
+    //     if (!$article['local_photo']) {
+    //         $img = $_SERVER['DOCUMENT_ROOT'] . '/wp-content/uploads/arnoldia/' . substr($article['featured_photo'], strpos($article['featured_photo'], '?file='));
+    //         $url = $article['featured_photo'];
+
+    //         file_put_contents($img, file_get_contents($url));            
+    //         $article['local_photo'] = $url;
+    //     }
+    // }
+
+    // $data = json_encode($json, JSON_PRETTY_PRINT);
+    // $fp = fopen($filename, 'w');
+    // fwrite($fp, $data);
+    // fclose($fp);
+    // // download the 
+
     return $json;
 }
 
