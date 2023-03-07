@@ -1,0 +1,14 @@
+{
+    "systems": [
+        {
+            "system_name": "Dana Greenhouse",
+            "total": 175049.296,
+            "start_date": "2016-12-01"
+        },
+        {
+            "system_name": "Weld Hill",
+            "total": 1550977.5,
+            "start_date": "2019-12-01"
+        }
+    ]
+}

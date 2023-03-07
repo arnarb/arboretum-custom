@@ -132,27 +132,14 @@ function sort_items($eras, $sort_value) {
 
 
 /**
- * 
- */
-function get_era($year) {
-    if ($year <= 1927) {
-        return "1874-1927";
-    } elseif ($year <= 1976) {
-        return "1928-1976";
-    } else {
-        return "1977-present";
-    }
-}
-
-
-/**
  * Get an array of arrays sorted into 3 eras, 1874-1927, 1928-1976, 1977-present
  */
 function get_items_by_era($items, $sort_value = "start_year") {
     $items_by_era = array();
 
     foreach($items as $item) {
-        $era = get_era($item->custom[$sort_value]);
+        $era = $item->custom[$sort_value] > 1976 ? "1977-present" : 
+            $item->custom[$sort_value] > 1927 ? "1928-1976" : "1874-1927";
 
         if (array_key_exists($era, $items_by_era)) {
             array_push($items_by_era[$era], $item);
@@ -579,3 +566,56 @@ function arboretum_new_user_registration_callback() {
 
 add_action('wp_ajax_arboretum_new_user_registration', 'arboretum_new_user_registration_callback');
 add_action('wp_ajax_nopriv_arboretum_new_user_registration', 'arboretum_new_user_registration_callback');
+
+
+/**
+ * Send an email to admin when a post is updated
+ */
+function post_saved_notification($post_ID) {
+    if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
+		return;
+	}
+
+    $headers = array(
+        "Content-Type: text/html; charset=UTF-8\r\n",
+        'From: The Arnold Arboretum <admin@arnarb.harvard.edu>'
+    );
+
+    $post_type = get_post_type($post_ID);
+    $title = get_the_title($post_ID);
+    $url = $_SERVER["HTTP_HOST"] . '/wp-admin/post.php?post=' . $post_ID . '&action=edit&lang=en';
+
+    $to                 = get_option('admin_email');
+    $subject            = 'New ' . $post_type . ' saved';
+    $body               = $post_type . '<br><br>' . $url . '<br><br><a href="'. $url . '">' . $title . '</a><br><br>';
+
+    wp_mail($to, $subject, $body, $headers);
+}
+
+add_action('save_post', 'post_saved_notification', 10, 3);
+
+/**
+ * Send an email to admin when a post is updated
+ */
+function post_update_notification($post_ID, $post_after, $post_before) {
+    if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
+		return;
+	}
+
+    $headers = array(
+        "Content-Type: text/html; charset=UTF-8\r\n",
+        'From: The Arnold Arboretum <admin@arnarb.harvard.edu>'
+    );
+
+    $post_type = get_post_type($post_ID);
+    $title = get_the_title($post_ID);
+    $url = $_SERVER["HTTP_HOST"] . '/wp-admin/post.php?post=' . $post_ID . '&action=edit&lang=en';
+
+    $to                 = get_option('admin_email');
+    $subject            = 'New ' . $post_type . ' update';
+    $body               = $post_type . '<br><br>' . $url . '<br><br><a href="'. $url . '">' . $title . '</a><br><br>';
+
+    wp_mail($to, $subject, $body, $headers);
+}
+
+add_action('post_updated', 'post_update_notification', 10, 3);
