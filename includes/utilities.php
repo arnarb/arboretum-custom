@@ -461,6 +461,23 @@ function get_algolia_data() {
     $file = file_get_contents($filename);
     $json = json_decode($file, true);
 
+    // foreach($json as $article)
+    // {
+    //     if (!$article['local_photo']) {
+    //         $img = $_SERVER['DOCUMENT_ROOT'] . '/wp-content/uploads/arnoldia/' . substr($article['featured_photo'], strpos($article['featured_photo'], '?file='));
+    //         $url = $article['featured_photo'];
+
+    //         file_put_contents($img, file_get_contents($url));            
+    //         $article['local_photo'] = $url;
+    //     }
+    // }
+
+    // $data = json_encode($json, JSON_PRETTY_PRINT);
+    // $fp = fopen($filename, 'w');
+    // fwrite($fp, $data);
+    // fclose($fp);
+    // // download the 
+
     return $json;
 }
 
@@ -515,29 +532,29 @@ add_filter('acf/fields/google_map/api', 'acf_google_map_api');
 /**
  * Redirect to a new login page
  */
-function redirect_login_page() {
-    $login_url  = home_url( '/login' );
-    $url = basename($_SERVER['REQUEST_URI']); // get requested URL
-    isset( $_REQUEST['redirect_to'] ) ? ( $url   = "wp-login.php" ): 0; // if users ssend request to wp-admin
-    if( $url  == "wp-login.php" && $_SERVER['REQUEST_METHOD'] == 'GET')  {
-        wp_redirect( $login_url );
-        exit;
-    }
-}
-add_action('init','redirect_login_page');
+// function redirect_login_page() {
+//     $login_url  = home_url( '/login' );
+//     $url = basename($_SERVER['REQUEST_URI']); // get requested URL
+//     isset( $_REQUEST['redirect_to'] ) ? ( $url   = "wp-login.php" ): 0; // if users ssend request to wp-admin
+//     if( $url  == "wp-login.php" && $_SERVER['REQUEST_METHOD'] == 'GET')  {
+//         wp_redirect( $login_url );
+//         exit;
+//     }
+// }
+// add_action('init','redirect_login_page');
 
-/**
- * Failed login error handling
- */
-function error_handler() {
-    $login_url  = home_url( '/login' );
-    global $errors;
-    $err_codes = $errors->get_error_codes(); // get WordPress built-in error codes
-    $_SESSION["err_codes"] =  $err_codes;
-    wp_redirect( $login_url ); // keep users on the same page
-    exit;
-}
-add_filter( 'login_errors', 'error_handler');
+// /**
+//  * Failed login error handling
+//  */
+// function error_handler() {
+//     $login_url  = home_url( '/login' );
+//     global $errors;
+//     $err_codes = $errors->get_error_codes(); // get WordPress built-in error codes
+//     $_SESSION["err_codes"] =  $err_codes;
+//     wp_redirect( $login_url ); // keep users on the same page
+//     exit;
+// }
+// add_filter( 'login_errors', 'error_handler');
 
 function correct_admin_email($email) {
     return "admin@arnarb.harvard.edu";
