@@ -29,7 +29,7 @@ function send_event_reminders() {
     $body = 'running<br>';
     if (file_exists("/www/arnoldarboretumwebsite_753/public/wp-load.php") ){
         if (is_readable("/www/arnoldarboretumwebsite_753/public/wp-load.php")) {
-            if (include("/www/arnoldarboretumwebsite_753/public/wp-load.php")){ 
+            if (include("/www/arnoldarboretumwebsite_753/public/wp-load.php")) { 
                 $tickets = $ticketRepo->getTickets(-1)->get();
 
                 foreach($tickets as $ticket) {
@@ -100,7 +100,7 @@ function send_event_surveys() {
 
     if (file_exists("/www/arnoldarboretumwebsite_753/public/wp-load.php") ){
         if (is_readable("/www/arnoldarboretumwebsite_753/public/wp-load.php")) {
-            if (include("/www/arnoldarboretumwebsite_753/public/wp-load.php")){ 
+            if (include("/www/arnoldarboretumwebsite_753/public/wp-load.php")) { 
                 $tickets = $ticketRepo->getTickets(-1)->get();
 
                 foreach($tickets as $ticket) {

@@ -29,9 +29,8 @@ function pull_powerdash_data() {
   $systems_response = curl_request($systems_options);
 
   if($systems_response):
-    $systems_json = json_decode($systems_response, true);
-
-    $systems = parse_locations($systems_json, $date);
+    $systems_decoded = json_decode($systems_response, true);
+    $systems = parse_locations($systems_decoded, $date);
 
     foreach($systems as $system):
       $system_url = $systems_url . $system->id;
@@ -44,8 +43,8 @@ function pull_powerdash_data() {
       $system_response = curl_request($system_options);
 
       if($system_response):
-        $system_json = json_decode($system_response, true);
-        $channels = parse_systems($system_json);
+        $system_decoded = json_decode($system_response, true);
+        $channels = parse_systems($system_decoded);
         $system->channels = $channels;
 
         foreach($channels as $channel):
@@ -69,9 +68,9 @@ function pull_powerdash_data() {
           $channel_response = curl_request($channel_options);
 
           if($channel_response):
-            $channel_json = json_decode($channel_response, true);
+            $channel_decoded = json_decode($channel_response, true);
 
-            $channel_val = $channel_json['channeldata']['intervals'][count($channel_json['channeldata']['intervals']) - 1]['values'][0]['endval'];
+            $channel_val = $channel_decoded['channeldata']['intervals'][count($channel_decoded['channeldata']['intervals']) - 1]['values'][0]['endval'];
             $channel->total = $channel_val;
           endif;
         endforeach;
@@ -150,11 +149,13 @@ function parse_locations($data, $date) {
   $HUNNEWELL_START = '2022-11-20T00:00:00Z';
   $WELD_START = '2019-12-01T00:00:00Z';
   $WELD = 'Weld';
+  $HUNNEWELL = 'Hunnewell';
 
   $systems = [];
 
   foreach($data['systems'] as $system):
-    $start = strpos($system['system_name'], $WELD) === false ? $DGH_START : $WELD_START;
+    $start = strpos($system['system_name'], $WELD) === false ? $DGH_START : 
+      strpost($system['system_name'], $HUNNEWELL) === false ? $HUNNEWELL_START : $WELD_START;
 
     $system_obj = (object) [
         'system_name' => $system['system_name'],
@@ -201,111 +202,5 @@ function parse_systems($data) {
 }
 
 pull_powerdash_data();
-
-
-
-
-
-/**
- * Curl request to Solren for Hunnewell Building
- */
-function get_hunnewell_solar_data() {
-  // this is the IP address that www.bata.com.sg resolves to
-////  $server = '209.160.64.80';
-  // $host   = 'http://solrenview.com/xmlfeed/ss-xmlN.php?show_whl&';
-  $url = "http://solrenview.com/xmlfeed/ss-xmlN.php?site_id=4232";//&ts_start=2021-01-01T00:00:00Z&ts_end=2021-05-11T00:00:00Z&show_whl";
-  // 'http://solrenview.com/xmlfeed/ss-xmlN.php?site_id=4232';
-
-  $curl = curl_init();
-
-      // $params = (object) [
-      //   'site_id'   => '4232',
-      //   'ts_start'  => '2021-01-01T00:00:00Z',
-      //   'ts_end'    => '2021-05-11T00:00:00Z',
-      // ];
-      // $args = http_build_query($params, '', '&amp;');
-  //$url = $host . $args;
-
-  // curl_setopt_array($curl, array(
-  //   CURLOPT_URL => $host,
-  //   CURLOPT_RETURNTRANSFER => true,
-  //   CURLOPT_TIMEOUT => 30,
-  //   CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-  //   CURLOPT_CUSTOMREQUEST => "GET",
-  //   // CURLOPT_HTTPHEADER => $options->headers
-  // ));
-
-  // $response = curl_exec($curl);
-  // $err = curl_error($curl);
-
-  // curl_close($curl);
-  // $ch = curl_init();
-  // $response = shell_exec("curl http://solrenview.com/xmlfeed/ss-xmlN.php?site_id=4232&ts_start=2021-01-01T00:00:00Z&ts_end=2021-05-11T00:00:00Z&show_whl")
-  //curl_setopt($curl, CURLOPT_URL, $host2); //$url);
-
-  // /* set the user agent - might help, doesn't hurt */
-  // curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:7.0.1) Gecko/20100101 Firefox/7.0.1');
-  // curl_setopt($ch, CURLOPT_RETURNTRANSFER,1);
-
-
-  // /* try to follow redirects */
-  // curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
-
-  // /* timeout after the specified number of seconds. assuming that this script runs
-  // on a server, 20 seconds should be plenty of time to verify a valid URL.  */
-  // curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 15);
-  // curl_setopt($ch, CURLOPT_TIMEOUT, 20);
-
-  // $headers = array();
-  // $headers[] = "Host: $host";
-
-  // curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-  // curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
-
-  // curl_setopt($curl, CURLOPT_VERBOSE, true);
-
-  // /* don't download the page, just the header (much faster in this case) */
-  // curl_setopt($ch, CURLOPT_NOBODY, true);
-  // curl_setopt($ch, CURLOPT_HEADER, true);
-  // curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-
-
-  curl_setopt_array($curl, array(
-    CURLOPT_URL => $url,
-    CURLOPT_RETURNTRANSFER => true,
-    CURLOPT_CONNECTTIMEOUT => 0,
-    CURLOPT_TIMEOUT => 0,
-    CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-    CURLOPT_CUSTOMREQUEST => "GET",
-    CURLOPT_USERAGENT => "curl/".(curl_version()["version"])
-    // CURLOPT_HTTPHEADER => $headers
-  ));
-
-  $response = curl_exec($curl);
-  $info = curl_getinfo($curl);
-  $err = curl_error($curl);
-  curl_close($curl);
-
-  $data = simplexml_load_string($response);
-  $filename = $_SERVER['DOCUMENT_ROOT'] . 'public/hunnewell_data.txt';
-  require "$filename";
-  $file = fopen($filename, 'w');
-  fwrite($file, $data);
-  fclose($file);
-
-  $filename = $_SERVER['DOCUMENT_ROOT'] . 'public/hunnewell_info.txt';
-  require "$filename";
-  $file = fopen($filename, 'w');
-  fwrite($file, $info);
-  fclose($file);
-
-  $filename = $_SERVER['DOCUMENT_ROOT'] . 'public/hunnewell_error.txt';
-  require "$filename";
-  $file = fopen($filename, 'w');
-  fwrite($file, $err);
-  fclose($file);
-}
-
-get_hunnewell_solar_data();
 
 ?>
