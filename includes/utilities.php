@@ -139,7 +139,7 @@ function get_items_by_era($items, $sort_value = "start_year") {
 
     foreach($items as $item) {
         $era = $item->custom[$sort_value] > 1976 ? "1977-present" : 
-            $item->custom[$sort_value] > 1927 ? "1928-1976" : "1874-1927";
+            ($item->custom[$sort_value] > 1927 ? "1928-1976" : "1874-1927");
 
         if (array_key_exists($era, $items_by_era)) {
             array_push($items_by_era[$era], $item);
