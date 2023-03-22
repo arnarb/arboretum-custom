@@ -922,3 +922,15 @@ function get_solar_data($atts) {
 }
 
 add_shortcode('get_solar_data', 'get_solar_data');
+
+
+/**
+ * Pulls in the Algolia json file and returns it
+ */
+function get_algolia_data() {
+  $filename = $_SERVER['DOCUMENT_ROOT'] . '/algolia_calc.json';
+  $file = file_get_contents($filename);
+  $json = json_decode($file, true);
+
+  return $json;
+}
