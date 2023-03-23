@@ -17,7 +17,7 @@ define('PUBLIC_PROGRAMS_EMAIL', 'publicprograms@arnarb.harvard.edu');
 include_once ARBORETUM_CUSTOM . 'includes/art-shows.php';
 // include_once ARBORETUM_CUSTOM . 'includes/consent-forms.php';
 include_once ARBORETUM_CUSTOM . 'includes/directors.php';
-// include_once ARBORETUM_CUSTOM . 'includes/events.php';
+include_once ARBORETUM_CUSTOM . 'includes/events.php';
 include_once ARBORETUM_CUSTOM . 'includes/expeditions.php';
 include_once ARBORETUM_CUSTOM . 'includes/plants.php';
 // include_once ARBORETUM_CUSTOM . 'includes/tickets.php';
