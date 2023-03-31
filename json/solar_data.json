@@ -1,0 +1,19 @@
+{
+    "systems": [
+        {
+            "system_name": "Dana Greenhouse",
+            "total": 175751.00799999997,
+            "start_date": "2016-12-01"
+        },
+        {
+            "system_name": "Hunnewell Visitor Center",
+            "total": 177797,
+            "start_date": "2016-12-01"
+        },
+        {
+            "system_name": "Weld Hill",
+            "total": 1563198.5,
+            "start_date": "2019-12-01"
+        }
+    ]
+}
