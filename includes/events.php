@@ -4,17 +4,19 @@
  */
 function set_custom_event_columns($columns) {
     if ($columns) {
-      $date = $colunns['date'];
-      unset($columns['date']);
-  
-    //   $columns['venue'] = __('Venue', 'arboretum');
-    //   $columns['type'] = __('Type', 'arboretum');
-      $columns['event_date'] = __('Event Date', 'arboretum');
-      $columns['signup_form'] = __('Signup Form', 'arboretum');
-    //   $columns['registrations'] = __('Registrations', 'arboretum');
-      $columns['date'] = __('Date', $date);
-  
-      return $columns;
+        $date = $colunns['date'];
+        unset($columns['date']);
+    
+        //   $columns['venue'] = __('Venue', 'arboretum');
+        //   $columns['type'] = __('Type', 'arboretum');
+        $columns['event_date'] = __('Event Date', 'arboretum');
+        $columns['signup_form'] = __('Signup Form', 'arboretum');
+        //   $columns['registrations'] = __('Registrations', 'arboretum');
+            
+        $columns['submissions'] = __('Submissions', 'arboretum');
+        $columns['date'] = __('Date', $date);
+    
+        return $columns;
     }
 }
 add_filter('manage_event_posts_columns', 'set_custom_event_columns');
@@ -34,11 +36,20 @@ function custom_event_column($column, $post_id) {
                 echo $date;
             }
             break;
+
         case 'signup_form':
             $form = get_field('signup_form', $post_id);
             if (is_array($form) && $form['id'] != 1) {
                 echo '<a href="/wp-admin/admin.php?page=nf-submissions&form_id=' . $form['id'] . '">' . $form['data']['title'] . '</a>';
             }
+            break;
+
+        case 'submissions':
+            $form = get_field('signup_form', $post_id);
+            if (is_array($form) && $form['id'] != 1) {
+                echo count(Ninja_Forms()->form($form['id'])->get_subs());
+            }
+            break;
     }
     
     date_default_timezone_set('UTC');
@@ -93,7 +104,7 @@ function event_filters_restrict_manage_posts($post_type){
   
     $events = get_posts(array('numberposts' => -1, 'post_type' => 'event', 'posts_per_page' => -1));
   
-    // User column
+    // Event Date column
     $values = array();
     foreach($events as $event) {
         setup_postdata($event);
