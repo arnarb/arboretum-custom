@@ -8,14 +8,10 @@ function extend(destination, source) {
 // Acf hook -> Hooks -> Filters -> date_picker_args
 // see https://www.advancedcustomfields.com/resources/adding-custom-javascript-fields/
 acf.add_filter('date_picker_args', function( args, $field ){
-	// do something to args
-
 	var custom_args = {
 	  yearRange:			"-200:+100", // value to change
 	};
+	args = extend(args, custom_args);
 
-	args = extend(args, custom_args)
-
-	// return
 	return args;
 });
