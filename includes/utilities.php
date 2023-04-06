@@ -209,3 +209,15 @@ function acf_google_map_api( $api ){
 }
 add_filter('acf/fields/google_map/api', 'acf_google_map_api');
 
+// Add custom focal point to image
+function add_focal_point_to_attachment_fields_to_edit($form_fields, $post) {
+    $imageHTML = '<div class="js-focal-point-selector">' . wp_get_attachment_image($post->ID, 'medium') . '</div>';
+    $form_fields['focal'] = array(
+        'label' => __( 'Focal Point' ),
+        'helps' => __( 'Pick the center of focus for this image' ),
+        'input' => 'html',
+        'html' => $imageHTML
+    );
+    return $form_fields;
+}
+add_filter('attachment_fields_to_edit', 'add_focal_point_to_attachment_fields_to_edit', 10, 2);
