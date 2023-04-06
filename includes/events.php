@@ -14,7 +14,8 @@ function set_custom_event_columns($columns) {
         //   $columns['registrations'] = __('Registrations', 'arboretum');
             
         $columns['submissions'] = __('Submissions', 'arboretum');
-        $columns['date'] = __('Date', $date);
+        $columns['description'] = __('Description', $date);
+        // $columns['date'] = __('Date', $date);
     
         return $columns;
     }
@@ -40,14 +41,15 @@ function custom_event_column($column, $post_id) {
         case 'signup_form':
             $form = get_field('signup_form', $post_id);
             if (is_array($form) && $form['id'] != 1) {
-                echo '<a href="/wp-admin/admin.php?page=nf-submissions&form_id=' . $form['id'] . '">' . $form['data']['title'] . '</a>';
+                echo '<a href="/wp-admin/admin.php?page=ninja-forms&form_id=' . $form['id'] . '">' . $form['data']['title'] . '</a>';
             }
             break;
 
         case 'submissions':
             $form = get_field('signup_form', $post_id);
             if (is_array($form) && $form['id'] != 1) {
-                echo count(Ninja_Forms()->form($form['id'])->get_subs());
+                $subs = count(Ninja_Forms()->form($form['id'])->get_subs());
+                echo '<a href="/wp-admin/admin.php?page=nf-submissions&form_id=' . $form['id'] . '">' . $subs . '</a>';
             }
             break;
     }
@@ -128,23 +130,23 @@ function event_filters_restrict_manage_posts($post_type){
             );
         }
     ?>
-      </select>
+        </select>
     <?php
-      wp_reset_postdata();
-  }
-  add_action('restrict_manage_posts', 'event_filters_restrict_manage_posts');
+    wp_reset_postdata();
+}
+add_action('restrict_manage_posts', 'event_filters_restrict_manage_posts');
   
   
-  /**
-   * if submitted filter by post meta
-   *
-   * make sure to change META_KEY to the actual meta key
-   * and POST_TYPE to the name of your custom post type
-   * @param  (wp_query object) $query
-   *
-   * @return Void
-   */
-  function event_filters($query){
+/**
+ * if submitted filter by post meta
+ *
+ * make sure to change META_KEY to the actual meta key
+ * and POST_TYPE to the name of your custom post type
+ * @param  (wp_query object) $query
+ *
+ * @return Void
+ */
+function event_filters($query){
     global $pagenow;
   
     $type = 'event';
@@ -176,6 +178,24 @@ function event_filters_restrict_manage_posts($post_type){
             'type'      => 'DATE'
         );
     }
-  }
-  add_filter('parse_query', 'event_filters');
-  
+}
+add_filter('parse_query', 'event_filters');
+
+// /**
+//  * Add Quick Edit field for Description
+//  */
+// add_action( 'quick_edit_custom_box',  'event_quick_edit_custon_box');
+
+// function event_quick_edit_custon_box($column_name, $post_type) {
+//     switch ($column_name) {
+//         case 'description':
+//             ? >
+//             <div class="inline-edit-col">
+//                 <label>
+//                     Test 
+//                 </label>
+//             </div>
+//             <?php
+//             break;
+//     }
+// }
