@@ -1,7 +1,3 @@
-<?php /* BEGIN KINSTA STAGING ENVIRONMENT */ ?>
-<?php if ( !defined('KINSTA_DEV_ENV') ) { define('KINSTA_DEV_ENV', true); /* Kinsta staging - don't remove this line */ } ?>
-<?php if ( !defined('JETPACK_STAGING_MODE') ) { define('JETPACK_STAGING_MODE', true); /* Kinsta staging - don't remove this line */ } ?>
-<?php /* END KINSTA STAGING ENVIRONMENT */ ?>
 <?php
 /**
  * The base configuration for WordPress
@@ -40,7 +36,11 @@ define( 'DB_CHARSET', 'utf8' );
 
 /** The Database Collate type. Don't change this if in doubt. */
 define( 'DB_COLLATE', '' );
-define('WP_MEMORY_LIMIT', '1000000M');
+define('WP_MEMORY_LIMIT', '400M');
+
+
+define( 'WP_ENV', 'production');
+
 /**
  * Authentication Unique Keys and Salts.
  *
@@ -67,16 +67,15 @@ define( 'WP_CACHE_KEY_SALT', '<0!w|ilWC)1UKP[8Af$!KFXNs^Df^z%M--CjVE7cCC}n-.2T2g
  * a unique prefix. Only numbers, letters, and underscores please!
  */
 $table_prefix = 'wp_';
+if (! defined('WP_DEBUG') ) { define( 'WP_DEBUG', false ); } // line added by the MyKinsta
 
-/* Algolia API keys */
-
+/* Algolia API Keys */
 define( 'ALGOLIA_APPLICATION_ID', 'FM6OP5R7TP');
 define( 'ALGOLIA_ADMIN_API_KEY', '5744d98ad3638124ff6d15e0796c10db');
 define( 'ALGOLIA_SEARCH_ONLY_API_KEY', 'a5638a5b52e24eec05af1cf4b22838c3');
-define( 'ALGOLIA_INDEX_PREFIX', 'staging');
+define( 'ALGOLIA_INDEX_PREFIX', 'live');
 
 
-define('DISABLE_WP_CRON', true);
 /* That's all, stop editing! Happy blogging. */
 
 /** Absolute path to the WordPress directory. */
