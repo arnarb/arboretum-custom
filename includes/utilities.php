@@ -154,11 +154,6 @@ function enqueue_utility_scripts() {
     wp_localize_script('date-picker-js', 'arbAjax', array('ajaxurl' => admin_url('admin-ajax.php')));
   
     wp_enqueue_script('date-picker-js', '', array(), false, true);
-
-    wp_register_script('focal-point-js', ARBORETUM_CUSTOM_URL . 'js/focal-point.js', array('jquery'));
-    wp_localize_script('focal-point-js', 'arbAjax', array('ajaxurl' => admin_url('admin-ajax.php')));
-  
-    wp_enqueue_script('focal-point-js', '', array(), false, true);
 }
 add_action('admin_enqueue_scripts', 'enqueue_utility_scripts');
   
@@ -216,7 +211,54 @@ add_filter('acf/fields/google_map/api', 'acf_google_map_api');
 
 // Add custom focal point to image
 function add_focal_point_to_attachment_fields_to_edit($form_fields, $post) {
-    $imageHTML = '<div class="js-focal-point-selector">' . wp_get_attachment_image($post->ID, 'medium') . '</div>';
+    $imageHTML = '
+        <script>
+            let posX = document.querySelector("#acf-field_642ec6749754a");
+            let posXReadout = document.querySelector("#acf-field_642ec6749754a-alt");
+            let posY = document.querySelector("#acf-field_642ec7429754b");
+            let posYReadout = document.querySelector("#acf-field_642ec7429754b-alt");
+
+            posX.addEventListener("change", positionReticle);
+            posXReadout.addEventListener("change", positionReticle);
+            posY.addEventListener("change", positionReticle);
+            posYReadout.addEventListener("change", positionReticle);
+
+            function createReticle() {
+                const reticle = document.createElement("img");
+                reticle.src = "/wp-content/uploads/2023/04/reticle.png";
+                reticle.style = "position: absolute; width: 25px;"
+                reticle.id = "reticle";
+
+                container = document.querySelector(".js-focal-point-selector");
+                container.appendChild(reticle);
+                
+                positionReticle();
+            }
+
+            function positionReticle() {
+                const reticle = document.querySelector("#reticle");
+                reticle.style = "position: absolute; width: 25px; left: calc(" + posX.value + "% - 13px); top: calc(" + posY.value + "% - 13px);";
+            }
+
+            function setPosPhoto(event) {
+                const bounds = document.querySelector(".js-focal-point-selector").getBoundingClientRect();
+
+                const percX = Math.floor((event.offsetX / bounds.width) * 100);
+                const percY = Math.floor((event.offsetY / bounds.height) * 100);
+
+                reticle.style = "position: absolute; width: 25px; left: calc(" + percX + "% - 13px); top: calc(" + percY + "% - 13px);";
+                posX.value = percX;
+                posXReadout.value = percX;
+                posY.value = percY;
+                posYReadout.value = percY;
+            }
+
+            setTimeout(createReticle, 300);
+        </script>
+
+        <div class="js-focal-point-selector" style="position: relative; width: fit-content; height: fit-content;" onmousedown="setPosPhoto(event)">' . wp_get_attachment_image($post->ID, 'medium') . '</div>
+    
+    ';
     $form_fields['focal'] = array(
         'label' => __( 'Focal Point' ),
         'helps' => __( 'Pick the center of focus for this image' ),
