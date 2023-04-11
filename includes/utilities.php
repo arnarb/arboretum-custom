@@ -213,34 +213,49 @@ add_filter('acf/fields/google_map/api', 'acf_google_map_api');
 function add_focal_point_to_attachment_fields_to_edit($form_fields, $post) {
     $imageHTML = '
         <script>
-            let posX = document.querySelector("#acf-field_642ec6749754a");
-            let posXReadout = document.querySelector("#acf-field_642ec6749754a-alt");
-            let posY = document.querySelector("#acf-field_642ec7429754b");
-            let posYReadout = document.querySelector("#acf-field_642ec7429754b-alt");
-
-            posX.addEventListener("change", positionReticle);
-            posXReadout.addEventListener("change", positionReticle);
-            posY.addEventListener("change", positionReticle);
-            posYReadout.addEventListener("change", positionReticle);
+            if (typeof posX === "undefined") {
+                const posX = document.querySelector("#acf-field_642ec6749754a");
+                const posXReadout = document.querySelector("#acf-field_642ec6749754a-alt");
+                posX.addEventListener("change", positionReticle);
+                posXReadout.addEventListener("change", positionReticle);
+            }
+            if (typeof posY === "undefined") {
+                const posY = document.querySelector("#acf-field_642ec7429754b");
+                const posYReadout = document.querySelector("#acf-field_642ec7429754b-alt");
+                posY.addEventListener("change", positionReticle);
+                posYReadout.addEventListener("change", positionReticle);
+            }
 
             function createReticle() {
-                const reticle = document.createElement("img");
-                reticle.src = "/wp-content/uploads/2023/04/reticle.png";
-                reticle.style = "position: absolute; width: 25px;"
-                reticle.id = "reticle";
+                let reticle = document.querySelector("#reticle");
+                if (!reticle) {
+                    reticle = document.createElement("img");
+                    reticle.src = "/wp-content/uploads/2023/04/reticle.png";
+                    reticle.style = "position: absolute; width: 25px;"
+                    reticle.id = "reticle";
 
-                container = document.querySelector(".js-focal-point-selector");
-                container.appendChild(reticle);
-                
+                    container = document.querySelector(".js-focal-point-selector");
+                    container.appendChild(reticle);
+                }
                 positionReticle();
             }
 
             function positionReticle() {
+                const posX = document.querySelector("#acf-field_642ec6749754a");
+                const posXReadout = document.querySelector("#acf-field_642ec6749754a-alt");
+                const posY = document.querySelector("#acf-field_642ec7429754b");
+                const posYReadout = document.querySelector("#acf-field_642ec7429754b-alt");
+
                 const reticle = document.querySelector("#reticle");
                 reticle.style = "position: absolute; width: 25px; left: calc(" + posX.value + "% - 13px); top: calc(" + posY.value + "% - 13px);";
             }
 
             function setPosPhoto(event) {
+                const posX = document.querySelector("#acf-field_642ec6749754a");
+                const posXReadout = document.querySelector("#acf-field_642ec6749754a-alt");
+                const posY = document.querySelector("#acf-field_642ec7429754b");
+                const posYReadout = document.querySelector("#acf-field_642ec7429754b-alt");
+                
                 const bounds = document.querySelector(".js-focal-point-selector").getBoundingClientRect();
 
                 const percX = Math.floor((event.offsetX / bounds.width) * 100);
