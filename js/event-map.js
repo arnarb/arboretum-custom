@@ -1,6 +1,5 @@
 // Render maps on page load.
 jQuery(document).ready(function() {
-    console.log('EVENT MAP');
     jQuery('.js-event-map').each(function(){
         var map = initMap( jQuery(this) );
     });
