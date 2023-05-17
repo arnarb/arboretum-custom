@@ -138,8 +138,11 @@ function nf_subs_capabilities($cap) {
  */
 function check_for_translations() {
     global $post;
-    $is_translated = apply_filters('wpml_element_has_translations', NULL, $post->ID, 'page');
 
+    if ($post && $post->ID) {
+        $is_translated = apply_filters('wpml_element_has_translations', NULL, $post->ID, 'page');
+    }
+    
     if(!$is_translated) {
         return 'hidden';
     }
