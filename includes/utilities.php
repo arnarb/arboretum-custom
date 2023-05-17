@@ -150,10 +150,16 @@ function check_for_translations() {
  * Extend AFC DatePicker field range
  */
 function enqueue_utility_scripts() {    
+    // Date Picker
     wp_register_script('date-picker-js', ARBORETUM_CUSTOM_URL . 'js/custom-date-picker.js', array('jquery'));
     wp_localize_script('date-picker-js', 'arbAjax', array('ajaxurl' => admin_url('admin-ajax.php')));
   
     wp_enqueue_script('date-picker-js', '', array(), false, true);
+    
+    // Event Map
+    wp_register_script('event-map', ARBORETUM_CUSTOM_URL . 'js/event-map.js', array('jquery'));
+    wp_localize_script('event-map', 'arbAjax', array('ajaxurl' => admin_url('admin-ajax.php')));
+    wp_enqueue_script('event-map');
 }
 add_action('admin_enqueue_scripts', 'enqueue_utility_scripts');
   
