@@ -20,17 +20,13 @@ add_filter('posts_where', 'allow_wildcards');
  */
 function set_custom_researcher_columns($columns) {
     if ($columns) {
-        $date = $colunns['date'];
+        $date = $columns['date'];
         unset($columns['date']);
     
-        $columns['fellowship'] = __('Role', 'arboretum');
-        $columns['award'] = __('Award', 'arboretum');
-        // $columns['event_date'] = __('Event Date', 'arboretum');
-        // $columns['signup_form'] = __('Signup Form', 'arboretum');
-        // //   $columns['registrations'] = __('Registrations', 'arboretum');
-            
-        // $columns['submissions'] = __('Submissions', 'arboretum');
-        // $columns['description'] = __('Description', $date);
+        $columns['fellowship'] = __('Roles', 'arboretum');
+        $columns['award'] = __('Awards', 'arboretum');
+        $columns['start_year'] = __('Start Year', 'arboretum');
+        $columns['end_year'] = __('End Year', 'arboretum');
         $columns['date'] = __('Date', $date);
     
         return $columns;
@@ -46,27 +42,81 @@ function custom_researcher_column($column, $post_id) {
     date_default_timezone_set('America/New_York');
 
     switch ($column) {
-        // case 'fellowship':
-        //     if (get_field('tenure', $post_id)) {
-        //         // foreach()
-        //         echo $date;
-        //     }
-        //     break;
+        case 'fellowship':
+            $tenures = get_field('tenure', $post_id);
+            if ($tenures > 0) {
+                $fellowships = '';
+                foreach($tenures as $tenure) {
+                    if ($tenure['fellowship']) {
+                        $fellowships .= $tenure['fellowship'][0] . '<br>';
+                    }
+                }
+                foreach($tenures as $tenure) {
+                    if ($tenure['award']) {
+                        $fellowships .= '<br>';
+                    }
+                }
+            }
 
-        // case 'signup_form':
-        //     $form = get_field('signup_form', $post_id);
-        //     if (is_array($form) && $form['id'] != 1) {
-        //         echo '<a href="/wp-admin/admin.php?page=ninja-forms&form_id=' . $form['id'] . '">' . $form['data']['title'] . '</a>';
-        //     }
-        //     break;
+            echo $fellowships;
+            break;
 
-        // case 'submissions':
-        //     $form = get_field('signup_form', $post_id);
-        //     if (is_array($form) && $form['id'] != 1) {
-        //         $subs = count(Ninja_Forms()->form($form['id'])->get_subs());
-        //         echo '<a href="/wp-admin/admin.php?page=nf-submissions&form_id=' . $form['id'] . '">' . $subs . '</a>';
-        //     }
-        //     break;
+        case 'award':
+            $tenures = get_field('tenure', $post_id);
+            if ($tenures > 0) {
+                $awards = '';
+                foreach($tenures as $tenure) {
+                    if ($tenure['fellowship']) {
+                        $awards .= '<br>';
+                    }
+                }
+                foreach($tenures as $tenure) {
+                    if ($tenure['award']) {
+                        $awards .= $tenure['award'][0] . '<br>';
+                    }
+                }
+            }
+
+            echo $awards;
+            break;
+
+        case 'start_year':
+            $tenures = get_field('tenure', $post_id);
+            if ($tenures > 0) {
+                $start_dates = '';
+                foreach($tenures as $tenure) {
+                    if ($tenure['fellowship']) {
+                        $start_dates .= $tenure['start_year'] . '<br>';
+                    }
+                }
+                foreach($tenures as $tenure) {
+                    if ($tenure['award']) {
+                        $start_dates .= $tenure['start_year'] . '<br>';
+                    }
+                }
+            }
+
+            echo $start_dates;
+            break;
+
+        case 'end_year':
+            $tenures = get_field('tenure', $post_id);
+            if ($tenures > 0) {
+                $end_dates = '';
+                foreach($tenures as $tenure) {
+                    if ($tenure['fellowship']) {
+                        $end_dates .= $tenure['end_year'] . '<br>';
+                    }
+                }
+                foreach($tenures as $tenure) {
+                    if ($tenure['award']) {
+                        $end_dates .= $tenure['end_year'] . '<br>';
+                    }
+                }
+            }
+
+            echo $end_dates;
+            break;
     }
     
     date_default_timezone_set('UTC');
@@ -77,29 +127,36 @@ add_action('manage_researcher_posts_custom_column', 'custom_researcher_column', 
 /**
  * Set fields as sortable
  */
-function set_custom_research_sortable_columns( $columns ) {
-    // $columns['event_date'] = 'event_date';
-
+function set_custom_researcher_sortable_columns( $columns ) {
+    $columns['fellowship'] = 'fellowship';
+    $columns['award'] = 'award';
+    $columns['start_year'] = 'start_year';
+    $columns['end_year'] = 'end_year';
     return $columns;
 }
-add_filter('manage_edit-researcher_sortable_columns', 'set_custom_research_sortable_columns');
+add_filter('manage_edit-researcher_sortable_columns', 'set_custom_researcher_sortable_columns');
 
 
 /**
  * Order fields
  */
-function research_orderby($query) {
+function researcher_orderby($query) {
     if(!is_admin())
         return;
 
-    $orderby = $query->get('orderby');
+    if( isset($query->query_vars['post_type']) && $query->query_vars['post_type'] == 'researcher' ) {
+        $orderby = $query->get('orderby');
 
-    // if('event_date' == $orderby) {
-    //     $query->set('meta_key', 'event_date');
-    //     $query->set('orderby', 'meta_value');
-    // }
+        if('fellowship' == $orderby) {
+            $query->set('meta_key', 'tenure_$_fellowship');
+        }
+
+        $query->set('orderby', 'meta_value');
+
+        return $query;
+    }
 }
-add_action('pre_get_posts', 'research_orderby');
+add_action('pre_get_posts', 'researcher_orderby');
 
 
 /**
