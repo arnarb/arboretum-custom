@@ -138,8 +138,11 @@ function nf_subs_capabilities($cap) {
  */
 function check_for_translations() {
     global $post;
-    $is_translated = apply_filters('wpml_element_has_translations', NULL, $post->ID, 'page');
 
+    if ($post && $post->ID) {
+        $is_translated = apply_filters('wpml_element_has_translations', NULL, $post->ID, 'page');
+    }
+    
     if(!$is_translated) {
         return 'hidden';
     }
@@ -147,17 +150,30 @@ function check_for_translations() {
 
 
 /**
- * Extend AFC DatePicker field range
+ * Extend Admin scripts
  */
-function extend_afc_date_picker_range() {    
+function enqueue_admin_utility_scripts() {    
+    // Date Picker
     wp_register_script('date-picker-js', ARBORETUM_CUSTOM_URL . 'js/custom-date-picker.js', array('jquery'));
     wp_localize_script('date-picker-js', 'arbAjax', array('ajaxurl' => admin_url('admin-ajax.php')));
-  
+
     wp_enqueue_script('date-picker-js', '', array(), false, true);
 }
-add_action('admin_enqueue_scripts', 'extend_afc_date_picker_range');
+add_action('admin_enqueue_scripts', 'enqueue_admin_utility_scripts');
   
-  
+/**
+ * Extend Visitor scripts
+ */
+function enqueue_utility_scripts() {    
+    // Event Map
+    wp_register_script('event-map', ARBORETUM_CUSTOM_URL . 'js/event-map.js', array('jquery'));
+    wp_localize_script('event-map', 'arbAjax', array('ajaxurl' => admin_url('admin-ajax.php')));
+
+    wp_enqueue_script('event-map');
+}
+add_action('wp_enqueue_scripts', 'enqueue_utility_scripts');
+
+
 /**
  * Create the tokens to hold the widget information that will get populated by JS when it reads 'js-solar-widget' class
  */
