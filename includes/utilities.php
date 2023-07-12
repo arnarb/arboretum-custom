@@ -209,3 +209,11 @@ function acf_google_map_api( $api ){
 }
 add_filter('acf/fields/google_map/api', 'acf_google_map_api');
 
+
+/**
+ * Switch the email address for mail
+ */
+function correct_admin_email($email) {
+    return "admin@arnarb.harvard.edu";
+}
+add_filter('wp_mail_from', 'correct_admin_email');
