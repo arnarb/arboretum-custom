@@ -307,3 +307,35 @@ function correct_admin_email($email) {
     return "admin@arnarb.harvard.edu";
 }
 add_filter('wp_mail_from', 'correct_admin_email');
+
+
+/**
+ * Try and filter some of the M.E. Calendar emails
+ */
+// function catch_mec_emails($args) {
+//     $index = strpos($args['message'], '[booking]');
+//     $indexOffset = 9;
+
+//     if (!is_bool($index)) {
+//         $indexEnd = strpos($args['message'], '[/booking]');
+//         $indexEndOffset = 10;
+//         $args['message'] .= 'Booking ID: ' . substr($args['message'], $index + $indexOffset, $indexEnd - ($index + $indexOffset));
+//     } else {
+//         $args['message'] .= 'No booking info';
+//     }
+
+//     return $args;
+// }
+// add_filter('wp_mail', 'catch_mec_emails', 10, 1);
+
+
+function hide_useless_mec_filters() {
+  echo '<style>
+    .input-field:has(> select[name="mec_ticket_name"]),
+    .alignleft:has(> select[name="mec_ticket_name"]),
+    #mec_filter_occurrence {
+      display: none;
+    } 
+  </style>';
+}
+add_action('admin_head', 'hide_useless_mec_filters');
