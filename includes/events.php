@@ -4,7 +4,7 @@
  */
 function set_custom_event_columns($columns) {
     if ($columns) {
-        $date = $colunns['date'];
+        $date = $columns['date'];
         unset($columns['date']);
     
         //   $columns['venue'] = __('Venue', 'arboretum');
