@@ -83,7 +83,7 @@ function pull_powerdash_data() {
       $total = 0;
 
       foreach($system->channels as $channel):
-        $total += $channel->total;
+        $total += (int)$channel->total;
       endforeach;
 
       $system_data = (object) [
@@ -155,7 +155,7 @@ function parse_locations($data, $date) {
 
   foreach($data['systems'] as $system):
     $start = strpos($system['system_name'], $WELD) === false ? $DGH_START : 
-      strpost($system['system_name'], $HUNNEWELL) === false ? $HUNNEWELL_START : $WELD_START;
+      (strpos($system['system_name'], $HUNNEWELL) === false ? $HUNNEWELL_START : $WELD_START);
 
     $system_obj = (object) [
         'system_name' => $system['system_name'],
