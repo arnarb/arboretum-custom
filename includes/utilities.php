@@ -347,8 +347,27 @@ add_action('admin_head', 'hide_useless_mec_filters');
  * Find the needle for ticket names in MEC emails
  */
 function compress_tickets($args) {
-    if (strpos($args['message'], '{{' ) != false) {
-        $args['message'] .= 'Found the string';
+    $start = strpos($args['message'], '{{');
+    $end = strpos($args['message'], '}}');
+
+    if ($start != false) {
+        $message_part_1 = substr($args['message'], 0, $start);
+        $ticket_names = substr($args['message'], $start + 2, $end - $start - 2);
+        $message_part_2 = substr($args['message'], $end + 2);
+
+        $ticket_name_array = explode(',', $ticket_names);
+        $distinct_ticket_names = [];
+
+        foreach ($ticket_name_array as $ticket_name) {
+            $ticket_name = trim($ticket_name);
+            if (!in_array($ticket_name, $distinct_ticket_names)) {
+                array_push($distinct_ticket_names, $ticket_name);
+            }
+        }
+
+        $tickets = implode(', ', $distinct_ticket_names);
+
+        $args['message'] = $message_part_1 . $tickets . $message_part_2;
     }
 
     return $args;
