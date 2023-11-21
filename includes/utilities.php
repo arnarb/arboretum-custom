@@ -355,7 +355,7 @@ function compress_tickets($args) {
         foreach ($ticket_name_array as $ticket_name) {
             $ticket_name = trim($ticket_name);
 
-            if (isset($distinct_ticket_names->$ticket_name)) {
+            if (isset($distinct_ticket_names[$ticket_name])) {
                 $distinct_ticket_names[$ticket_name] ++;
             } else {
                 $distinct_ticket_names[$ticket_name] = 1;
