@@ -37,8 +37,10 @@ foreach($mecEvents as $event):
                 update_field('survey_sent', 1, $book->ID);
                 $survey_bookings[$book->ID] = $book;
 
-                if (!in_array($booking->mec_event_id, $eventsSent)) {
-                    array_push($eventsSent, $booking->mec_event_id);
+                $eventTimeString = $booking->mec_event_id . '-' . $book->mec_attention_time_end;
+
+                if (!in_array($eventTimeString, $eventsSent)) {
+                    array_push($eventsSent, $eventTimeString);
                     $notif->event_finished($booking->mec_event_id, $book->mec_attention_time_start.':'.$book->mec_attention_time_end);
                 }
             }

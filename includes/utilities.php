@@ -354,11 +354,30 @@ function compress_tickets($args) {
         $distinct_ticket_names = [];
         foreach ($ticket_name_array as $ticket_name) {
             $ticket_name = trim($ticket_name);
-            if (!in_array($ticket_name, $distinct_ticket_names)) {
-                array_push($distinct_ticket_names, $ticket_name);
+
+            if (isset($distinct_ticket_names->$ticket_name)) {
+                $distinct_ticket_names[$ticket_name] ++;
+            } else {
+                $distinct_ticket_names[$ticket_name] = 1;
             }
+            // if (!in_array($ticket_name, $distinct_ticket_names)) {
+            //     array_push($distinct_ticket_names, $ticket_name);
+            // }
         }
-        $tickets = implode(', ', $distinct_ticket_names);
+        $tickets = '';
+        $counter = count($distinct_ticket_names);
+        foreach($distinct_ticket_names as $name => $num) {
+            $tickets .= $name . ' (' . $num . ')';
+
+            if ($counter > 1) {
+                $tickets .= ', ';
+            }
+
+            $counter --;
+        }
+
+
+        // $tickets = implode(', ', $distinct_ticket_names);
         $args['message'] = $message_part_1 . $tickets . $message_part_2;
     }
     return $args;
