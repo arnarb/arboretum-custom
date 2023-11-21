@@ -1,7 +1,6 @@
 <?php
 use Arboretum\Repositories\DirectorRepository;
 
-
 /**
  * Create a shortcode for director's lectures
  */
