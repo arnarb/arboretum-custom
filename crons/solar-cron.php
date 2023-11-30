@@ -28,11 +28,11 @@ function pull_powerdash_data() {
   // cURL Powerdash Locations for systems
   $systems_response = curl_request($systems_options);
 
-  if($systems_response):
+  if ($systems_response):
     $systems_decoded = json_decode($systems_response, true);
     $systems = parse_locations($systems_decoded, $date);
 
-    foreach($systems as $system):
+    foreach ($systems as $system):
       $system_url = $systems_url . $system->id;
       $system_options = (object) [
         'url'       => $system_url,
@@ -42,12 +42,12 @@ function pull_powerdash_data() {
       // cURL Powerdash systems for individual channels
       $system_response = curl_request($system_options);
 
-      if($system_response):
+      if ($system_response):
         $system_decoded = json_decode($system_response, true);
         $channels = parse_systems($system_decoded);
         $system->channels = $channels;
 
-        foreach($channels as $channel):
+        foreach ($channels as $channel):
           $params = (object) [
             'channel_id'  => $channel->id,
             'start_time'  => $system->start_time,
@@ -67,7 +67,7 @@ function pull_powerdash_data() {
           // cURL Powerdash individual channels for output values
           $channel_response = curl_request($channel_options);
 
-          if($channel_response):
+          if ($channel_response):
             $channel_decoded = json_decode($channel_response, true);
 
             $channel_val = $channel_decoded['channeldata']['intervals'][count($channel_decoded['channeldata']['intervals']) - 1]['values'][0]['endval'];
@@ -79,11 +79,11 @@ function pull_powerdash_data() {
     endforeach;
 
     // Add output values together and create JSON object of the systems
-    foreach($systems as $system):
+    foreach ($systems as $system):
       $total = 0;
 
-      foreach($system->channels as $channel):
-        $total += $channel->total;
+      foreach ($system->channels as $channel):
+        $total += (int)$channel->total;
       endforeach;
 
       $system_data = (object) [
@@ -127,10 +127,10 @@ function curl_request($options) {
 
   curl_close($curl);
 
-  if($err):
+  if ($err):
     echo 'ERROR: ', $err;
     return false;
-  elseif($response):
+  elseif ($response):
     return $response;
   endif;
 }
@@ -145,17 +145,22 @@ function curl_request($options) {
  * @return systems array of the systems arrays
  */
 function parse_locations($data, $date) {
-  $DGH_START = '2016-12-01T00:00:00Z';
-  $HUNNEWELL_START = '2017-09-01T00:00:00Z';
-  $WELD_START = '2019-12-01T00:00:00Z';
+  $DGH_START = '2016-12-02T00:00:00Z';
+  $HUNNEWELL_START = '2017-09-02T00:00:00Z';
+  $WELD_START = '2019-12-02T00:00:00Z'; // *
   $WELD = 'Weld';
   $HUNNEWELL = 'Hunnewell';
 
   $systems = [];
 
   foreach($data['systems'] as $system):
-    $start = strpos($system['system_name'], $WELD) === false ? $DGH_START : 
-      strpost($system['system_name'], $HUNNEWELL) === false ? $HUNNEWELL_START : $WELD_START;
+    if (strpos($system['system_name'], $WELD) !== false && strpos($system['system_name'], $WELD) > -1):
+      $start = $WELD_START;
+    elseif (strpos($system['system_name'], $HUNNEWELL) !== false && strpos($system['system_name'], $HUNNEWELL) > -1):
+      $start = $HUNNEWELL_START;
+    else:
+      $start = $DGH_START;
+    endif;
 
     $system_obj = (object) [
         'system_name' => $system['system_name'],
@@ -185,8 +190,8 @@ function parse_systems($data) {
   $TESLA = 'Solar production (Tesla meter)';
 
   $channels = [];
-  foreach($data['channels'] as $channel):
-    if(strpos($data['system_name'], $WELD) === false || strpos($channel['label'], $TESLA) > -1):
+  foreach ($data['channels'] as $channel):
+    if (strpos($data['system_name'], $WELD) === false || strpos($channel['label'], $TESLA) > -1):
       $channel_obj = (object) [
         'channel_name' => $channel['label'],
         'id' => $channel['channel_id'],
