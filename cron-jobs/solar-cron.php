@@ -146,7 +146,7 @@ function curl_request($options) {
  */
 function parse_locations($data, $date) {
   $DGH_START = '2016-12-01T00:00:00Z';
-  $HUNNEWELL_START = '2022-11-20T00:00:00Z';
+  $HUNNEWELL_START = '2017-09-01T00:00:00Z';
   $WELD_START = '2019-12-01T00:00:00Z';
   $WELD = 'Weld';
   $HUNNEWELL = 'Hunnewell';
