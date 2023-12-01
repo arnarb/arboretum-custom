@@ -365,17 +365,22 @@ function compress_tickets($args) {
             // }
         }
         $tickets = '';
-        $counter = count($distinct_ticket_names);
+        $total = count($distinct_ticket_names);
+        $counter = $total;
+
         foreach($distinct_ticket_names as $name => $num) {
-            $tickets .= $name . ' (' . $num . ')';
+            if ($total > 1) {
+                $tickets .= $name . ' (' . $num . ')';
 
-            if ($counter > 1) {
-                $tickets .= ', ';
+                if ($counter > 1) {
+                    $tickets .= ', ';
+                }
+
+                $counter --;
+            } else {
+                $tickets = $name;
             }
-
-            $counter --;
         }
-
 
         // $tickets = implode(', ', $distinct_ticket_names);
         $args['message'] = $message_part_1 . $tickets . $message_part_2;
