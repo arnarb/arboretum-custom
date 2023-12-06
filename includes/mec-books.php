@@ -1,5 +1,6 @@
 <?php
 use Arboretum\Models\MECEvent;
+use Arboretum\Models\MECBooking;
 
 require_once ARBORETUM_CUSTOM . '/vendor/autoload.php';
 
@@ -70,7 +71,7 @@ function generate_spreadsheet_bulk_action() { //$redirect_url, $action, $post_id
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
     
-        $sheet->setTitle("Event Registrations - - $date");
+        $sheet->setTitle("Event Registrations $title");
         // $tickets = get_posts(
         //     array(
         //     'numberposts' => -1,
@@ -96,8 +97,11 @@ function generate_spreadsheet_bulk_action() { //$redirect_url, $action, $post_id
     //     $sheet->setCellValue("L1", "Selected Venue Location");
     
     //     // Add custom questions
-    //     $custom_question_positions = array();
-    //     $column_number = 12;  // Capital A (65) + 11 other predetermined columns for chr()
+    $custom_question_positions = array();
+    $column_number = 6;  // Capital A (65) + 11 other predetermined columns for chr()
+
+    // Get the questions from the event
+
     //     foreach($tickets as $ticket) {      
     
     //         $get_post_custom = get_post_custom($ticket->ID); 
@@ -124,11 +128,42 @@ function generate_spreadsheet_bulk_action() { //$redirect_url, $action, $post_id
         $num = 1;
         // Populate rows with submissions
         foreach($bookings as $booking) {
+
+            $book = new MECBooking($booking->ID);
+            $attendees = $book->mec_attendees;
+            $main_attendee = $attendees[0];
+            if (isset($main_attendee['reg'])) {
+                $answers = $main_attendee['reg'];
+            }
     //         $user = get_user_by('ID', $ticket->user);
             $num ++;
-            $sheet->setCellValue("A$num", 'booking');
-            $sheet->setCellValue("B$num", $booking->event);
-            $sheet->setCellValue("C$num", $booking)
+            $sheet->setCellValue("A$num", $book->ID);
+            $sheet->setCellValue("B$num", $booking->ID);
+            $sheet->setCellValue("C$num", count($attendees));
+            $sheet->setCellValue("D$num", $main_attendee['name']);
+            $sheet->setCellValue("E$num", $main_attendee['email']);
+            if (isset($main_attendee['reg'])) {
+                foreach($answers as $key=>$value) {
+                    $sheet->setCellValue("F$num", $value);
+                }
+            }
+            // foreach($answers as $key=>$value) {
+            //     // if (strpos($name, 'custom_questions_') === 0 && !str_contains($name, '_answer')) {
+        
+            //     //     $question_num = substr($name, 0, strlen($name) - 9);
+            //     //     $answer_name = $question_num . '_answer';
+            //         $answer = $answers[$key];
+            //         foreach($value as $value_name=>$question) {
+            //             $column_letter = $custom_question_positions[$question];
+            //             $column = $column_letter . $num;
+            
+            //             $sheet->setCellValue($column, $answer);
+            //             }
+            //         }
+            //     }
+            // }
+            
+
     //         $sheet->setCellValue("B$num", $ticket->ID);
     //         $sheet->setCellValue("C$num", $ticket->time_registered);        
     //         $sheet->setCellValue("D$num", "$user->first_name $user->last_name");
@@ -237,6 +272,24 @@ function add_download_data_button($which)
         echo '<input type="button" value="Export Data" class="button" disabled/>';
     } else {
         echo '<hr><input type="button" value="Export Data" onclick="' . $onclick . '" class="button"/>';
+        $event_id = $_GET['mec_event_id'];
+
+        $args = array(
+            'numberposts'   => -1,
+            'post_type'     => 'mec-books',
+            'meta_key'      => 'mec_event_id',
+            'meta_value'    => $event_id
+        );
+    
+        // Get Event
+        // $mecEvent = new MECEvent($event_id);
+
+        $bookings = get_posts($args);
+        $booking = new MECBooking($bookings[0]->ID);
+
+        var_dump($bookings[0]);
+        echo '<hr>';
+        var_dump($booking);
     }
 
     // `<input id="post-query-export" class="button" type="button" value="Export CSV list" name="" onclick="document.location.href=` . get_stylesheet_directory_uri() . `/csv/export.php';">`;
