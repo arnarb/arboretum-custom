@@ -64,14 +64,20 @@ function generate_spreadsheet_bulk_action() { //$redirect_url, $action, $post_id
     // Get Event
     $mecEvent = new MECEvent($event_id);
     $bookings = get_posts($args);
-    $title = $bookings[0]->event;
-    $alt_title = $mecEvent->title;
+    $title = 'Event Registrations';
+    $long_title = 'Event Registrations - ' . $mecEvent->post_title . ' - ' . $date;
+
+
 
     // if($action == 'download_mec-books') {
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
     
-        $sheet->setTitle("Event Registrations $title");
+        
+    //     $invalidCharacters = array('*', ':', '/', '\\', '?', '[', ']');
+    // $title = str_replace($invalidCharacters, '', $title);
+    
+        $sheet->setTitle($title);
         // $tickets = get_posts(
         //     array(
         //     'numberposts' => -1,
@@ -83,7 +89,16 @@ function generate_spreadsheet_bulk_action() { //$redirect_url, $action, $post_id
         // $ticket_num = count($tickets);
 
         // Set static column titles
-        $sheet->setCellValue("A1", "TEST FOR BOOK TICKETS");
+        $sheet->setCellValue("A1", "Booking ID");
+        $sheet->setCellValue("B1", "Registrant Name");
+        $sheet->setCellValue("C1", "Registrant Email");
+        $sheet->setCellValue("D1", "Total Registrations");
+        $sheet->setCellValue("E1", "Ticket Type");
+        $sheet->setCellValue("F1", "Booking Date");
+        $sheet->setCellValue("G1", "Event Date");
+
+        // Custom Questions
+
     //     $sheet->setCellValue("B1", "Ticket Number");
     //     $sheet->setCellValue("C1", "Time Registered");
     //     $sheet->setCellValue("D1", "User Name");
@@ -138,15 +153,22 @@ function generate_spreadsheet_bulk_action() { //$redirect_url, $action, $post_id
     //         $user = get_user_by('ID', $ticket->user);
             $num ++;
             $sheet->setCellValue("A$num", $book->ID);
-            $sheet->setCellValue("B$num", $booking->ID);
-            $sheet->setCellValue("C$num", count($attendees));
-            $sheet->setCellValue("D$num", $main_attendee['name']);
-            $sheet->setCellValue("E$num", $main_attendee['email']);
-            if (isset($main_attendee['reg'])) {
-                foreach($answers as $key=>$value) {
-                    $sheet->setCellValue("F$num", $value);
-                }
-            }
+            $sheet->setCellValue("B$num", $main_attendee['name']);
+            $sheet->setCellValue("C$num", $main_attendee['email']);
+            $sheet->setCellValue("D$num", count($attendees));
+
+            // type
+            // booking date
+            // date
+            $book_date = wp_date('Y/m/d - h:i', substr($book->mec_date, 0, strpos($book->mec_date, ':')), new DateTimeZone('America/New_York'));
+            $sheet->setCellValue("G$num", $book_date);
+
+            // custom questions
+            // if (isset($main_attendee['reg'])) {
+            //     foreach($answers as $key=>$value) {
+            //         $sheet->setCellValue("F$num", $value);
+            //     }
+            // }
             // foreach($answers as $key=>$value) {
             //     // if (strpos($name, 'custom_questions_') === 0 && !str_contains($name, '_answer')) {
         
@@ -242,7 +264,7 @@ function generate_spreadsheet_bulk_action() { //$redirect_url, $action, $post_id
     // Write excel sheet to file
     $writer = new Xlsx($spreadsheet);
     header("Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-    header("Content-Disposition: attachment;filename=\"Event-Registrations-$date.xlsx\"");
+    header("Content-Disposition: attachment;filename=\"$long_title.xlsx\"");
     header("Cache-Control: max-age=0");
     header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
     header("Cache-Control: cache, must-revalidate");
@@ -285,11 +307,17 @@ function add_download_data_button($which)
         // $mecEvent = new MECEvent($event_id);
 
         $bookings = get_posts($args);
-        $booking = new MECBooking($bookings[0]->ID);
+        $mecEvent = new MECEvent($event_id);
 
         var_dump($bookings[0]);
         echo '<hr>';
-        var_dump($booking);
+
+        foreach($bookings as $book) {
+            $booking = new MECBooking($book->ID);
+            var_dump($booking);
+            echo '<hr>';
+        }
+        var_dump($mecEvent);
     }
 
     // `<input id="post-query-export" class="button" type="button" value="Export CSV list" name="" onclick="document.location.href=` . get_stylesheet_directory_uri() . `/csv/export.php';">`;
