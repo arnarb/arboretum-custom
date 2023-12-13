@@ -143,7 +143,7 @@ function check_for_translations() {
         $is_translated = apply_filters('wpml_element_has_translations', NULL, $post->ID, 'page');
     }
     
-    if(!$is_translated) {
+    if(!isset($is_translated)) {
         return 'hidden';
     }
 }
