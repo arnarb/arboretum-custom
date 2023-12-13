@@ -6,6 +6,8 @@ require_once ARBORETUM_CUSTOM . '/vendor/autoload.php';
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\RichText\RichText;
+use PhpOffice\PhpSpreadsheet\Style\Color;
 
 function generate_spreadsheet_bulk_action() { 
     $date = date("Y-m-d");
@@ -45,18 +47,19 @@ function generate_spreadsheet_bulk_action() {
     $sheet->setCellValue("A1", "Booking ID");
     $sheet->setCellValue("B1", "Registrant Name");
     $sheet->setCellValue("C1", "Registrant Email");
-    $sheet->setCellValue("D1", "Total Registrations");
-    $sheet->setCellValue("E1", "Ticket Type");
-    $sheet->setCellValue("F1", "Booking Date");
-    $sheet->setCellValue("G1", "Event Date");
+    $sheet->setCellValue("D1", "Verification");
+    $sheet->setCellValue("E1", "Total Registrations");
+    $sheet->setCellValue("F1", "Ticket Type");
+    $sheet->setCellValue("G1", "Booking Date");
+    $sheet->setCellValue("H1", "Event Date");
 
     // Add custom questions
     $custom_question_positions = array();
-    $column_number = 7;  // Capital A (65) + 6 other predetermined columns for chr()
+    $column_number = 8;  // Capital A (65) + 7 other predetermined columns for chr()
 
     $ignore_values = array('name', 'mec_email', 'p');
 
-    $columns = array('A', 'B', 'C', 'D', 'E', 'F', 'G');
+    $columns = array('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H');
 
     // Custom Questions
     if ($mecEvent->mec_reg_fields_global_inheritance == '0') {
@@ -66,7 +69,7 @@ function generate_spreadsheet_bulk_action() {
                 $column_letter = chr(65 + ($column_number % 26));
                 $cell = $column_letter . '1';
 
-                if ($question['label'] && !in_array($question['type'], $ignore_values)) {
+                if (isset($question['label']) && !in_array($question['type'], $ignore_values)) {
                     $sheet->setCellValue($cell, $question['label']);
                     $custom_question_positions[$key] = $column_letter;
 
@@ -77,8 +80,8 @@ function generate_spreadsheet_bulk_action() {
             }
         }
     } else {
-        $sheet->setCellValue('H1', 'THIS EVENT INHERITS FROM THE GLOBALS');
-        array_push($columns, 'H');
+        $sheet->setCellValue('I1', 'THIS EVENT INHERITS FROM THE GLOBALS');
+        array_push($columns, 'I');
     }
 
     $max_column_number = chr(65 + ($column_number % 26));
@@ -101,8 +104,24 @@ function generate_spreadsheet_bulk_action() {
         $sheet->setCellValue("B$num", $main_attendee['name']);
         $sheet->setCellValue("C$num", $main_attendee['email']);
 
+        // verification, waiting, canceled
+        $values = array('-1' => 'Canceled', '0' => 'Waiting', '1' => 'Verified');
+        $value = $values[$book->mec_verified];
+        $richText = new RichText();
+        $verified = $richText->createTextRun($value);
+        $verified->getFont()->setBold(true);
+        switch($value) {
+            case 'Canceled':
+                $verified->getFont()->setColor(new Color('FFFF4400'));
+                break;
+            case 'Verified':
+                $verified->getFont()->setColor(new Color('FF00B400'));
+                break;
+        }
+        $sheet->getCell("D$num")->setValue($richText);
+
         // attendees
-        $sheet->setCellValue("D$num", count($attendees));
+        $sheet->setCellValue("E$num", count($attendees));
 
         // type
         $types = explode(',', $book->mec_ticket_id);
@@ -135,16 +154,16 @@ function generate_spreadsheet_bulk_action() {
                 $tickets = $key;
             }
         }
-        $sheet->setCellValue("E$num", $tickets);
+        $sheet->setCellValue("F$num", $tickets);
 
         // booking date
         $book_date = date('j F, Y @ g:i A', strtotime($book->mec_booking_time));
-        $sheet->setCellValue("F$num", $book_date);
+        $sheet->setCellValue("G$num", $book_date);
 
         // date
         $timestamp = substr($book->mec_date, 0, strpos($book->mec_date, ':'));
         $event_date = date('j F, Y @ g:i A', $timestamp);
-        $sheet->setCellValue("G$num", $event_date);
+        $sheet->setCellValue("H$num", $event_date);
 
         foreach($answers as $key => $answer) {
             if (array_key_exists($key, $custom_question_positions)) {
@@ -161,9 +180,9 @@ function generate_spreadsheet_bulk_action() {
 
     // Set auto width and text wrap
     foreach ($columns as $column) {
-        $spreadsheet->getActiveSheet()->getColumnDimension($column)->setAutoSize(true);
+        $sheet->getColumnDimension($column)->setAutoSize(true);
     }
-    $spreadsheet->getActiveSheet()->getStyle("A2:$max_column_number$num")->getAlignment()->setWrapText(true);
+    $sheet->getStyle("A2:$max_column_number$num")->getAlignment()->setWrapText(true);
 
     // Write excel sheet to file
     $writer = new Xlsx($spreadsheet);
@@ -192,25 +211,6 @@ function add_export_data_button($which)
         echo '<input type="button" value="Export Data" class="button" disabled/>';
     } else {
         echo '<hr><input type="button" value="Export Data" onclick="' . $onclick . '" class="button"/>';
-        
-        
-        $event_id = $_GET['mec_event_id'];
-        $args = array(
-            'numberposts'   => -1,
-            'post_type'     => 'mec-books',
-            'meta_key'      => 'mec_event_id',
-            'meta_value'    => $event_id
-        );
-    
-        // Get Event
-        $mecEvent = new MECEvent($event_id);
-        $bookings = get_posts($args);
-
-        var_dump($mecEvent); 
-        echo '<hr>';
-        foreach($bookings as $booking) {
-            var_dump($booking);
-        }
     }
 }
 add_action('manage_posts_extra_tablenav', 'add_export_data_button');
