@@ -192,7 +192,25 @@ function add_export_data_button($which)
         echo '<input type="button" value="Export Data" class="button" disabled/>';
     } else {
         echo '<hr><input type="button" value="Export Data" onclick="' . $onclick . '" class="button"/>';
+        
+        
         $event_id = $_GET['mec_event_id'];
+        $args = array(
+            'numberposts'   => -1,
+            'post_type'     => 'mec-books',
+            'meta_key'      => 'mec_event_id',
+            'meta_value'    => $event_id
+        );
+    
+        // Get Event
+        $mecEvent = new MECEvent($event_id);
+        $bookings = get_posts($args);
+
+        var_dump($mecEvent); 
+        echo '<hr>';
+        foreach($bookings as $booking) {
+            var_dump($booking);
+        }
     }
 }
 add_action('manage_posts_extra_tablenav', 'add_export_data_button');
