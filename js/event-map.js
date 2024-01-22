@@ -1,8 +1,10 @@
 // Render maps on page load.
 jQuery(document).ready(function() {
-    jQuery('.js-event-map').each(function(){
-        var map = initMap( jQuery(this) );
-    });
+    if (jQuery('.js-event-map').length) {
+        jQuery('.js-event-map').each(function(){
+            var map = initMap( jQuery(this) );
+        });
+    }
 });
 
 /**
