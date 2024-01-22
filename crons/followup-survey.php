@@ -23,6 +23,8 @@ $survey_bookings = [];
 $mecRepo = new MECEventRepository();
 $mecEvents = $mecRepo->getUpcomingEvents()->get();
 
+$eventsSent = [];
+
 foreach($mecEvents as $event):
     $bookings = $main->get_bookings($event->ID);
 
@@ -32,10 +34,15 @@ foreach($mecEvents as $event):
         // Check the time on the ticket - is it tomorrow
         if (empty($book->survey_sent)) {
             if ($book->mec_attention_time_end < (strtotime($current_time) - $one_day)) {
-                $notif->event_finished($booking->mec_event_id, $book->mec_attention_time_start.':'.$book->mec_attention_time_end);
                 update_field('survey_sent', 1, $book->ID);
-
                 $survey_bookings[$book->ID] = $book;
+
+                $eventTimeString = $booking->mec_event_id . '-' . $book->mec_attention_time_end;
+
+                if (!in_array($eventTimeString, $eventsSent)) {
+                    array_push($eventsSent, $eventTimeString);
+                    $notif->event_finished($booking->mec_event_id, $book->mec_attention_time_start.':'.$book->mec_attention_time_end);
+                }
             }
         }
     endforeach;
