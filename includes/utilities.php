@@ -388,4 +388,3 @@ function compress_tickets($args) {
     return $args;
 }
 add_filter('wp_mail', 'compress_tickets', 10, 1);
->>>>>>> develop
