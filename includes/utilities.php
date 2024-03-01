@@ -339,3 +339,52 @@ function hide_useless_mec_filters() {
   </style>';
 }
 add_action('admin_head', 'hide_useless_mec_filters');
+
+/**
+ * Find the needle for ticket names in MEC emails
+ */
+function compress_tickets($args) {
+    $start = strpos($args['message'], '{{');
+    $end = strpos($args['message'], '}}');
+    if ($start != false) {
+        $message_part_1 = substr($args['message'], 0, $start);
+        $ticket_names = substr($args['message'], $start + 2, $end - $start - 2);
+        $message_part_2 = substr($args['message'], $end + 2);
+        $ticket_name_array = explode(',', $ticket_names);
+        $distinct_ticket_names = [];
+        foreach ($ticket_name_array as $ticket_name) {
+            $ticket_name = trim($ticket_name);
+
+            if (isset($distinct_ticket_names[$ticket_name])) {
+                $distinct_ticket_names[$ticket_name] ++;
+            } else {
+                $distinct_ticket_names[$ticket_name] = 1;
+            }
+            // if (!in_array($ticket_name, $distinct_ticket_names)) {
+            //     array_push($distinct_ticket_names, $ticket_name);
+            // }
+        }
+        $tickets = '';
+        $total = count($distinct_ticket_names);
+        $counter = $total;
+
+        foreach($distinct_ticket_names as $name => $num) {
+            if ($total > 1) {
+                $tickets .= $name . ' (' . $num . ')';
+
+                if ($counter > 1) {
+                    $tickets .= ', ';
+                }
+
+                $counter --;
+            } else {
+                $tickets = $name;
+            }
+        }
+
+        // $tickets = implode(', ', $distinct_ticket_names);
+        $args['message'] = $message_part_1 . $tickets . $message_part_2;
+    }
+    return $args;
+}
+add_filter('wp_mail', 'compress_tickets', 10, 1);
