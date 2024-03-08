@@ -9,7 +9,7 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\RichText\RichText;
 use PhpOffice\PhpSpreadsheet\Style\Color;
 
-function generate_booking_spreadsheet() { 
+function generate_waitlist_spreadsheet() { 
     $date = date("Y-m-d");
     $meta_query = array();
 
@@ -21,7 +21,7 @@ function generate_booking_spreadsheet() {
 
     $args = array(
         'numberposts'   => -1,
-        'post_type'     => 'mec-books',
+        'post_type'     => 'mec-waiting',
         'meta_key'      => 'mec_event_id',
         'meta_value'    => $event_id
     );
@@ -29,8 +29,8 @@ function generate_booking_spreadsheet() {
     // Get Event
     $mecEvent = new MECEvent($event_id);
     $bookings = get_posts($args);
-    $title = 'Event Registrations';
-    $long_title = 'Event Registrations - ' . $mecEvent->post_title . ' - ' . $date;
+    $title = 'Waitlist Registrations';
+    $long_title = 'Waitlist Registrations - ' . $mecEvent->post_title . ' - ' . $date;
 
     $ticket_types = array();
     $types = $mecEvent->mec_tickets;
@@ -62,27 +62,27 @@ function generate_booking_spreadsheet() {
     $columns = array('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H');
 
     // Custom Questions
-    if ($mecEvent->mec_reg_fields_global_inheritance == '0') {
-        foreach ($mecEvent->mec_reg_fields as $key=>$question) {
-                // See if it already contains this answer?
-            if (!array_key_exists($key, $custom_question_positions)) {
-                $column_letter = chr(65 + ($column_number % 26));
-                $cell = $column_letter . '1';
+    // if ($mecEvent->mec_reg_fields_global_inheritance == '0') {
+    //     foreach ($mecEvent->mec_reg_fields as $key=>$question) {
+    //             // See if it already contains this answer?
+    //         if (!array_key_exists($key, $custom_question_positions)) {
+    //             $column_letter = chr(65 + ($column_number % 26));
+    //             $cell = $column_letter . '1';
 
-                if (isset($question['label']) && !in_array($question['type'], $ignore_values)) {
-                    $sheet->setCellValue($cell, $question['label']);
-                    $custom_question_positions[$key] = $column_letter;
+    //             // if (isset($question['label']) && !in_array($question['type'], $ignore_values)) {
+    //             //     $sheet->setCellValue($cell, $question['label']);
+    //             //     $custom_question_positions[$key] = $column_letter;
 
-                    $column_number++;
+    //             //     $column_number++;
 
-                    array_push($columns, $column_letter);
-                }
-            }
-        }
-    } else {
-        $sheet->setCellValue('I1', 'THIS EVENT INHERITS FROM THE GLOBALS');
-        array_push($columns, 'I');
-    }
+    //             //     array_push($columns, $column_letter);
+    //             // }
+    //         }
+    //     }
+    // } else {
+    //     $sheet->setCellValue('I1', 'THIS EVENT INHERITS FROM THE GLOBALS');
+    //     array_push($columns, 'I');
+    // }
 
     $max_column_number = chr(65 + ($column_number % 26));
     
@@ -165,17 +165,18 @@ function generate_booking_spreadsheet() {
         $event_date = date('j F, Y @ g:i A', $timestamp);
         $sheet->setCellValue("H$num", $event_date);
 
-        foreach($answers as $key => $answer) {
-            if (array_key_exists($key, $custom_question_positions)) {
-                $column_letter = $custom_question_positions[$key];
-                $cell = $column_letter . $num;
+        // Custom Questions
+        // foreach($answers as $key => $answer) {
+        //     if (array_key_exists($key, $custom_question_positions)) {
+        //         $column_letter = $custom_question_positions[$key];
+        //         $cell = $column_letter . $num;
     
-                if (is_array($answer)) {
-                    $answer = implode(', ', $answer);
-                }
-                $sheet->setCellValue($cell, $answer);
-            }
-        }
+        //         if (is_array($answer)) {
+        //             $answer = implode(', ', $answer);
+        //         }
+        //         $sheet->setCellValue($cell, $answer);
+        //     }
+        // }
     }
 
     // Set auto width and text wrap
@@ -197,10 +198,10 @@ function generate_booking_spreadsheet() {
 }
 
 // Add the export data button
-function add_booking_export_data_button($which)
+function add_waiting_export_data_button($which)
 {
     global $typenow;
-    if ('mec-books' !== $typenow) return;
+    if ('mec-waiting' !== $typenow) return;
     if ($which == 'top') return;
 
     $url = "https://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]&export_data=true";
@@ -213,16 +214,16 @@ function add_booking_export_data_button($which)
         echo '<hr><input type="button" value="Export Data" onclick="' . $onclick . '" class="button"/>';
     }
 }
-add_action('manage_posts_extra_tablenav', 'add_booking_export_data_button');
+add_action('manage_posts_extra_tablenav', 'add_waiting_export_data_button');
 
 // Export data for selected event
-function export_booking_data()
+function export_waiting_data()
 {
     global $typenow;
-    if ('mec-books' !== $typenow) return;
+    if ('mec-waiting' !== $typenow) return;
 
     if (isset($_GET['export_data'])) {
-        generate_booking_spreadsheet();
+        generate_waitlist_spreadsheet();
     }
 }
-add_action('wp', 'export_booking_data');
+add_action('wp', 'export_waiting_data');

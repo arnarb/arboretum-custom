@@ -19,6 +19,7 @@ include_once ARBORETUM_CUSTOM . 'includes/directors.php';
 include_once ARBORETUM_CUSTOM . 'includes/events.php';
 include_once ARBORETUM_CUSTOM . 'includes/expeditions.php';
 include_once ARBORETUM_CUSTOM . 'includes/mec-books.php';
+include_once ARBORETUM_CUSTOM . 'includes/mec-waiting.php';
 include_once ARBORETUM_CUSTOM . 'includes/plants.php';
 // include_once ARBORETUM_CUSTOM . 'includes/researchers.php';
 include_once ARBORETUM_CUSTOM . 'includes/utilities.php';
