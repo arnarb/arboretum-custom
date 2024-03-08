@@ -1,6 +1,6 @@
 <?php
 use Arboretum\Models\MECEvent;
-use Arboretum\Models\MECBooking;
+use Arboretum\Models\MECWaiting;
 
 require_once ARBORETUM_CUSTOM . '/vendor/autoload.php';
 
@@ -28,7 +28,7 @@ function generate_waitlist_spreadsheet() {
 
     // Get Event
     $mecEvent = new MECEvent($event_id);
-    $bookings = get_posts($args);
+    $waitings = get_posts($args);
     $title = 'Waitlist Registrations';
     $long_title = 'Waitlist Registrations - ' . $mecEvent->post_title . ' - ' . $date;
 
@@ -61,44 +61,21 @@ function generate_waitlist_spreadsheet() {
 
     $columns = array('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H');
 
-    // Custom Questions
-    // if ($mecEvent->mec_reg_fields_global_inheritance == '0') {
-    //     foreach ($mecEvent->mec_reg_fields as $key=>$question) {
-    //             // See if it already contains this answer?
-    //         if (!array_key_exists($key, $custom_question_positions)) {
-    //             $column_letter = chr(65 + ($column_number % 26));
-    //             $cell = $column_letter . '1';
-
-    //             // if (isset($question['label']) && !in_array($question['type'], $ignore_values)) {
-    //             //     $sheet->setCellValue($cell, $question['label']);
-    //             //     $custom_question_positions[$key] = $column_letter;
-
-    //             //     $column_number++;
-
-    //             //     array_push($columns, $column_letter);
-    //             // }
-    //         }
-    //     }
-    // } else {
-    //     $sheet->setCellValue('I1', 'THIS EVENT INHERITS FROM THE GLOBALS');
-    //     array_push($columns, 'I');
-    // }
-
     $max_column_number = chr(65 + ($column_number % 26));
     
     $num = 1;
     // Populate rows with submissions
-    foreach($bookings as $booking) {
-        $book = new MECBooking($booking->ID);
-        $attendees = $book->mec_attendees;
+    foreach($waitings as $waiting) {
+        $waiting = new MECWaiting($waiting->ID);
+        $attendees = $waiting->mec_attendees;
         $main_attendee = $attendees[0];
         if (isset($main_attendee['reg'])) {
             $answers = $main_attendee['reg'];
         }
 
         $num ++;
-        // booking id
-        $sheet->setCellValue("A$num", $book->ID);
+        // waiting id
+        $sheet->setCellValue("A$num", $waiting->ID);
 
         // registrants info
         $sheet->setCellValue("B$num", $main_attendee['name']);
@@ -106,7 +83,7 @@ function generate_waitlist_spreadsheet() {
 
         // verification, waiting, canceled
         $values = array('-1' => 'Canceled', '0' => 'Waiting', '1' => 'Verified');
-        $value = $values[$book->mec_verified];
+        $value = $values[$waiting->mec_verified];
         $richText = new RichText();
         $verified = $richText->createTextRun($value);
         $verified->getFont()->setBold(true);
@@ -124,7 +101,12 @@ function generate_waitlist_spreadsheet() {
         $sheet->setCellValue("E$num", count($attendees));
 
         // type
-        $types = explode(',', $book->mec_ticket_id);
+        if (gettype($waiting->mec_ticket_id) != "array")
+        {
+            $types = explode(',', $waiting->mec_ticket_id);
+        } else {
+            $types = $waiting->mec_ticket_id;
+        }
         $tickets_purchased = array();
 
         foreach ($types as $type) {
@@ -157,26 +139,13 @@ function generate_waitlist_spreadsheet() {
         $sheet->setCellValue("F$num", $tickets);
 
         // booking date
-        $book_date = date('j F, Y @ g:i A', strtotime($book->mec_booking_time));
+        $book_date = get_the_date('j F, Y @ g:i A', $waiting);
         $sheet->setCellValue("G$num", $book_date);
 
         // date
-        $timestamp = substr($book->mec_date, 0, strpos($book->mec_date, ':'));
+        $timestamp = substr($waiting->mec_date, 0, strpos($waiting->mec_date, ':'));
         $event_date = date('j F, Y @ g:i A', $timestamp);
         $sheet->setCellValue("H$num", $event_date);
-
-        // Custom Questions
-        // foreach($answers as $key => $answer) {
-        //     if (array_key_exists($key, $custom_question_positions)) {
-        //         $column_letter = $custom_question_positions[$key];
-        //         $cell = $column_letter . $num;
-    
-        //         if (is_array($answer)) {
-        //             $answer = implode(', ', $answer);
-        //         }
-        //         $sheet->setCellValue($cell, $answer);
-        //     }
-        // }
     }
 
     // Set auto width and text wrap
