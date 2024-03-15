@@ -183,9 +183,7 @@ function researcher_filters_restrict_manage_posts($post_type){
     if (isset($_GET['post_type'])) {
       $type = $_GET['post_type'];
     }
-    if('researcher' !== $type) {
-      return;
-    }
+    if('researcher' !== $type) return;
   
     $researchers = get_posts(array('numberposts' => -1, 'post_type' => 'researcher', 'posts_per_page' => -1));
   
@@ -236,9 +234,7 @@ function researcher_filters($query){
     if (isset($_GET['post_type'])) {
         $type = $_GET['post_type'];
     }
-    if('researcher' !== $type) {
-        return;
-    }
+    if('researcher' !== $type) return;
   
     // Subject Matter filter
     if (is_admin() &&

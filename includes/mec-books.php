@@ -199,8 +199,11 @@ function generate_booking_spreadsheet() {
 // Add the export data button
 function add_booking_export_data_button($which)
 {
-    global $typenow;
-    if ('mec-books' !== $typenow) return;
+    $type = 'mec-books';
+    if (isset($_GET['post_type'])) {
+      $type = $_GET['post_type'];
+    }
+    if('mec-books' !== $type) return;
     if ($which == 'top') return;
 
     $url = "https://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]&export_data=true";
@@ -218,8 +221,11 @@ add_action('manage_posts_extra_tablenav', 'add_booking_export_data_button');
 // Export data for selected event
 function export_booking_data()
 {
-    global $typenow;
-    if ('mec-books' !== $typenow) return;
+    $type = 'mec-books';
+    if (isset($_GET['post_type'])) {
+      $type = $_GET['post_type'];
+    }
+    if('mec-books' !== $type) return;
 
     if (isset($_GET['export_data'])) {
         generate_booking_spreadsheet();

@@ -169,8 +169,12 @@ function generate_waitlist_spreadsheet() {
 // Add the export data button
 function add_waiting_export_data_button($which)
 {
-    global $typenow;
-    if ('mec-waiting' !== $typenow) return;
+    $type = 'mec-waiting';
+    if (isset($_GET['post_type'])) {
+      $type = $_GET['post_type'];
+    }
+    if('mec-waiting' !== $type) return;
+    
     if ($which == 'top') return;
 
     $url = "https://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]&export_data=true";
@@ -188,8 +192,11 @@ add_action('manage_posts_extra_tablenav', 'add_waiting_export_data_button');
 // Export data for selected event
 function export_waiting_data()
 {
-    global $typenow;
-    if ('mec-waiting' !== $typenow) return;
+    $type = 'mec-waiting';
+    if (isset($_GET['post_type'])) {
+      $type = $_GET['post_type'];
+    }
+    if('mec-waiting' !== $type) return;
 
     if (isset($_GET['export_data'])) {
         generate_waitlist_spreadsheet();
