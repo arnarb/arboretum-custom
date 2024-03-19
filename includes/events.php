@@ -227,6 +227,8 @@ function generate_events_archive() {
     $sheet->setCellValue("C1", "Start Date");
     $sheet->setCellValue("D1", "End Date");
     $sheet->setCellValue("E1", "Total Registrations (if recorded)");
+    $sheet->setCellValue("F1", "Max Registrants");
+    $sheet->setCellValue("G1", "Image URL");
 
     // Get Event
     $events = get_posts($args);
@@ -234,8 +236,12 @@ function generate_events_archive() {
 
     foreach($events as $event_raw) {
         $event = new Event($event_raw->ID);
+
+        if ($event->image) {
+            $url = $event->image['url'];
+            $sheet->setCellValue("G$num", "$url");
+        }
         $sheet->setCellValue("A$num", $event->title);
-        $sheet->setCellValue("B$num", $event->description);
 
         $date = new DateTime($event->event_date);
         $date = $date->format('Y/m/d') . ' at ' . $date->format('h:i a');
@@ -248,9 +254,9 @@ function generate_events_archive() {
 
         $form = get_field('signup_form', $event->ID);
         if (is_array($form) && $form['id'] != 1) {
+
             $subs = Ninja_Forms()->form($form['id'])->get_subs();
             $count = count($subs);
-
             $registrants = "Total Registrants: $count\n\n";
 
             // Get user data for registrations
@@ -258,12 +264,10 @@ function generate_events_archive() {
                 foreach($subs as $sub) {
                     $field_values = $sub->get_field_values();
                     
-                    // $registrants .= var_dump($field_values);
                     $name = "Name: ";
                     $email = "Email: ";
                     $phone = "Phone: ";
                     $source = "Source: ";
-
                     
                     foreach($field_values as $key => $value) {
                         if (str_contains($key, "firstname")) {
@@ -288,14 +292,14 @@ function generate_events_archive() {
 
         $num++;
     }
-    $columns = array('A', 'B', 'C', 'D', 'E');
+    $columns = array("A", "B", "C", "D", "E", "F", "G");
 
     // Set auto width and text wrap
     foreach ($columns as $column) {
         $sheet->getColumnDimension($column)->setWidth(50);
     }
-    $sheet->getStyle("A2:E$num")->getAlignment()->setWrapText(true);
-    $sheet->getStyle("A2:E$num")->getAlignment()->setVertical('top');
+    $sheet->getStyle("A2:G$num")->getAlignment()->setWrapText(true);
+    $sheet->getStyle("A2:G$num")->getAlignment()->setVertical('top');
 
     // Write excel sheet to file
     $writer = new Xlsx($spreadsheet);
