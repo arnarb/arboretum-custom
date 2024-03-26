@@ -305,7 +305,12 @@ add_filter('attachment_fields_to_edit', 'add_focal_point_to_attachment_fields_to
  * Switch the email address for mail
  */
 function correct_admin_email($email) {
-    return "admin@arnarb.harvard.edu";
+    // whitelist Tanya's email
+    if (!str_contains($email, "tholton")) {
+        $email = "admin@arnarb.harvard.edu";
+    }
+    
+    return $email;
 }
 add_filter('wp_mail_from', 'correct_admin_email');
 
